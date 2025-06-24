@@ -26,12 +26,20 @@ Devvit.addCustomPostType({
     // Load initial data
     const { data: initialData, loading } = useAsync(async () => {
       try {
+        // First check if this post has a type set
         let postType = await gameService.getPostType(postId);
         
-        // If postType is null or undefined, default to 'game' and persist it
+        // If no post type is set, check if this is a pinned post
         if (!postType) {
-          postType = 'game';
-          await gameService.setPostType(postId, 'game');
+          const pinnedPostId = await gameService.getPinnedPost();
+          if (pinnedPostId === postId) {
+            postType = 'pinned';
+            await gameService.setPostType(postId, 'pinned');
+          } else {
+            // Default to game post for new posts
+            postType = 'game';
+            await gameService.setPostType(postId, 'game');
+          }
         }
         
         if (postType === 'pinned') {
@@ -51,10 +59,15 @@ Devvit.addCustomPostType({
             leaderboard: { guesserLeaderboard, liarLeaderboard, userStats },
           };
         } else if (postType === 'game') {
-          // This is a game post
-          const gamePost = await gameService.getGamePost(postId);
+          // This is a game post - check if it exists, if not create a placeholder
+          let gamePost = await gameService.getGamePost(postId);
+          
           if (!gamePost) {
-            throw new Error('Game post not found');
+            // This is a new game post that hasn't been configured yet
+            // Show the creation interface
+            return {
+              type: 'new-game' as const,
+            };
           }
 
           let hasGuessed = false;
@@ -122,6 +135,36 @@ Devvit.addCustomPostType({
       );
     }
 
+    // New game post that needs to be configured
+    if (initialData.type === 'new-game') {
+      return (
+        <blocks>
+          <vstack padding="large" gap="medium">
+            <text size="xxlarge" alignment="center">🎪 Configure Your Game</text>
+            <text alignment="center" color="neutral-content-weak">
+              This post needs to be configured with your Two Truths One Lie game!
+            </text>
+            
+            <vstack gap="medium" padding="medium" backgroundColor="neutral-background-weak" cornerRadius="medium">
+              <text weight="bold">To set up your game:</text>
+              <text size="small">1. Use the menu action "[TTOL] Configure Game Post" from the three dots menu</text>
+              <text size="small">2. Or create a new game from the community hub</text>
+            </vstack>
+
+            <button
+              onPress={() => {
+                context.ui.showToast('Use the menu action to configure this post');
+              }}
+              appearance="primary"
+              size="large"
+            >
+              Configure Game 🎪
+            </button>
+          </vstack>
+        </blocks>
+      );
+    }
+
     // Pinned post (community hub)
     if (initialData.type === 'pinned') {
       const { leaderboard } = initialData;
@@ -164,7 +207,7 @@ Devvit.addCustomPostType({
                   onPress={async () => {
                     // This would need to be implemented to create a new post
                     // For now, show a message
-                    context.ui.showToast('Feature coming soon! Use the menu action to create posts.');
+                    context.ui.showToast('Use the menu action "[TTOL] New Two Truths One Lie Post" to create posts.');
                   }}
                   appearance="primary"
                   grow
@@ -486,17 +529,54 @@ Devvit.addMenuItem({
         customPostType: 'ttol',
         preview: (
           <blocks>
-            {/* Empty blocks element allows full Devvit app to render */}
+            <vstack alignment="center middle" padding="large">
+              <text size="xxlarge">🎪</text>
+              <text size="large" weight="bold">Two Truths One Lie</text>
+              <text color="neutral-content-weak">Loading game...</text>
+            </vstack>
           </blocks>
         ),
       });
       
-      ui.showToast({ text: 'Created Two Truths One Lie post!' });
+      ui.showToast({ text: 'Created Two Truths One Lie post! Configure it using the menu.' });
       ui.navigateTo(post.url);
     } catch (error) {
       console.error('Error creating post:', error);
       ui.showToast({
         text: error instanceof Error ? `Error: ${error.message}` : 'Error creating post!',
+      });
+    }
+  },
+});
+
+// Menu item for configuring a game post
+Devvit.addMenuItem({
+  label: '[TTOL] Configure Game Post',
+  location: 'post',
+  forUserType: 'moderator',
+  postFilter: 'currentApp',
+  onPress: async (event, context) => {
+    const { ui, redis, reddit } = context;
+    const postId = event.targetId;
+    
+    try {
+      const gameService = new GameService(redis);
+      
+      // Check if this post already has a game configured
+      const existingGame = await gameService.getGamePost(postId);
+      if (existingGame) {
+        ui.showToast({ text: 'This post already has a game configured!' });
+        return;
+      }
+      
+      // Set this as a game post
+      await gameService.setPostType(postId, 'game');
+      
+      ui.showToast({ text: 'Post configured! Now create your game using the web interface.' });
+    } catch (error) {
+      console.error('Error configuring post:', error);
+      ui.showToast({
+        text: error instanceof Error ? `Error: ${error.message}` : 'Error configuring post!',
       });
     }
   },
@@ -521,7 +601,11 @@ Devvit.addMenuItem({
         customPostType: 'ttol',
         preview: (
           <blocks>
-            {/* Empty blocks element allows full Devvit app to render */}
+            <vstack alignment="center middle" padding="large">
+              <text size="xxlarge">🏆</text>
+              <text size="large" weight="bold">Two Truths One Lie</text>
+              <text color="neutral-content-weak">Community Hub</text>
+            </vstack>
           </blocks>
         ),
       });
