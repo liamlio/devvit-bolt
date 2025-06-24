@@ -26,7 +26,13 @@ Devvit.addCustomPostType({
     // Load initial data
     const { data: initialData, loading } = useAsync(async () => {
       try {
-        const postType = await gameService.getPostType(postId);
+        let postType = await gameService.getPostType(postId);
+        
+        // If postType is null or undefined, default to 'game' and persist it
+        if (!postType) {
+          postType = 'game';
+          await gameService.setPostType(postId, 'game');
+        }
         
         if (postType === 'pinned') {
           // This is the pinned community post
