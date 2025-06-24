@@ -1,6 +1,6 @@
-import { Devvit, useState, useAsync } from '@devvit/public-api';
+import { Devvit, useState, useAsync, useForm } from '@devvit/public-api';
 import { GameService } from '../server/core/game';
-import type { GamePost, UserGuess, UserScore, LeaderboardEntry } from '../shared/types/game';
+import type { GamePost, UserGuess, UserScore, LeaderboardEntry, Statement } from '../shared/types/game';
 import { getLevelByExperience, LEVELS } from '../server/core/levels';
 
 // Configure Devvit
@@ -93,12 +93,141 @@ Devvit.addCustomPostType({
       }
     });
 
+    // Create game form
+    const createGameForm = useForm(
+      {
+        title: '🎪 Create Your Two Truths One Lie Game',
+        description: 'Create two true statements and one lie. Players will try to guess which statement is false!',
+        acceptLabel: 'Create Game Post! 🎪',
+        cancelLabel: 'Cancel',
+        fields: [
+          {
+            type: 'paragraph',
+            name: 'truth1',
+            label: 'Truth #1 ✅',
+            helpText: 'Enter your first true statement',
+            required: true,
+          },
+          {
+            type: 'string',
+            name: 'truth1Description',
+            label: 'Truth #1 Details (Optional)',
+            helpText: 'Add details to make it more believable',
+            required: false,
+          },
+          {
+            type: 'paragraph',
+            name: 'truth2',
+            label: 'Truth #2 ✅',
+            helpText: 'Enter your second true statement',
+            required: true,
+          },
+          {
+            type: 'string',
+            name: 'truth2Description',
+            label: 'Truth #2 Details (Optional)',
+            helpText: 'Add details to make it more believable',
+            required: false,
+          },
+          {
+            type: 'paragraph',
+            name: 'lie',
+            label: 'The Lie ❌',
+            helpText: 'Enter your convincing lie',
+            required: true,
+          },
+        ],
+      },
+      async (values) => {
+        try {
+          if (!userId || !reddit) {
+            context.ui.showToast('Must be logged in to create a game');
+            return;
+          }
+
+          // Get current user info
+          const user = await reddit.getCurrentUser();
+          if (!user) {
+            context.ui.showToast('Unable to get user information');
+            return;
+          }
+
+          // Check if user has required level
+          const userScore = await gameService.getUserScore(userId);
+          if (userScore.level < 1 && userScore.experience < 1) {
+            context.ui.showToast('You must reach level 1 by playing at least one game before creating your own post');
+            return;
+          }
+
+          // Randomly assign lie position
+          const lieIndex = Math.floor(Math.random() * 3);
+          
+          // Create statements
+          const truth1: Statement = {
+            text: values.truth1!,
+            description: values.truth1Description || undefined,
+          };
+          const truth2: Statement = {
+            text: values.truth2!,
+            description: values.truth2Description || undefined,
+          };
+          const lie: Statement = {
+            text: values.lie!,
+          };
+
+          // Create game post data
+          const gamePost: GamePost = {
+            postId,
+            authorId: userId,
+            authorUsername: user.username,
+            truth1,
+            truth2,
+            lie,
+            lieIndex,
+            createdAt: Date.now(),
+            totalGuesses: 0,
+            correctGuesses: 0,
+            guessBreakdown: [0, 0, 0],
+          };
+
+          // Save to Redis
+          await gameService.createGamePost(gamePost);
+          await gameService.setPostType(postId, 'game');
+
+          // Schedule post preview update if scheduler is available
+          if (context.scheduler) {
+            await context.scheduler.runJob({
+              name: 'UpdatePostPreview',
+              data: { postId },
+              runAt: new Date(Date.now() + 1000),
+            });
+          }
+
+          context.ui.showToast('Game created successfully! 🎪');
+          setGameState('loading'); // Trigger reload
+        } catch (error) {
+          console.error('Error creating game:', error);
+          context.ui.showToast('Error creating game. Please try again.');
+        }
+      }
+    );
+
     // Handle loading state
     if (loading) {
       return (
         <blocks>
           <zstack width="100%" height="100%" alignment="center middle">
-            <vstack width="100%" height="100%" backgroundColor="#3b82f6" />
+            {/* Carnival background */}
+            <vstack width="100%" height="100%">
+              <image
+                url="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='carnival' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff6b6b'/%3E%3Cstop offset='25%25' style='stop-color:%234ecdc4'/%3E%3Cstop offset='50%25' style='stop-color:%2345b7d1'/%3E%3Cstop offset='75%25' style='stop-color:%2396ceb4'/%3E%3Cstop offset='100%25' style='stop-color:%23ffeaa7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23carnival)'/%3E%3C/svg%3E"
+                imageHeight={400}
+                imageWidth={400}
+                height="100%"
+                width="100%"
+                resizeMode="cover"
+              />
+            </vstack>
             <vstack alignment="center middle" gap="medium">
               <text size="xxlarge">🎪</text>
               <text size="large" weight="bold" color="white">Loading Two Truths One Lie...</text>
@@ -139,28 +268,39 @@ Devvit.addCustomPostType({
     if (initialData.type === 'new-game') {
       return (
         <blocks>
-          <vstack padding="large" gap="medium">
-            <text size="xxlarge" alignment="center">🎪 Configure Your Game</text>
-            <text alignment="center" color="neutral-content-weak">
-              This post needs to be configured with your Two Truths One Lie game!
-            </text>
-            
-            <vstack gap="medium" padding="medium" backgroundColor="neutral-background-weak" cornerRadius="medium">
-              <text weight="bold">To set up your game:</text>
-              <text size="small">1. Use the menu action "[TTOL] Configure Game Post" from the three dots menu</text>
-              <text size="small">2. Or create a new game from the community hub</text>
+          <zstack width="100%" height="100%">
+            {/* Carnival background */}
+            <vstack width="100%" height="100%">
+              <image
+                url="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='carnival' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff6b6b'/%3E%3Cstop offset='25%25' style='stop-color:%234ecdc4'/%3E%3Cstop offset='50%25' style='stop-color:%2345b7d1'/%3E%3Cstop offset='75%25' style='stop-color:%2396ceb4'/%3E%3Cstop offset='100%25' style='stop-color:%23ffeaa7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23carnival)'/%3E%3C/svg%3E"
+                imageHeight={400}
+                imageWidth={400}
+                height="100%"
+                width="100%"
+                resizeMode="cover"
+              />
             </vstack>
+            <vstack padding="large" gap="medium" alignment="center middle">
+              <text size="xxlarge" alignment="center">🎪</text>
+              <text size="xlarge" weight="bold" color="white" alignment="center">Configure Your Game</text>
+              <text alignment="center" color="white">
+                This post needs to be configured with your Two Truths One Lie game!
+              </text>
+              
+              <vstack gap="medium" padding="medium" backgroundColor="rgba(255,255,255,0.9)" cornerRadius="medium" maxWidth="80%">
+                <text weight="bold" color="black">Ready to create your game?</text>
+                <text size="small" color="black">Create two true statements and one convincing lie!</text>
+              </vstack>
 
-            <button
-              onPress={() => {
-                context.ui.showToast('Use the menu action to configure this post');
-              }}
-              appearance="primary"
-              size="large"
-            >
-              Configure Game 🎪
-            </button>
-          </vstack>
+              <button
+                onPress={() => context.ui.showForm(createGameForm)}
+                appearance="primary"
+                size="large"
+              >
+                Create Your Game! 🎪
+              </button>
+            </vstack>
+          </zstack>
         </blocks>
       );
     }
@@ -172,50 +312,44 @@ Devvit.addCustomPostType({
       if (gameState === 'create') {
         return (
           <blocks>
-            <vstack padding="large" gap="medium">
-              <text size="xxlarge" alignment="center">🎪 Create Your Game</text>
-              <text alignment="center" color="neutral-content-weak">
-                Create your game with two truths and one lie! Players will try to guess which statement is false.
-              </text>
-              
-              <vstack gap="small">
-                <text weight="bold">Truth #1 ✅</text>
-                <textInput placeholder="Enter your first true statement..." />
-                <textInput placeholder="Optional: Add details to make it believable..." />
+            <zstack width="100%" height="100%">
+              {/* Carnival background */}
+              <vstack width="100%" height="100%">
+                <image
+                  url="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='carnival' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff6b6b'/%3E%3Cstop offset='25%25' style='stop-color:%234ecdc4'/%3E%3Cstop offset='50%25' style='stop-color:%2345b7d1'/%3E%3Cstop offset='75%25' style='stop-color:%2396ceb4'/%3E%3Cstop offset='100%25' style='stop-color:%23ffeaa7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23carnival)'/%3E%3C/svg%3E"
+                  imageHeight={400}
+                  imageWidth={400}
+                  height="100%"
+                  width="100%"
+                  resizeMode="cover"
+                />
               </vstack>
-              
-              <vstack gap="small">
-                <text weight="bold">Truth #2 ✅</text>
-                <textInput placeholder="Enter your second true statement..." />
-                <textInput placeholder="Optional: Add details to make it believable..." />
+              <vstack padding="large" gap="medium">
+                <text size="xxlarge" alignment="center" color="white">🎪 Create Your Game</text>
+                <text alignment="center" color="white">
+                  Use the menu action "[TTOL] New Two Truths One Lie Post" to create posts.
+                </text>
+                
+                <hstack gap="medium">
+                  <button
+                    onPress={() => setGameState('leaderboard')}
+                    appearance="secondary"
+                    grow
+                  >
+                    Back
+                  </button>
+                  <button
+                    onPress={async () => {
+                      context.ui.showToast('Use the menu action "[TTOL] New Two Truths One Lie Post" to create posts.');
+                    }}
+                    appearance="primary"
+                    grow
+                  >
+                    Create Game Post!
+                  </button>
+                </hstack>
               </vstack>
-              
-              <vstack gap="small">
-                <text weight="bold">The Lie ❌</text>
-                <textInput placeholder="Enter your convincing lie..." />
-              </vstack>
-
-              <hstack gap="medium">
-                <button
-                  onPress={() => setGameState('leaderboard')}
-                  appearance="secondary"
-                  grow
-                >
-                  Back
-                </button>
-                <button
-                  onPress={async () => {
-                    // This would need to be implemented to create a new post
-                    // For now, show a message
-                    context.ui.showToast('Use the menu action "[TTOL] New Two Truths One Lie Post" to create posts.');
-                  }}
-                  appearance="primary"
-                  grow
-                >
-                  Create Game Post!
-                </button>
-              </hstack>
-            </vstack>
+            </zstack>
           </blocks>
         );
       }
@@ -227,80 +361,93 @@ Devvit.addCustomPostType({
 
       return (
         <blocks>
-          <vstack padding="large" gap="medium">
-            <text size="xxlarge" alignment="center">🏆 Two Truths One Lie</text>
-            <text alignment="center" color="neutral-content-weak">
-              Welcome to the carnival of deception! Can you spot the lies?
-            </text>
+          <zstack width="100%" height="100%">
+            {/* Carnival background */}
+            <vstack width="100%" height="100%">
+              <image
+                url="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='carnival' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff6b6b'/%3E%3Cstop offset='25%25' style='stop-color:%234ecdc4'/%3E%3Cstop offset='50%25' style='stop-color:%2345b7d1'/%3E%3Cstop offset='75%25' style='stop-color:%2396ceb4'/%3E%3Cstop offset='100%25' style='stop-color:%23ffeaa7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23carnival)'/%3E%3C/svg%3E"
+                imageHeight={400}
+                imageWidth={400}
+                height="100%"
+                width="100%"
+                resizeMode="cover"
+              />
+            </vstack>
+            <vstack padding="large" gap="medium">
+              <text size="xxlarge" alignment="center" color="white">🏆 Two Truths One Lie</text>
+              <text alignment="center" color="white">
+                Welcome to the carnival of deception! Can you spot the lies?
+              </text>
 
-            {/* User Stats */}
-            {leaderboard.userStats && (
-              <vstack padding="medium" backgroundColor="neutral-background-weak" cornerRadius="medium">
-                <text weight="bold">Your Stats</text>
-                <hstack gap="large">
-                  <vstack>
-                    <text size="small" color="neutral-content-weak">Level {leaderboard.userStats.level}</text>
-                    <text size="small" color="neutral-content-weak">{leaderboard.userStats.experience} XP</text>
-                  </vstack>
-                  <vstack>
-                    <text size="small" color="neutral-content-weak">Games: {leaderboard.userStats.totalGames}</text>
-                    <text size="small" color="neutral-content-weak">
-                      Accuracy: {leaderboard.userStats.totalGames > 0 
-                        ? Math.round((leaderboard.userStats.correctGuesses / leaderboard.userStats.totalGames) * 100) 
-                        : 0}%
-                    </text>
-                  </vstack>
-                </hstack>
-              </vstack>
-            )}
-
-            {/* Tab Navigation */}
-            <hstack gap="small">
-              <button
-                onPress={() => setActiveTab('guessers')}
-                appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
-                grow
-              >
-                🕵️ Best Guessers
-              </button>
-              <button
-                onPress={() => setActiveTab('liars')}
-                appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
-                grow
-              >
-                🎭 Best Liars
-              </button>
-            </hstack>
-
-            {/* Leaderboard */}
-            <vstack gap="small">
-              {currentLeaderboard.length > 0 ? (
-                currentLeaderboard.map((entry, index) => (
-                  <hstack key={entry.userId} padding="small" backgroundColor="neutral-background-weak" cornerRadius="small">
-                    <text weight="bold" width="40px">
-                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                    </text>
-                    <text grow>u/{entry.username}</text>
-                    <text weight="bold">{entry.score}</text>
+              {/* User Stats */}
+              {leaderboard.userStats && (
+                <vstack padding="medium" backgroundColor="rgba(255,255,255,0.9)" cornerRadius="medium">
+                  <text weight="bold" color="black">Your Stats</text>
+                  <hstack gap="large">
+                    <vstack>
+                      <text size="small" color="black">Level {leaderboard.userStats.level}</text>
+                      <text size="small" color="black">{leaderboard.userStats.experience} XP</text>
+                    </vstack>
+                    <vstack>
+                      <text size="small" color="black">Games: {leaderboard.userStats.totalGames}</text>
+                      <text size="small" color="black">
+                        Accuracy: {leaderboard.userStats.totalGames > 0 
+                          ? Math.round((leaderboard.userStats.correctGuesses / leaderboard.userStats.totalGames) * 100) 
+                          : 0}%
+                      </text>
+                    </vstack>
                   </hstack>
-                ))
-              ) : (
-                <vstack alignment="center middle" padding="large">
-                  <text size="large">🎪</text>
-                  <text color="neutral-content-weak">No entries yet! Be the first to play!</text>
                 </vstack>
               )}
-            </vstack>
 
-            {/* Action Button */}
-            <button
-              onPress={() => setGameState('create')}
-              appearance="primary"
-              size="large"
-            >
-              Create Your Game 🎪
-            </button>
-          </vstack>
+              {/* Tab Navigation */}
+              <hstack gap="small">
+                <button
+                  onPress={() => setActiveTab('guessers')}
+                  appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
+                  grow
+                >
+                  🕵️ Best Guessers
+                </button>
+                <button
+                  onPress={() => setActiveTab('liars')}
+                  appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
+                  grow
+                >
+                  🎭 Best Liars
+                </button>
+              </hstack>
+
+              {/* Leaderboard */}
+              <vstack gap="small">
+                {currentLeaderboard.length > 0 ? (
+                  currentLeaderboard.map((entry, index) => (
+                    <hstack key={entry.userId} padding="small" backgroundColor="rgba(255,255,255,0.9)" cornerRadius="small">
+                      <text weight="bold" width="40px" color="black">
+                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                      </text>
+                      <text grow color="black">u/{entry.username}</text>
+                      <text weight="bold" color="black">{entry.score}</text>
+                    </hstack>
+                  ))
+                ) : (
+                  <vstack alignment="center middle" padding="large">
+                    <text size="large">🎪</text>
+                    <text color="white">No entries yet! Be the first to play!</text>
+                  </vstack>
+                )}
+              </vstack>
+
+              {/* Action Button */}
+              <button
+                onPress={() => setGameState('create')}
+                appearance="primary"
+                size="large"
+              >
+                Create Your Game 🎪
+              </button>
+            </vstack>
+          </zstack>
         </blocks>
       );
     }
@@ -314,128 +461,141 @@ Devvit.addCustomPostType({
       if (!hasGuessed) {
         return (
           <blocks>
-            <vstack padding="large" gap="medium">
-              <text size="xxlarge" alignment="center">🎪 Two Truths One Lie</text>
-              <text alignment="center" color="neutral-content-weak">
-                Can you spot the lie? Choose the statement you think is false!
-              </text>
-              <text size="small" alignment="center" color="neutral-content-weak">
-                By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
-              </text>
-
-              <vstack gap="small">
-                {statements.map((statement, index) => (
-                  <button
-                    key={index}
-                    onPress={() => setSelectedIndex(index)}
-                    appearance={selectedIndex === index ? 'primary' : 'secondary'}
-                    size="large"
-                  >
-                    <text alignment="start">{statement.text}</text>
-                  </button>
-                ))}
+            <zstack width="100%" height="100%">
+              {/* Carnival background */}
+              <vstack width="100%" height="100%">
+                <image
+                  url="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='carnival' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff6b6b'/%3E%3Cstop offset='25%25' style='stop-color:%234ecdc4'/%3E%3Cstop offset='50%25' style='stop-color:%2345b7d1'/%3E%3Cstop offset='75%25' style='stop-color:%2396ceb4'/%3E%3Cstop offset='100%25' style='stop-color:%23ffeaa7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23carnival)'/%3E%3C/svg%3E"
+                  imageHeight={400}
+                  imageWidth={400}
+                  height="100%"
+                  width="100%"
+                  resizeMode="cover"
+                />
               </vstack>
+              <vstack padding="large" gap="medium">
+                <text size="xxlarge" alignment="center" color="white">🎪 Two Truths One Lie</text>
+                <text alignment="center" color="white">
+                  Can you spot the lie? Choose the statement you think is false!
+                </text>
+                <text size="small" alignment="center" color="white">
+                  By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
+                </text>
 
-              <button
-                onPress={async () => {
-                  if (selectedIndex === null || !userId || !reddit) return;
+                <vstack gap="small">
+                  {statements.map((statement, index) => (
+                    <button
+                      key={index}
+                      onPress={() => setSelectedIndex(index)}
+                      appearance={selectedIndex === index ? 'primary' : 'secondary'}
+                      size="large"
+                    >
+                      <text alignment="start">{statement.text}</text>
+                    </button>
+                  ))}
+                </vstack>
 
-                  try {
-                    // Check if user already guessed
-                    const existingGuess = await gameService.getUserGuess(postId, userId);
-                    if (existingGuess) {
-                      context.ui.showToast('You have already guessed on this post');
-                      return;
-                    }
+                <button
+                  onPress={async () => {
+                    if (selectedIndex === null || !userId || !reddit) return;
 
-                    // Check if user is the author
-                    if (gamePost.authorId === userId) {
-                      context.ui.showToast('You cannot guess on your own post');
-                      return;
-                    }
-
-                    // Get current user info
-                    const user = await reddit.getCurrentUser();
-                    if (!user) {
-                      context.ui.showToast('Unable to get user information');
-                      return;
-                    }
-
-                    // Process the guess
-                    const isCorrect = selectedIndex === gamePost.lieIndex;
-                    
-                    // Create user guess record
-                    const newUserGuess: UserGuess = {
-                      userId,
-                      username: user.username,
-                      postId,
-                      guessIndex: selectedIndex,
-                      isCorrect,
-                      timestamp: Date.now(),
-                    };
-
-                    // Update game post stats
-                    gamePost.totalGuesses += 1;
-                    gamePost.guessBreakdown[selectedIndex] += 1;
-                    if (isCorrect) {
-                      gamePost.correctGuesses += 1;
-                    }
-
-                    // Award experience points (1 for playing, +3 for correct guess)
-                    const experiencePoints = isCorrect ? 4 : 1;
-                    const guesserPoints = isCorrect ? 1 : 0;
-                    
-                    // Save data and award points
-                    await Promise.all([
-                      gameService.saveUserGuess(newUserGuess),
-                      gameService.updateGamePost(gamePost),
-                      gameService.awardExperience(userId, user.username, experiencePoints),
-                      gameService.awardGuesserPoints(userId, user.username, guesserPoints),
-                    ]);
-
-                    // Award liar points to the author if guess was wrong
-                    if (!isCorrect) {
-                      await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1);
-                    }
-
-                    // Check for level up
-                    const userScore = await gameService.getUserScore(userId);
-                    const newLevel = getLevelByExperience(userScore.experience);
-                    
-                    if (newLevel.level > userScore.level) {
-                      // Update user level
-                      userScore.level = newLevel.level;
-                      await gameService.updateUserScore(userScore);
-                      
-                      // Schedule flair update
-                      if (context.scheduler) {
-                        await context.scheduler.runJob({
-                          name: 'UpdateUserFlair',
-                          data: { userId, username: user.username, level: newLevel.level },
-                          runAt: new Date(Date.now() + 1000),
-                        });
+                    try {
+                      // Check if user already guessed
+                      const existingGuess = await gameService.getUserGuess(postId, userId);
+                      if (existingGuess) {
+                        context.ui.showToast('You have already guessed on this post');
+                        return;
                       }
-                      
-                      context.ui.showToast(`Level up! You are now ${newLevel.name}!`);
-                    }
 
-                    // Show result
-                    context.ui.showToast(isCorrect ? '🎉 Correct! You spotted the lie!' : '😅 Wrong! Better luck next time!');
-                    
-                    // Refresh the view to show results
-                    setGameState('result');
-                  } catch (err) {
-                    console.error('Error submitting guess:', err);
-                    context.ui.showToast('Error submitting guess. Please try again.');
-                  }
-                }}
-                appearance="primary"
-                size="large"
-                disabled={selectedIndex === null}
-              >
-                Submit Guess! 🎯
-              </button>
-            </vstack>
+                      // Check if user is the author
+                      if (gamePost.authorId === userId) {
+                        context.ui.showToast('You cannot guess on your own post');
+                        return;
+                      }
+
+                      // Get current user info
+                      const user = await reddit.getCurrentUser();
+                      if (!user) {
+                        context.ui.showToast('Unable to get user information');
+                        return;
+                      }
+
+                      // Process the guess
+                      const isCorrect = selectedIndex === gamePost.lieIndex;
+                      
+                      // Create user guess record
+                      const newUserGuess: UserGuess = {
+                        userId,
+                        username: user.username,
+                        postId,
+                        guessIndex: selectedIndex,
+                        isCorrect,
+                        timestamp: Date.now(),
+                      };
+
+                      // Update game post stats
+                      gamePost.totalGuesses += 1;
+                      gamePost.guessBreakdown[selectedIndex] += 1;
+                      if (isCorrect) {
+                        gamePost.correctGuesses += 1;
+                      }
+
+                      // Award experience points (1 for playing, +3 for correct guess)
+                      const experiencePoints = isCorrect ? 4 : 1;
+                      const guesserPoints = isCorrect ? 1 : 0;
+                      
+                      // Save data and award points
+                      await Promise.all([
+                        gameService.saveUserGuess(newUserGuess),
+                        gameService.updateGamePost(gamePost),
+                        gameService.awardExperience(userId, user.username, experiencePoints),
+                        gameService.awardGuesserPoints(userId, user.username, guesserPoints),
+                      ]);
+
+                      // Award liar points to the author if guess was wrong
+                      if (!isCorrect) {
+                        await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1);
+                      }
+
+                      // Check for level up
+                      const userScore = await gameService.getUserScore(userId);
+                      const newLevel = getLevelByExperience(userScore.experience);
+                      
+                      if (newLevel.level > userScore.level) {
+                        // Update user level
+                        userScore.level = newLevel.level;
+                        await gameService.updateUserScore(userScore);
+                        
+                        // Schedule flair update
+                        if (context.scheduler) {
+                          await context.scheduler.runJob({
+                            name: 'UpdateUserFlair',
+                            data: { userId, username: user.username, level: newLevel.level },
+                            runAt: new Date(Date.now() + 1000),
+                          });
+                        }
+                        
+                        context.ui.showToast(`Level up! You are now ${newLevel.name}!`);
+                      }
+
+                      // Show result
+                      context.ui.showToast(isCorrect ? '🎉 Correct! You spotted the lie!' : '😅 Wrong! Better luck next time!');
+                      
+                      // Refresh the view to show results
+                      setGameState('result');
+                    } catch (err) {
+                      console.error('Error submitting guess:', err);
+                      context.ui.showToast('Error submitting guess. Please try again.');
+                    }
+                  }}
+                  appearance="primary"
+                  size="large"
+                  disabled={selectedIndex === null}
+                >
+                  Submit Guess! 🎯
+                </button>
+              </vstack>
+            </zstack>
           </blocks>
         );
       }
@@ -443,61 +603,74 @@ Devvit.addCustomPostType({
       // Results interface
       return (
         <blocks>
-          <vstack padding="large" gap="medium">
-            <text size="xxlarge" alignment="center">🎪 Results</text>
-            <text alignment="center" color="neutral-content-weak">
-              {userGuess?.isCorrect 
-                ? '🎉 Congratulations! You spotted the lie!' 
-                : '😅 Nice try! Better luck next time!'
-              }
-            </text>
-            <text size="small" alignment="center" color="neutral-content-weak">
-              By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
-            </text>
-
-            <vstack gap="small">
-              {statements.map((statement, index) => {
-                const isLie = index === gamePost.lieIndex;
-                const isUserChoice = userGuess?.guessIndex === index;
-                const votes = gamePost.guessBreakdown[index];
-                const percentage = gamePost.totalGuesses > 0 
-                  ? Math.round((votes / gamePost.totalGuesses) * 100) 
-                  : 0;
-
-                return (
-                  <vstack key={index} padding="medium" backgroundColor={isLie ? "red-weak" : "green-weak"} cornerRadius="medium">
-                    <hstack>
-                      <text grow weight="bold">
-                        {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
-                      </text>
-                      {isUserChoice && <text color="blue">(Your choice)</text>}
-                    </hstack>
-                    
-                    {!isLie && statement.description && (
-                      <text size="small" color="neutral-content-weak" style="italic">
-                        Details: {statement.description}
-                      </text>
-                    )}
-                    
-                    <text size="small" color="neutral-content-weak">
-                      {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
-                    </text>
-                  </vstack>
-                );
-              })}
+          <zstack width="100%" height="100%">
+            {/* Carnival background */}
+            <vstack width="100%" height="100%">
+              <image
+                url="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='carnival' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff6b6b'/%3E%3Cstop offset='25%25' style='stop-color:%234ecdc4'/%3E%3Cstop offset='50%25' style='stop-color:%2345b7d1'/%3E%3Cstop offset='75%25' style='stop-color:%2396ceb4'/%3E%3Cstop offset='100%25' style='stop-color:%23ffeaa7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23carnival)'/%3E%3C/svg%3E"
+                imageHeight={400}
+                imageWidth={400}
+                height="100%"
+                width="100%"
+                resizeMode="cover"
+              />
             </vstack>
+            <vstack padding="large" gap="medium">
+              <text size="xxlarge" alignment="center" color="white">🎪 Results</text>
+              <text alignment="center" color="white">
+                {userGuess?.isCorrect 
+                  ? '🎉 Congratulations! You spotted the lie!' 
+                  : '😅 Nice try! Better luck next time!'
+                }
+              </text>
+              <text size="small" alignment="center" color="white">
+                By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
+              </text>
 
-            <text alignment="center" color="neutral-content-weak">
-              💬 How surprising were the truths? Comment below!
-            </text>
+              <vstack gap="small">
+                {statements.map((statement, index) => {
+                  const isLie = index === gamePost.lieIndex;
+                  const isUserChoice = userGuess?.guessIndex === index;
+                  const votes = gamePost.guessBreakdown[index];
+                  const percentage = gamePost.totalGuesses > 0 
+                    ? Math.round((votes / gamePost.totalGuesses) * 100) 
+                    : 0;
 
-            <button
-              onPress={() => setGameState('leaderboard')}
-              appearance="secondary"
-            >
-              View Leaderboard 🏆
-            </button>
-          </vstack>
+                  return (
+                    <vstack key={index} padding="medium" backgroundColor={isLie ? "rgba(255,0,0,0.2)" : "rgba(0,255,0,0.2)"} cornerRadius="medium">
+                      <hstack>
+                        <text grow weight="bold" color="white">
+                          {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
+                        </text>
+                        {isUserChoice && <text color="yellow">(Your choice)</text>}
+                      </hstack>
+                      
+                      {!isLie && statement.description && (
+                        <text size="small" color="white" style="italic">
+                          Details: {statement.description}
+                        </text>
+                      )}
+                      
+                      <text size="small" color="white">
+                        {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                      </text>
+                    </vstack>
+                  );
+                })}
+              </vstack>
+
+              <text alignment="center" color="white">
+                💬 How surprising were the truths? Comment below!
+              </text>
+
+              <button
+                onPress={() => setGameState('leaderboard')}
+                appearance="secondary"
+              >
+                View Leaderboard 🏆
+              </button>
+            </vstack>
+          </zstack>
         </blocks>
       );
     }
@@ -513,16 +686,19 @@ Devvit.addCustomPostType({
   },
 });
 
-// Menu item for creating new posts
+// Menu item for creating new posts - AUTOMATICALLY CREATES THE POST
 Devvit.addMenuItem({
   label: '[TTOL] New Two Truths One Lie Post',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
-    const { reddit, ui } = context;
+    const { reddit, ui, redis } = context;
     
     try {
+      const gameService = new GameService(redis);
       const subreddit = await reddit.getCurrentSubreddit();
+      
+      // Automatically create the post
       const post = await reddit.submitPost({
         title: '🎪 Two Truths One Lie - Can You Spot the Lie? 🎪',
         subredditName: subreddit.name,
@@ -532,51 +708,21 @@ Devvit.addMenuItem({
             <vstack alignment="center middle" padding="large">
               <text size="xxlarge">🎪</text>
               <text size="large" weight="bold">Two Truths One Lie</text>
-              <text color="neutral-content-weak">Loading game...</text>
+              <text color="neutral-content-weak">Ready to create your game...</text>
             </vstack>
           </blocks>
         ),
       });
       
-      ui.showToast({ text: 'Created Two Truths One Lie post! Configure it using the menu.' });
+      // Set as game post type
+      await gameService.setPostType(post.id, 'game');
+      
+      ui.showToast({ text: 'Created Two Truths One Lie post! Click on it to configure your game.' });
       ui.navigateTo(post.url);
     } catch (error) {
       console.error('Error creating post:', error);
       ui.showToast({
         text: error instanceof Error ? `Error: ${error.message}` : 'Error creating post!',
-      });
-    }
-  },
-});
-
-// Menu item for configuring a game post
-Devvit.addMenuItem({
-  label: '[TTOL] Configure Game Post',
-  location: 'post',
-  forUserType: 'moderator',
-  postFilter: 'currentApp',
-  onPress: async (event, context) => {
-    const { ui, redis, reddit } = context;
-    const postId = event.targetId;
-    
-    try {
-      const gameService = new GameService(redis);
-      
-      // Check if this post already has a game configured
-      const existingGame = await gameService.getGamePost(postId);
-      if (existingGame) {
-        ui.showToast({ text: 'This post already has a game configured!' });
-        return;
-      }
-      
-      // Set this as a game post
-      await gameService.setPostType(postId, 'game');
-      
-      ui.showToast({ text: 'Post configured! Now create your game using the web interface.' });
-    } catch (error) {
-      console.error('Error configuring post:', error);
-      ui.showToast({
-        text: error instanceof Error ? `Error: ${error.message}` : 'Error configuring post!',
       });
     }
   },
