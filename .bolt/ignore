@@ -1,0 +1,17 @@
+/home/project/example/pixelary/src/forms/*
+/home/project/example/pixelary/src/jobs/*
+/home/project/example/pixelary/src/trigger/*
+/home/project/example/pixelary/src/components/*
+/home/project/example/pixelary/src/utils.test.ts
+/home/project/example/pixelary/src/types.ts
+/home/project/example/pixelary/.ci-deploy.json
+/home/project/example/pixelary/.gitignore
+/home/project/example/pixelary/data-schema.md
+/home/project/example/pixelary/devvit.yaml
+/home/project/example/pixelary/tsconfig.json
+/home/project/example/pixelary/package.json
+/home/project/example/pixelary/src/utils
+.prettierrc
+package-lock.json
+LICENSE
+/home/project/tools
