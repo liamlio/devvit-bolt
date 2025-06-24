@@ -280,7 +280,7 @@ Devvit.addCustomPostType({
                 }}
                 appearance="primary"
               >
-                <text color="black" weight="bold">Retry</text>
+                <text color="white" weight="bold">Retry</text>
               </button>
             </vstack>
           </zstack>
@@ -328,7 +328,7 @@ Devvit.addCustomPostType({
                   appearance="primary"
                   size="large"
                 >
-                  <text color="black" weight="bold" size="large">Create Your Game! 🎪</text>
+                  <text color="white" weight="bold" size="large">Create Your Game! 🎪</text>
                 </button>
               </vstack>
             </vstack>
@@ -384,7 +384,7 @@ Devvit.addCustomPostType({
                       appearance="primary"
                       grow
                     >
-                      <text color="black" weight="bold">Create Game Post!</text>
+                      <text color="white" weight="bold">Create Game Post!</text>
                     </button>
                   </hstack>
                 </vstack>
@@ -453,14 +453,14 @@ Devvit.addCustomPostType({
                     appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
                     grow
                   >
-                    <text color="black" weight="bold">🕵️ Best Guessers</text>
+                    <text color={activeTab === 'guessers' ? 'white' : 'black'} weight="bold">🕵️ Best Guessers</text>
                   </button>
                   <button
                     onPress={() => setActiveTab('liars')}
                     appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
                     grow
                   >
-                    <text color="black" weight="bold">🎭 Best Liars</text>
+                    <text color={activeTab === 'liars' ? 'white' : 'black'} weight="bold">🎭 Best Liars</text>
                   </button>
                 </hstack>
 
@@ -497,7 +497,7 @@ Devvit.addCustomPostType({
                   appearance="primary"
                   size="large"
                 >
-                  <text color="black" weight="bold" size="large">Create Your Game 🎪</text>
+                  <text color="white" weight="bold" size="large">Create Your Game 🎪</text>
                 </button>
               </vstack>
             </vstack>
@@ -550,7 +550,7 @@ Devvit.addCustomPostType({
                         appearance={selectedIndex === index ? 'primary' : 'secondary'}
                         size="large"
                       >
-                        <hstack 
+                        <vstack 
                           backgroundColor={selectedIndex === index ? '#FFD700' : '#F8F9FA'} 
                           cornerRadius="large" 
                           padding="medium"
@@ -558,7 +558,7 @@ Devvit.addCustomPostType({
                           borderColor={selectedIndex === index ? '#4A90E2' : '#C0C0C0'}
                         >
                           <text alignment="start" color="black" weight="bold">{statement.text}</text>
-                        </hstack>
+                        </vstack>
                       </button>
                     ))}
                   </vstack>
@@ -660,7 +660,7 @@ Devvit.addCustomPostType({
                     size="large"
                     disabled={selectedIndex === null}
                   >
-                    <text color="black" weight="bold" size="large">Submit Guess! 🎯</text>
+                    <text color="white" weight="bold" size="large">Submit Guess! 🎯</text>
                   </button>
                 </vstack>
               </vstack>
