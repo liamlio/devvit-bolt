@@ -111,7 +111,7 @@ export class GameService {
       ? `leaderboard:${type}:weekly:${weekNumber}`
       : `leaderboard:${type}:alltime`;
 
-    const results = await this.redis.zrevrange(key, 0, limit - 1, { withScores: true });
+    const results = await this.redis.zRange(key, 0, limit - 1, { reverse: true, withScores: true });
     
     const leaderboard: LeaderboardEntry[] = [];
     for (let i = 0; i < results.length; i++) {
@@ -134,7 +134,7 @@ export class GameService {
       ? `leaderboard:${type}:weekly:${weekNumber}`
       : `leaderboard:${type}:alltime`;
 
-    const rank = await this.redis.zrevrank(key, userId);
+    const rank = await this.redis.zRevRank(key, userId);
     return rank !== null ? rank + 1 : -1;
   }
 
