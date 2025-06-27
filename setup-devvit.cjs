@@ -21,9 +21,9 @@ function updateDevvitName() {
 
   if (parsedYaml.name === 'YOUR_APP_NAME') {
     const suffix = generateRandomSuffix(6);
-    parsedYaml.name = `bolt-${suffix}`;
+    parsedYaml.name = `ttol-${suffix}`;
     fs.writeFileSync(devvitYamlPath, yaml.stringify(parsedYaml));
-    console.log(`Updated app name to bolt-${suffix}`);
+    console.log(`Updated app name to ttol-${suffix}`);
   }
 }
 
@@ -85,12 +85,12 @@ async function main() {
     // Step 2: Run checks
     const checksPass = await runChecks();
 
-    // Step 3: If all checks pass, run dev:all
+    // Step 3: If all checks pass, run dev:devvit
     if (checksPass) {
-      console.log('\nAll checks passed! Starting development server...');
-      const devProcess = exec('npm run dev:all', (error, stdout, stderr) => {
+      console.log('\nAll checks passed! Starting Devvit playtest...');
+      const devProcess = exec('npm run dev:devvit', (error, stdout, stderr) => {
         if (error) {
-          console.error(`Error running dev:all: ${error.message}`);
+          console.error(`Error running dev:devvit: ${error.message}`);
           process.exit(1);
         }
       });

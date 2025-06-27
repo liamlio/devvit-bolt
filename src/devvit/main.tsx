@@ -1,7 +1,5 @@
 import { Devvit, useState, useAsync, useForm } from '@devvit/public-api';
-import { GameService } from '../server/core/game';
 import type { GamePost, UserGuess, UserScore, LeaderboardEntry, Statement } from '../shared/types/game';
-import { getLevelByExperience, LEVELS } from '../server/core/levels';
 
 // Configure Devvit
 Devvit.configure({
@@ -10,11 +8,214 @@ Devvit.configure({
   media: true,
 });
 
+// Game Service - simplified for Devvit
+class GameService {
+  constructor(private redis: any) {}
+
+  // Game Post Management
+  async createGamePost(gamePost: GamePost): Promise<void> {
+    const key = `game_post:${gamePost.postId}`;
+    await this.redis.set(key, JSON.stringify(gamePost));
+  }
+
+  async getGamePost(postId: string): Promise<GamePost | null> {
+    const key = `game_post:${postId}`;
+    const data = await this.redis.get(key);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async updateGamePost(gamePost: GamePost): Promise<void> {
+    await this.createGamePost(gamePost);
+  }
+
+  // User Guess Management
+  async saveUserGuess(guess: UserGuess): Promise<void> {
+    const key = `user_guess:${guess.postId}:${guess.userId}`;
+    await this.redis.set(key, JSON.stringify(guess));
+  }
+
+  async getUserGuess(postId: string, userId: string): Promise<UserGuess | null> {
+    const key = `user_guess:${postId}:${userId}`;
+    const data = await this.redis.get(key);
+    return data ? JSON.parse(data) : null;
+  }
+
+  // User Score Management
+  async getUserScore(userId: string): Promise<UserScore> {
+    const key = `user_score:${userId}`;
+    const data = await this.redis.get(key);
+    
+    if (data) {
+      return JSON.parse(data);
+    }
+    
+    return {
+      userId,
+      username: '',
+      guesserPoints: 0,
+      liarPoints: 0,
+      weeklyGuesserPoints: 0,
+      weeklyLiarPoints: 0,
+      level: 1,
+      experience: 0,
+      totalGames: 0,
+      correctGuesses: 0,
+    };
+  }
+
+  async updateUserScore(userScore: UserScore): Promise<{ leveledUp: boolean; newLevel?: number }> {
+    const oldLevel = userScore.level;
+    const newLevel = this.getLevelByExperience(userScore.experience);
+    userScore.level = newLevel.level;
+    
+    const key = `user_score:${userScore.userId}`;
+    await this.redis.set(key, JSON.stringify(userScore));
+
+    await this.updateLeaderboards(userScore);
+
+    const leveledUp = newLevel.level > oldLevel;
+    return {
+      leveledUp,
+      newLevel: leveledUp ? newLevel.level : undefined,
+    };
+  }
+
+  private async updateLeaderboards(userScore: UserScore): Promise<void> {
+    const weekNumber = this.getWeekNumber();
+    
+    await this.redis.zadd(`leaderboard:guesser:weekly:${weekNumber}`, {
+      member: userScore.userId,
+      score: userScore.weeklyGuesserPoints,
+    });
+    await this.redis.zadd('leaderboard:guesser:alltime', {
+      member: userScore.userId,
+      score: userScore.guesserPoints,
+    });
+
+    await this.redis.zadd(`leaderboard:liar:weekly:${weekNumber}`, {
+      member: userScore.userId,
+      score: userScore.weeklyLiarPoints,
+    });
+    await this.redis.zadd('leaderboard:liar:alltime', {
+      member: userScore.userId,
+      score: userScore.liarPoints,
+    });
+  }
+
+  async getLeaderboard(type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime', limit: number = 10): Promise<LeaderboardEntry[]> {
+    const weekNumber = this.getWeekNumber();
+    const key = timeframe === 'weekly' 
+      ? `leaderboard:${type}:weekly:${weekNumber}`
+      : `leaderboard:${type}:alltime`;
+
+    const results = await this.redis.zRange(key, 0, limit - 1, { withScores: true });
+    results.reverse();
+    
+    const leaderboard: LeaderboardEntry[] = [];
+    for (let i = 0; i < results.length; i++) {
+      const { member: userId, score } = results[i];
+      const userScore = await this.getUserScore(userId);
+      leaderboard.push({
+        userId,
+        username: userScore.username,
+        score,
+        rank: i + 1,
+      });
+    }
+
+    return leaderboard;
+  }
+
+  // Game Settings
+  async getGameSettings(): Promise<{ subredditName: string }> {
+    const data = await this.redis.get('game_settings');
+    return data ? JSON.parse(data) : { subredditName: '' };
+  }
+
+  async setGameSettings(settings: { subredditName: string }): Promise<void> {
+    await this.redis.set('game_settings', JSON.stringify(settings));
+  }
+
+  // Post Type Management
+  async setPostType(postId: string, type: 'game' | 'pinned'): Promise<void> {
+    await this.redis.set(`post_type:${postId}`, type);
+  }
+
+  async getPostType(postId: string): Promise<'game' | 'pinned' | null> {
+    const type = await this.redis.get(`post_type:${postId}`);
+    return type as 'game' | 'pinned' | null;
+  }
+
+  async setPinnedPost(postId: string): Promise<void> {
+    await this.redis.set('pinned_post', postId);
+  }
+
+  async getPinnedPost(): Promise<string | null> {
+    return await this.redis.get('pinned_post');
+  }
+
+  // Utility Methods
+  private getWeekNumber(): number {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    const diff = now.getTime() - start.getTime();
+    const oneWeek = 1000 * 60 * 60 * 24 * 7;
+    return Math.floor(diff / oneWeek);
+  }
+
+  private getLevelByExperience(experience: number): { level: number; name: string } {
+    const levels = [
+      { level: 1, name: 'Rookie Detective', experienceRequired: 1 },
+      { level: 2, name: 'Truth Seeker', experienceRequired: 10 },
+      { level: 3, name: 'Lie Detector', experienceRequired: 20 },
+      { level: 4, name: 'Master Sleuth', experienceRequired: 35 },
+      { level: 5, name: 'Truth Master', experienceRequired: 55 },
+      { level: 6, name: 'Carnival Legend', experienceRequired: 80 },
+      { level: 7, name: 'Ultimate Detective', experienceRequired: 110 },
+    ];
+
+    for (let i = levels.length - 1; i >= 0; i--) {
+      if (experience >= levels[i].experienceRequired) {
+        return levels[i];
+      }
+    }
+    return levels[0];
+  }
+
+  async awardExperience(userId: string, username: string, points: number): Promise<{ leveledUp: boolean; newLevel?: number }> {
+    const userScore = await this.getUserScore(userId);
+    userScore.username = username;
+    userScore.experience += points;
+    
+    return await this.updateUserScore(userScore);
+  }
+
+  async awardGuesserPoints(userId: string, username: string, points: number): Promise<{ leveledUp: boolean; newLevel?: number }> {
+    const userScore = await this.getUserScore(userId);
+    userScore.username = username;
+    userScore.guesserPoints += points;
+    userScore.weeklyGuesserPoints += points;
+    userScore.totalGames += 1;
+    if (points > 0) userScore.correctGuesses += 1;
+    
+    return await this.updateUserScore(userScore);
+  }
+
+  async awardLiarPoints(userId: string, username: string, points: number): Promise<{ leveledUp: boolean; newLevel?: number }> {
+    const userScore = await this.getUserScore(userId);
+    userScore.username = username;
+    userScore.liarPoints += points;
+    userScore.weeklyLiarPoints += points;
+    
+    return await this.updateUserScore(userScore);
+  }
+}
+
 // Carnival theme settings
 const CarnivalTheme = {
   colors: {
-    primary: '#3b82f6',      // Blue-500 to match React component
-    secondary: '#93c5fd',    // Blue-300 to match React component
+    primary: '#3b82f6',
+    secondary: '#93c5fd',
     accent: '#FFD700',
     success: '#32CD32',
     danger: '#FF4444',
@@ -27,18 +228,15 @@ const CarnivalTheme = {
   },
 };
 
-// Create the carnival striped background to match the React component exactly
+// Create the carnival striped background
 const createCarnivalBackground = () => {
   return `data:image/svg+xml,${encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
       <defs>
-        <!-- Diagonal stripe pattern matching React component -->
         <pattern id="diagonalStripes" patternUnits="userSpaceOnUse" width="56.57" height="56.57" patternTransform="rotate(45)">
           <rect width="28.28" height="56.57" fill="#3b82f6"/>
           <rect x="28.28" width="28.28" height="56.57" fill="#93c5fd"/>
         </pattern>
-        
-        <!-- Noise texture filter -->
         <filter id="noiseFilter">
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/>
           <feColorMatrix type="saturate" values="0"/>
@@ -47,11 +245,7 @@ const createCarnivalBackground = () => {
           </feComponentTransfer>
         </filter>
       </defs>
-      
-      <!-- Base diagonal stripes with 90% opacity -->
       <rect width="100%" height="100%" fill="url(#diagonalStripes)" opacity="0.9"/>
-      
-      <!-- Noise texture overlay with 20% opacity -->
       <rect width="100%" height="100%" fill="white" filter="url(#noiseFilter)" opacity="0.2"/>
     </svg>
   `)}`;
@@ -102,24 +296,20 @@ Devvit.addCustomPostType({
     // Load initial data
     const { data: initialData, loading } = useAsync(async () => {
       try {
-        // First check if this post has a type set
         let postType = await gameService.getPostType(postId);
         
-        // If no post type is set, check if this is a pinned post
         if (!postType) {
           const pinnedPostId = await gameService.getPinnedPost();
           if (pinnedPostId === postId) {
             postType = 'pinned';
             await gameService.setPostType(postId, 'pinned');
           } else {
-            // Default to game post for new posts
             postType = 'game';
             await gameService.setPostType(postId, 'game');
           }
         }
         
         if (postType === 'pinned') {
-          // This is the pinned community post
           const [guesserLeaderboard, liarLeaderboard] = await Promise.all([
             gameService.getLeaderboard('guesser', 'alltime', 10),
             gameService.getLeaderboard('liar', 'alltime', 10),
@@ -135,12 +325,9 @@ Devvit.addCustomPostType({
             leaderboard: { guesserLeaderboard, liarLeaderboard, userStats },
           };
         } else if (postType === 'game') {
-          // This is a game post - check if it exists, if not create a placeholder
           let gamePost = await gameService.getGamePost(postId);
           
           if (!gamePost) {
-            // This is a new game post that hasn't been configured yet
-            // Show the creation interface
             return {
               type: 'new-game' as const,
             };
@@ -221,24 +408,20 @@ Devvit.addCustomPostType({
             return;
           }
 
-          // Get current user info
           const user = await reddit.getCurrentUser();
           if (!user) {
             context.ui.showToast('Unable to get user information');
             return;
           }
 
-          // Check if user has required level
           const userScore = await gameService.getUserScore(userId);
           if (userScore.level < 1 && userScore.experience < 1) {
             context.ui.showToast('You must reach level 1 by playing at least one game before creating your own post');
             return;
           }
 
-          // Randomly assign lie position
           const lieIndex = Math.floor(Math.random() * 3);
           
-          // Create statements
           const truth1: Statement = {
             text: values.truth1!,
             description: values.truth1Description || undefined,
@@ -251,7 +434,6 @@ Devvit.addCustomPostType({
             text: values.lie!,
           };
 
-          // Create game post data
           const gamePost: GamePost = {
             postId,
             authorId: userId,
@@ -266,21 +448,11 @@ Devvit.addCustomPostType({
             guessBreakdown: [0, 0, 0],
           };
 
-          // Save to Redis
           await gameService.createGamePost(gamePost);
           await gameService.setPostType(postId, 'game');
 
-          // Schedule post preview update if scheduler is available
-          if (context.scheduler) {
-            await context.scheduler.runJob({
-              name: 'UpdatePostPreview',
-              data: { postId },
-              runAt: new Date(Date.now() + 1000),
-            });
-          }
-
           context.ui.showToast('Game created successfully! 🎪');
-          setGameState('loading'); // Trigger reload
+          setGameState('loading');
         } catch (error) {
           console.error('Error creating game:', error);
           context.ui.showToast('Error creating game. Please try again.');
@@ -562,30 +734,25 @@ Devvit.addCustomPostType({
                       if (selectedIndex === null || !userId || !reddit) return;
 
                       try {
-                        // Check if user already guessed
                         const existingGuess = await gameService.getUserGuess(postId, userId);
                         if (existingGuess) {
                           context.ui.showToast('You have already guessed on this post');
                           return;
                         }
 
-                        // Check if user is the author
                         if (gamePost.authorId === userId) {
                           context.ui.showToast('You cannot guess on your own post');
                           return;
                         }
 
-                        // Get current user info
                         const user = await reddit.getCurrentUser();
                         if (!user) {
                           context.ui.showToast('Unable to get user information');
                           return;
                         }
 
-                        // Process the guess
                         const isCorrect = selectedIndex === gamePost.lieIndex;
                         
-                        // Create user guess record
                         const newUserGuess: UserGuess = {
                           userId,
                           username: user.username,
@@ -595,18 +762,15 @@ Devvit.addCustomPostType({
                           timestamp: Date.now(),
                         };
 
-                        // Update game post stats
                         gamePost.totalGuesses += 1;
                         gamePost.guessBreakdown[selectedIndex] += 1;
                         if (isCorrect) {
                           gamePost.correctGuesses += 1;
                         }
 
-                        // Award experience points (1 for playing, +3 for correct guess)
                         const experiencePoints = isCorrect ? 4 : 1;
                         const guesserPoints = isCorrect ? 1 : 0;
                         
-                        // Save data and award points
                         await Promise.all([
                           gameService.saveUserGuess(newUserGuess),
                           gameService.updateGamePost(gamePost),
@@ -614,36 +778,21 @@ Devvit.addCustomPostType({
                           gameService.awardGuesserPoints(userId, user.username, guesserPoints),
                         ]);
 
-                        // Award liar points to the author if guess was wrong
                         if (!isCorrect) {
                           await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1);
                         }
 
-                        // Check for level up
                         const userScore = await gameService.getUserScore(userId);
-                        const newLevel = getLevelByExperience(userScore.experience);
+                        const newLevel = gameService.getLevelByExperience(userScore.experience);
                         
                         if (newLevel.level > userScore.level) {
-                          // Update user level
                           userScore.level = newLevel.level;
                           await gameService.updateUserScore(userScore);
-                          
-                          // Schedule flair update
-                          if (context.scheduler) {
-                            await context.scheduler.runJob({
-                              name: 'UpdateUserFlair',
-                              data: { userId, username: user.username, level: newLevel.level },
-                              runAt: new Date(Date.now() + 1000),
-                            });
-                          }
-                          
                           context.ui.showToast(`Level up! You are now ${newLevel.name}!`);
                         }
 
-                        // Show result
                         context.ui.showToast(isCorrect ? '🎉 Correct! You spotted the lie!' : '😅 Wrong! Better luck next time!');
                         
-                        // Refresh the view to show results
                         setGameState('result');
                       } catch (err) {
                         console.error('Error submitting guess:', err);
@@ -751,7 +900,7 @@ Devvit.addCustomPostType({
   },
 });
 
-// Menu item for creating new posts - AUTOMATICALLY CREATES THE POST
+// Menu item for creating new posts
 Devvit.addMenuItem({
   label: '[TTOL] New Two Truths One Lie Post',
   location: 'subreddit',
@@ -763,7 +912,6 @@ Devvit.addMenuItem({
       const gameService = new GameService(redis);
       const subreddit = await reddit.getCurrentSubreddit();
       
-      // Automatically create the post
       const post = await reddit.submitPost({
         title: '🎪 Two Truths One Lie - Can You Spot the Lie? 🎪',
         subredditName: subreddit.name,
@@ -779,7 +927,6 @@ Devvit.addMenuItem({
         ),
       });
       
-      // Set as game post type
       await gameService.setPostType(post.id, 'game');
       
       ui.showToast({ text: 'Created Two Truths One Lie post! Click on it to configure your game.' });
@@ -805,7 +952,6 @@ Devvit.addMenuItem({
       const gameService = new GameService(redis);
       const subreddit = await reddit.getCurrentSubreddit();
       
-      // Create pinned community post
       const post = await reddit.submitPost({
         title: '🎪 Two Truths One Lie - Community Hub 🎪',
         subredditName: subreddit.name,
@@ -821,7 +967,6 @@ Devvit.addMenuItem({
         ),
       });
       
-      // Pin the post and save settings
       await Promise.all([
         post.sticky(),
         gameService.setPinnedPost(post.id),
@@ -836,85 +981,6 @@ Devvit.addMenuItem({
       ui.showToast({
         text: error instanceof Error ? `Error: ${error.message}` : 'Error installing game!',
       });
-    }
-  },
-});
-
-// Scheduler job for updating user flair
-Devvit.addSchedulerJob({
-  name: 'UpdateUserFlair',
-  onRun: async (event, context) => {
-    if (!event.data) return;
-    
-    const { userId, username, level } = event.data as { userId: string; username: string; level: number };
-    const { reddit, redis } = context;
-    
-    try {
-      const gameService = new GameService(redis);
-      const settings = await gameService.getGameSettings();
-      
-      if (!settings.subredditName) {
-        console.error('No subreddit name in settings');
-        return;
-      }
-      
-      const levelData = LEVELS.find(l => l.level === level);
-      if (!levelData) {
-        console.error('Level data not found for level:', level);
-        return;
-      }
-      
-      await reddit.setUserFlair({
-        subredditName: settings.subredditName,
-        username,
-        text: levelData.flairText,
-        backgroundColor: levelData.flairColor,
-        textColor: 'light',
-      });
-      
-      console.log(`Updated flair for ${username} to level ${level}`);
-    } catch (error) {
-      console.error('Error updating user flair:', error);
-    }
-  },
-});
-
-// Scheduler job for updating post preview
-Devvit.addSchedulerJob({
-  name: 'UpdatePostPreview',
-  onRun: async (event, context) => {
-    if (!event.data) return;
-    
-    const { postId } = event.data as { postId: string };
-    const { reddit, redis } = context;
-    
-    try {
-      const gameService = new GameService(redis);
-      const gamePost = await gameService.getGamePost(postId);
-      
-      if (!gamePost) {
-        console.error('Game post not found for preview update:', postId);
-        return;
-      }
-      
-      const post = await reddit.getPostById(postId);
-      await post.setCustomPostPreview(() => (
-        <blocks>
-          <vstack padding="medium" gap="small">
-            <text size="large" weight="bold" alignment="center">🎪 Two Truths One Lie</text>
-            <text alignment="center" color="neutral-content-weak">
-              Can you spot the lie?
-            </text>
-            <text size="small" alignment="center" color="neutral-content-weak">
-              By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
-            </text>
-          </vstack>
-        </blocks>
-      ));
-      
-      console.log(`Updated preview for post ${postId}`);
-    } catch (error) {
-      console.error('Error updating post preview:', error);
     }
   },
 });

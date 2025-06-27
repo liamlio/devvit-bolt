@@ -1,66 +1,64 @@
-## Devvit Bolt Starter Experimental
+## Two Truths One Lie - Devvit Game
 
-An experimental starter that explores a new way to build applications on Reddit's developer platform.
-
-## Video Tutorial
-
-[![Video Tutorial](docs-img/video-preview.png)](https://www.youtube.com/watch?v=uI85NRCoQNU)
+A fun deception game built entirely on Reddit's Devvit platform where players create statements and try to spot the lies!
 
 ## Getting Started
 
-This template is made specifically to work with **Bolt.new**.
-Click the button below to open this template directly in Bolt:
+This is a pure Devvit application - no React client or Express server needed!
 
-<a href="https://bolt.new/github.com/reddit/devvit-bolt-starter-experimental"><img src="docs-img/open-in-bolt-2x.png" heigh="36px" width="199px" alt="Open in Bolt"></a>
+### Setup Steps
 
-As soon as the project is checked out you will get the following errors.
-**This is expected**!
+1. **Login to Reddit**
+   ```bash
+   npm run login
+   ```
 
-```
-❌  Authentication: Please run `npm run login` to authenticate with Reddit
-❌  App initialization: Please run `npm run devvit:init` to setup your app remotely
-❌  Playtest subreddit: Please update YOUR_SUBREDDIT_NAME in the dev:devvit script in package.json
-```
+2. **Initialize your app**
+   ```bash
+   npm run devvit:init
+   ```
 
-### Step 1: Login
+3. **Update your test subreddit**
+   - Create a test subreddit on Reddit
+   - Update the `dev:devvit` script in `package.json` to use your subreddit name
 
-In bolt terminal, run
+4. **Start development**
+   ```bash
+   npm run dev
+   ```
 
-```
-npm run login
-```
+### Installing the Game
 
-This will authenticate with Reddit. You will be prompted to follow a link and paste an authentication code.
-Paste that authentication code in your **terminal window** in Bolt, then press `<Enter>`.
+1. Go to your test subreddit
+2. Use the menu action "[TTOL] Install Game" to create the community hub
+3. Use "[TTOL] New Two Truths One Lie Post" to create game posts
 
-### Step 2: App Initialization
+## How to Play
 
-In bolt terminal, run
+### For Players
+- View game posts and try to identify which statement is the lie
+- Earn experience points for playing and bonus points for correct guesses
+- Level up to unlock new titles and abilities
 
-```
-npm run devvit:init
-```
+### For Creators
+- Create two true statements and one convincing lie
+- Earn points when players guess incorrectly on your posts
+- Add optional details to make your truths more believable
 
-This will get your app set up with Devvit. You will be prompted to follow a link and paste an authentication code. Paste that authentication code in your **terminal window** in Bolt, then press `<Enter>`.
+## Features
 
-### Step 3: Playtest subreddit
+- **Level System**: Progress through detective ranks as you play
+- **Leaderboards**: Compete to be the best guesser or most convincing liar
+- **Carnival Theme**: Beautiful striped background with festive design
+- **Real-time Stats**: Track your accuracy and experience points
+- **Community Hub**: Central leaderboard and game creation
 
-For this step, you will need to go to Reddit and create an empty subreddit for you to test your app.
+## Architecture
 
-You can do this by following going to [Reddit](https://www.reddit.com) and clicking the **"Create a Community"** button in the left-side navigation. Once you create your community, paste the name of the subreddit (for example if you community is reddit.com/r/my_test_subreddit, you will paste `my_test_subreddit`) into the `package.json` file, replacing the string `YOUR_SUBREDDIT_NAME`.
+This app is built entirely with Devvit components:
+- **Custom Post Type**: Interactive game interface
+- **Redis Storage**: User scores, game data, and leaderboards
+- **Menu Actions**: Easy post creation for moderators
+- **Scheduler Jobs**: Automated flair updates and notifications
 
-After that, if you run `npm run dev` again, all checks should pass and you should be able to test your application on Reddit.
-
-### Step 4: Testing your app
-
-Once the initial configuration is done, you can test your application by navigating to your test subreddit, clicking the three dots icon on the top-right and creating a new post. The command will be called `[Bolt Word Guesser] New Post`. Once you create a new post you can go back and forth with Bolt by prompting your way to making your app and testing it on Reddit.
-
-Now vibe code away!
-
-### Known limitations
-
-- **Only test on your subreddit:** Your app's backend requests will not work on Bolt's preview window. You need to continue to test your app running in your subreddit, where your backend code will work.
-
-- **Use Reddit's backend:** Devvit provides a free of charge scalable backend. Bolt will be able to help you use Reddit's Redis database for key-value storage. You are not going to be able to use other tools such as Supabase for your backend.
-
-- **This is experimental:** While the Devvit team is working to make it as easy as possible to use Bolt for authoring Reddit apps, this is all still in an experimental phase. If you run into issues, please [join our Discord](https://discord.com/invite/Cd43ExtEFS) and ask your questions in **#devvit-vibe-coding**
+No external dependencies or complex build processes - just pure Devvit!
