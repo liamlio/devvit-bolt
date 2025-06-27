@@ -65,10 +65,19 @@ export const GameResultsInterface = ({
                       )}
                     </hstack>
                     
+                    {/* Improvement 1: Expandable text for long descriptions */}
                     {!isLie && statement.description && (
-                      <text size="small" color={CarnivalTheme.colors.textLight}>
-                        Details: {statement.description}
-                      </text>
+                      <vstack 
+                        padding="small" 
+                        backgroundColor="rgba(255,255,255,0.8)" 
+                        cornerRadius="small"
+                        maxHeight="200px"
+                        overflow="scroll"
+                      >
+                        <text size="small" color={CarnivalTheme.colors.textLight} wrap>
+                          Details: {statement.description}
+                        </text>
+                      </vstack>
                     )}
                     
                     <text size="small" color={CarnivalTheme.colors.textLight}>

@@ -19,6 +19,7 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
   const gameService = new GameService(redis);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [error, setError] = useState<string>('');
+  const [gameState, setGameState] = useState<'play' | 'result'>('play');
 
   // Load game data
   const { data: gameData, loading } = useAsync(async () => {
@@ -229,9 +230,10 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
         ui.showToast(`Level up! You are now ${newLevel.name}!`);
       }
 
-      ui.showToast(isCorrect ? '🎉 Correct! You spotted the lie!' : '😅 Wrong! Better luck next time!');
+      // Improvement 4: Change UI to post-guess state instead of just showing toast
+      setGameState('result');
       
-      // Trigger reload
+      // Trigger reload to get updated data
       setError('reload');
       setError('');
     } catch (err) {
@@ -257,8 +259,9 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
       // Remove the user's guess to allow them to guess again
       await gameService.removeUserGuess(postId, userId);
       
-      // Reset selected index
+      // Reset selected index and game state
       setSelectedIndex(null);
+      setGameState('play');
       
       ui.showToast('🔄 Reset complete! You can guess again.');
       
@@ -303,30 +306,30 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     // TESTING EXCEPTION: Check if this is the test user
     const isTestUser = currentUser?.username === 'liamlio';
 
-    // Game play interface
-    if (!hasGuessed) {
+    // Improvement 4: Show results immediately after guessing, or if already guessed
+    if (hasGuessed || gameState === 'result') {
       return (
-        <GamePlayInterface
+        <GameResultsInterface
           gamePost={gamePost}
-          selectedIndex={selectedIndex}
-          onSelectStatement={setSelectedIndex}
-          onSubmitGuess={handleSubmitGuess}
+          userGuess={userGuess}
+          onViewLeaderboard={() => {
+            // This would need to be handled by the parent component
+            ui.showToast('Leaderboard feature coming soon!');
+          }}
+          // TESTING EXCEPTION: Show back button only for u/liamlio
+          showBackButton={isTestUser}
+          onBackToGuessing={handleBackToGuessing}
         />
       );
     }
 
-    // Results interface with optional back button for test user
+    // Game play interface
     return (
-      <GameResultsInterface
+      <GamePlayInterface
         gamePost={gamePost}
-        userGuess={userGuess}
-        onViewLeaderboard={() => {
-          // This would need to be handled by the parent component
-          ui.showToast('Leaderboard feature coming soon!');
-        }}
-        // TESTING EXCEPTION: Show back button only for u/liamlio
-        showBackButton={isTestUser}
-        onBackToGuessing={handleBackToGuessing}
+        selectedIndex={selectedIndex}
+        onSelectStatement={setSelectedIndex}
+        onSubmitGuess={handleSubmitGuess}
       />
     );
   }
