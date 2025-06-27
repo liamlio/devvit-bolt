@@ -81,20 +81,20 @@ export class GameService {
   private async updateLeaderboards(userScore: UserScore): Promise<void> {
     const weekNumber = this.getWeekNumber();
     
-    await this.redis.zadd(`leaderboard:guesser:weekly:${weekNumber}`, {
+    await this.redis.zAdd(`leaderboard:guesser:weekly:${weekNumber}`, {
       member: userScore.userId,
       score: userScore.weeklyGuesserPoints,
     });
-    await this.redis.zadd('leaderboard:guesser:alltime', {
+    await this.redis.zAdd('leaderboard:guesser:alltime', {
       member: userScore.userId,
       score: userScore.guesserPoints,
     });
 
-    await this.redis.zadd(`leaderboard:liar:weekly:${weekNumber}`, {
+    await this.redis.zAdd(`leaderboard:liar:weekly:${weekNumber}`, {
       member: userScore.userId,
       score: userScore.weeklyLiarPoints,
     });
-    await this.redis.zadd('leaderboard:liar:alltime', {
+    await this.redis.zAdd('leaderboard:liar:alltime', {
       member: userScore.userId,
       score: userScore.liarPoints,
     });
