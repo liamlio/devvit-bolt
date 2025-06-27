@@ -1,0 +1,288 @@
+import { Devvit, useState, useAsync, useForm } from '@devvit/public-api';
+import { GameService } from '../service/GameService.js';
+import { LoadingState } from '../components/LoadingState.js';
+import { ErrorState } from '../components/ErrorState.js';
+import { NewGamePost } from '../components/NewGamePost.js';
+import { GamePlayInterface } from '../components/GamePlayInterface.js';
+import { GameResultsInterface } from '../components/GameResultsInterface.js';
+import type { GamePost as GamePostType, UserGuess, Statement } from '../../shared/types/game.js';
+
+interface GamePostProps {
+  postId: string;
+  userId?: string;
+  redis: any;
+  reddit?: any;
+  ui: any;
+}
+
+export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): JSX.Element => {
+  const gameService = new GameService(redis);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [error, setError] = useState<string>('');
+
+  // Load game data
+  const { data: gameData, loading } = useAsync(async () => {
+    try {
+      let gamePost = await gameService.getGamePost(postId);
+      
+      if (!gamePost) {
+        return { type: 'new-game' as const };
+      }
+
+      let hasGuessed = false;
+      let userGuess: UserGuess | undefined;
+      
+      if (userId) {
+        userGuess = await gameService.getUserGuess(postId, userId);
+        hasGuessed = userGuess !== null;
+      }
+
+      return {
+        type: 'game' as const,
+        gamePost,
+        hasGuessed,
+        userGuess,
+      };
+    } catch (err) {
+      console.error('Error loading game data:', err);
+      throw err;
+    }
+  });
+
+  // Create game form
+  const createGameForm = useForm(
+    {
+      title: '🎪 Create Your Two Truths One Lie Game',
+      description: 'Create two true statements and one lie. Players will try to guess which statement is false!',
+      acceptLabel: 'Create Game Post! 🎪',
+      cancelLabel: 'Cancel',
+      fields: [
+        {
+          type: 'paragraph',
+          name: 'truth1',
+          label: 'Truth #1 ✅',
+          helpText: 'Enter your first true statement',
+          required: true,
+        },
+        {
+          type: 'string',
+          name: 'truth1Description',
+          label: 'Truth #1 Details (Optional)',
+          helpText: 'Add details to make it more believable',
+          required: false,
+        },
+        {
+          type: 'paragraph',
+          name: 'truth2',
+          label: 'Truth #2 ✅',
+          helpText: 'Enter your second true statement',
+          required: true,
+        },
+        {
+          type: 'string',
+          name: 'truth2Description',
+          label: 'Truth #2 Details (Optional)',
+          helpText: 'Add details to make it more believable',
+          required: false,
+        },
+        {
+          type: 'paragraph',
+          name: 'lie',
+          label: 'The Lie ❌',
+          helpText: 'Enter your convincing lie',
+          required: true,
+        },
+      ],
+    },
+    async (values) => {
+      try {
+        if (!userId || !reddit) {
+          ui.showToast('Must be logged in to create a game');
+          return;
+        }
+
+        const user = await reddit.getCurrentUser();
+        if (!user) {
+          ui.showToast('Unable to get user information');
+          return;
+        }
+
+        const userScore = await gameService.getUserScore(userId);
+        if (userScore.level < 1 && userScore.experience < 1) {
+          ui.showToast('You must reach level 1 by playing at least one game before creating your own post');
+          return;
+        }
+
+        const lieIndex = Math.floor(Math.random() * 3);
+        
+        const truth1: Statement = {
+          text: values.truth1!,
+          description: values.truth1Description || undefined,
+        };
+        const truth2: Statement = {
+          text: values.truth2!,
+          description: values.truth2Description || undefined,
+        };
+        const lie: Statement = {
+          text: values.lie!,
+        };
+
+        const gamePost: GamePostType = {
+          postId,
+          authorId: userId,
+          authorUsername: user.username,
+          truth1,
+          truth2,
+          lie,
+          lieIndex,
+          createdAt: Date.now(),
+          totalGuesses: 0,
+          correctGuesses: 0,
+          guessBreakdown: [0, 0, 0],
+        };
+
+        await gameService.createGamePost(gamePost);
+        await gameService.setPostType(postId, 'game');
+
+        ui.showToast('Game created successfully! 🎪');
+        // Trigger reload by setting error and clearing it
+        setError('reload');
+        setError('');
+      } catch (error) {
+        console.error('Error creating game:', error);
+        ui.showToast('Error creating game. Please try again.');
+      }
+    }
+  );
+
+  const handleSubmitGuess = async () => {
+    if (selectedIndex === null || !userId || !reddit || !gameData || gameData.type !== 'game') return;
+
+    try {
+      const { gamePost } = gameData;
+      
+      const existingGuess = await gameService.getUserGuess(postId, userId);
+      if (existingGuess) {
+        ui.showToast('You have already guessed on this post');
+        return;
+      }
+
+      if (gamePost.authorId === userId) {
+        ui.showToast('You cannot guess on your own post');
+        return;
+      }
+
+      const user = await reddit.getCurrentUser();
+      if (!user) {
+        ui.showToast('Unable to get user information');
+        return;
+      }
+
+      const isCorrect = selectedIndex === gamePost.lieIndex;
+      
+      const newUserGuess: UserGuess = {
+        userId,
+        username: user.username,
+        postId,
+        guessIndex: selectedIndex,
+        isCorrect,
+        timestamp: Date.now(),
+      };
+
+      gamePost.totalGuesses += 1;
+      gamePost.guessBreakdown[selectedIndex] += 1;
+      if (isCorrect) {
+        gamePost.correctGuesses += 1;
+      }
+
+      const experiencePoints = isCorrect ? 4 : 1;
+      const guesserPoints = isCorrect ? 1 : 0;
+      
+      await Promise.all([
+        gameService.saveUserGuess(newUserGuess),
+        gameService.updateGamePost(gamePost),
+        gameService.awardExperience(userId, user.username, experiencePoints),
+        gameService.awardGuesserPoints(userId, user.username, guesserPoints),
+      ]);
+
+      if (!isCorrect) {
+        await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1);
+      }
+
+      const userScore = await gameService.getUserScore(userId);
+      const newLevel = gameService.getLevelByExperience(userScore.experience);
+      
+      if (newLevel.level > userScore.level) {
+        userScore.level = newLevel.level;
+        await gameService.updateUserScore(userScore);
+        ui.showToast(`Level up! You are now ${newLevel.name}!`);
+      }
+
+      ui.showToast(isCorrect ? '🎉 Correct! You spotted the lie!' : '😅 Wrong! Better luck next time!');
+      
+      // Trigger reload
+      setError('reload');
+      setError('');
+    } catch (err) {
+      console.error('Error submitting guess:', err);
+      ui.showToast('Error submitting guess. Please try again.');
+    }
+  };
+
+  // Handle loading state
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  // Handle error state
+  if (!gameData) {
+    return (
+      <ErrorState 
+        error={error || 'Something went wrong. Please try again.'} 
+        onRetry={() => {
+          setError('');
+          // Trigger reload by setting and clearing error
+          setError('reload');
+          setError('');
+        }} 
+      />
+    );
+  }
+
+  // New game post that needs to be configured
+  if (gameData.type === 'new-game') {
+    return <NewGamePost onCreateGame={() => ui.showForm(createGameForm)} />;
+  }
+
+  // Game post
+  if (gameData.type === 'game') {
+    const { gamePost, hasGuessed, userGuess } = gameData;
+
+    // Game play interface
+    if (!hasGuessed) {
+      return (
+        <GamePlayInterface
+          gamePost={gamePost}
+          selectedIndex={selectedIndex}
+          onSelectStatement={setSelectedIndex}
+          onSubmitGuess={handleSubmitGuess}
+        />
+      );
+    }
+
+    // Results interface
+    return (
+      <GameResultsInterface
+        gamePost={gamePost}
+        userGuess={userGuess}
+        onViewLeaderboard={() => {
+          // This would need to be handled by the parent component
+          ui.showToast('Leaderboard feature coming soon!');
+        }}
+      />
+    );
+  }
+
+  // Fallback
+  return <ErrorState error="Unknown game state" onRetry={() => setError('')} />;
+};
