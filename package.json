@@ -9,7 +9,7 @@
     "devvit:init": "devvit upload --copy-paste && touch .initialized",
     "deploy": "devvit upload --copy-paste",
     "dev": "node setup-devvit.cjs",
-    "dev:devvit": "devvit playtest ttol-alpha-3",
+    "dev:devvit": "devvit playtest twotruthsonelie",
     "lint": "eslint ./src",
     "lint:fix": "eslint --fix ./src",
     "login": "devvit login --copy-paste",
