@@ -26,7 +26,7 @@ export const LeaderboardInterface = ({
   return (
     <blocks height="tall">
       <CarnivalBackground>
-        <vstack width="100%" height="100%" padding="large" gap="medium">
+        <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
           <CarnivalCard>
             <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🏆 Two Truths One Lie</text>
             <text alignment="center" color={CarnivalTheme.colors.textLight}>
@@ -82,8 +82,8 @@ export const LeaderboardInterface = ({
               </button>
             </hstack>
 
-            {/* Leaderboard */}
-            <vstack gap="small">
+            {/* Leaderboard with scrolling for many entries */}
+            <vstack gap="small" maxHeight="300px" overflow="scroll">
               {currentLeaderboard.length > 0 ? (
                 currentLeaderboard.map((entry, index) => (
                   <hstack 

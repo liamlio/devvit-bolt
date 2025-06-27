@@ -81,7 +81,7 @@ export const CreateGameInterface = ({ onBack, onShowToast, onCreateGame }: Creat
   return (
     <blocks height="tall">
       <CarnivalBackground>
-        <vstack width="100%" height="100%" alignment="center middle" padding="large">
+        <vstack width="100%" height="100%" alignment="center middle" padding="large" overflow="scroll">
           <CarnivalCard>
             <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
             <text alignment="center" color={CarnivalTheme.colors.text}>

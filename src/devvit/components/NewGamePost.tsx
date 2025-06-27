@@ -10,7 +10,7 @@ interface NewGamePostProps {
 export const NewGamePost = ({ onCreateGame }: NewGamePostProps): JSX.Element => (
   <blocks height="tall">
     <CarnivalBackground>
-      <vstack width="100%" height="100%" alignment="center middle" padding="large">
+      <vstack width="100%" height="100%" alignment="center middle" padding="large" overflow="scroll">
         <CarnivalCard>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪</text>
           <text size="xlarge" weight="bold" color={CarnivalTheme.colors.text} alignment="center">

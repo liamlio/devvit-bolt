@@ -25,7 +25,7 @@ export const GameResultsInterface = ({
   return (
     <blocks height="tall">
       <CarnivalBackground>
-        <vstack width="100%" height="100%" padding="large" gap="medium">
+        <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
           <CarnivalCard>
             <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
             <text alignment="center" color={CarnivalTheme.colors.text}>
@@ -38,7 +38,7 @@ export const GameResultsInterface = ({
               By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
             </text>
 
-            <vstack gap="small">
+            <vstack gap="small" overflow="scroll">
               {statements.map((statement, index) => {
                 const isLie = index === gamePost.lieIndex;
                 const isUserChoice = userGuess?.guessIndex === index;
@@ -57,7 +57,7 @@ export const GameResultsInterface = ({
                     borderColor={isLie ? CarnivalTheme.colors.danger : CarnivalTheme.colors.success}
                   >
                     <hstack>
-                      <text grow weight="bold" color={CarnivalTheme.colors.text}>
+                      <text grow weight="bold" color={CarnivalTheme.colors.text} wrap>
                         {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
                       </text>
                       {isUserChoice && (
@@ -65,13 +65,13 @@ export const GameResultsInterface = ({
                       )}
                     </hstack>
                     
-                    {/* Improvement 1: Expandable text for long descriptions */}
+                    {/* Expandable text for long descriptions with scrolling */}
                     {!isLie && statement.description && (
                       <vstack 
                         padding="small" 
                         backgroundColor="rgba(255,255,255,0.8)" 
                         cornerRadius="small"
-                        maxHeight="200px"
+                        maxHeight="150px"
                         overflow="scroll"
                       >
                         <text size="small" color={CarnivalTheme.colors.textLight} wrap>

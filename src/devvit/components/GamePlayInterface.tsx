@@ -22,7 +22,7 @@ export const GamePlayInterface = ({
   return (
     <blocks height="tall">
       <CarnivalBackground>
-        <vstack width="100%" height="100%" padding="large" gap="medium">
+        <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
           <CarnivalCard>
             <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Two Truths One Lie</text>
             <text alignment="center" color={CarnivalTheme.colors.textLight}>
@@ -32,7 +32,7 @@ export const GamePlayInterface = ({
               By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
             </text>
 
-            <vstack gap="small">
+            <vstack gap="small" overflow="scroll">
               {statements.map((statement, index) => (
                 <vstack
                   key={index}
@@ -43,7 +43,7 @@ export const GamePlayInterface = ({
                   borderColor={selectedIndex === index ? CarnivalTheme.colors.primary : CarnivalTheme.colors.shadow}
                   onPress={() => onSelectStatement(index)}
                 >
-                  <text alignment="start" color={CarnivalTheme.colors.text} weight="bold">
+                  <text alignment="start" color={CarnivalTheme.colors.text} weight="bold" wrap>
                     {statement.text}
                   </text>
                 </vstack>
