@@ -10,8 +10,87 @@ Devvit.configure({
   media: true,
 });
 
-// Carnival theme SVG background - blue and light blue striped tent with noise texture
-const carnivalBackground = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3Cpattern id='stripes' patternUnits='userSpaceOnUse' width='40' height='40'%3E%3Crect width='20' height='40' fill='%234A90E2'/%3E%3Crect x='20' width='20' height='40' fill='%2387CEEB'/%3E%3C/pattern%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='1' result='noise'/%3E%3CfeColorMatrix in='noise' type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0.1'/%3E%3C/feComponentTransfer%3E%3CfeComposite operator='over' in2='SourceGraphic'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23stripes)'/%3E%3Crect width='100%25' height='100%25' fill='url(%23stripes)' filter='url(%23noise)' opacity='0.3'/%3E%3C/svg%3E`;
+// Carnival theme settings
+const CarnivalTheme = {
+  colors: {
+    primary: '#4A90E2',
+    secondary: '#87CEEB', 
+    accent: '#FFD700',
+    success: '#32CD32',
+    danger: '#FF4444',
+    warning: '#FFA500',
+    background: '#F0F8FF',
+    shadow: '#C0C0C0',
+    text: '#000000',
+    textLight: '#666666',
+    white: '#FFFFFF',
+  },
+  background: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3Cpattern id='stripes' patternUnits='userSpaceOnUse' width='40' height='40'%3E%3Crect width='20' height='40' fill='%234A90E2'/%3E%3Crect x='20' width='20' height='40' fill='%2387CEEB'/%3E%3C/pattern%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='1' result='noise'/%3E%3CfeColorMatrix in='noise' type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0.1'/%3E%3C/feComponentTransfer%3E%3CfeComposite operator='over' in2='SourceGraphic'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23stripes)'/%3E%3Crect width='100%25' height='100%25' fill='url(%23stripes)' filter='url(%23noise)' opacity='0.3'/%3E%3C/svg%3E`,
+};
+
+// Reusable components
+const CarnivalCard = ({ children, borderColor = CarnivalTheme.colors.shadow }: { children: JSX.Element | JSX.Element[], borderColor?: string }) => (
+  <vstack 
+    backgroundColor="rgba(255,255,255,0.95)" 
+    cornerRadius="large" 
+    padding="large"
+    border="thick"
+    borderColor={borderColor}
+    gap="medium"
+  >
+    {children}
+  </vstack>
+);
+
+const CarnivalBackground = ({ children }: { children: JSX.Element | JSX.Element[] }) => (
+  <zstack width="100%" height="100%">
+    <image
+      url={CarnivalTheme.background}
+      imageHeight={400}
+      imageWidth={400}
+      height="100%"
+      width="100%"
+      resizeMode="cover"
+    />
+    {children}
+  </zstack>
+);
+
+const CarnivalButton = ({ 
+  children, 
+  onPress, 
+  appearance = 'primary', 
+  disabled = false,
+  size = 'medium'
+}: { 
+  children: JSX.Element | string, 
+  onPress?: () => void | Promise<void>, 
+  appearance?: 'primary' | 'secondary' | 'success' | 'danger',
+  disabled?: boolean,
+  size?: 'small' | 'medium' | 'large'
+}) => {
+  const colors = {
+    primary: { bg: CarnivalTheme.colors.primary, text: CarnivalTheme.colors.white },
+    secondary: { bg: CarnivalTheme.colors.background, text: CarnivalTheme.colors.text },
+    success: { bg: CarnivalTheme.colors.success, text: CarnivalTheme.colors.white },
+    danger: { bg: CarnivalTheme.colors.danger, text: CarnivalTheme.colors.white },
+  };
+
+  const buttonColor = colors[appearance];
+  
+  return (
+    <button
+      onPress={disabled ? undefined : onPress}
+      appearance={appearance}
+      size={size}
+      disabled={disabled}
+    >
+      <text color={buttonColor.text} weight="bold">
+        {typeof children === 'string' ? children : children}
+      </text>
+    </button>
+  );
+};
 
 // Add the custom post type
 Devvit.addCustomPostType({
@@ -219,29 +298,16 @@ Devvit.addCustomPostType({
     if (loading) {
       return (
         <blocks height="tall">
-          <zstack width="100%" height="100%" alignment="center middle">
-            {/* Carnival striped background */}
-            <image
-              url={carnivalBackground}
-              imageHeight={400}
-              imageWidth={400}
-              height="100%"
-              width="100%"
-              resizeMode="cover"
-            />
-            <vstack 
-              backgroundColor="rgba(255,255,255,0.95)" 
-              cornerRadius="large" 
-              padding="large"
-              border="thick"
-              borderColor="#C0C0C0"
-              alignment="center middle"
-              gap="medium"
-            >
-              <text size="xxlarge">🎪</text>
-              <text size="large" weight="bold" color="black">Loading Two Truths One Lie...</text>
+          <CarnivalBackground>
+            <vstack width="100%" height="100%" alignment="center middle" padding="large">
+              <CarnivalCard>
+                <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪</text>
+                <text size="large" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                  Loading Two Truths One Lie...
+                </text>
+              </CarnivalCard>
             </vstack>
-          </zstack>
+          </CarnivalBackground>
         </blocks>
       );
     }
@@ -250,40 +316,28 @@ Devvit.addCustomPostType({
     if (!initialData) {
       return (
         <blocks height="tall">
-          <zstack width="100%" height="100%" alignment="center middle">
-            <image
-              url={carnivalBackground}
-              imageHeight={400}
-              imageWidth={400}
-              height="100%"
-              width="100%"
-              resizeMode="cover"
-            />
-            <vstack 
-              backgroundColor="rgba(255,255,255,0.95)" 
-              cornerRadius="large" 
-              padding="large"
-              border="thick"
-              borderColor="#FF4444"
-              alignment="center middle"
-              gap="medium"
-            >
-              <text size="xxlarge">⚠️</text>
-              <text size="large" weight="bold" color="#FF4444">Error Loading Game</text>
-              <text color="black" alignment="center">
-                {error || 'Something went wrong. Please try again.'}
-              </text>
-              <button
-                onPress={() => {
-                  setError('');
-                  setGameState('loading');
-                }}
-                appearance="primary"
-              >
-                <text color="white" weight="bold">Retry</text>
-              </button>
+          <CarnivalBackground>
+            <vstack width="100%" height="100%" alignment="center middle" padding="large">
+              <CarnivalCard borderColor={CarnivalTheme.colors.danger}>
+                <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>⚠️</text>
+                <text size="large" weight="bold" color={CarnivalTheme.colors.danger} alignment="center">
+                  Error Loading Game
+                </text>
+                <text color={CarnivalTheme.colors.text} alignment="center">
+                  {error || 'Something went wrong. Please try again.'}
+                </text>
+                <CarnivalButton
+                  appearance="danger"
+                  onPress={() => {
+                    setError('');
+                    setGameState('loading');
+                  }}
+                >
+                  Retry
+                </CarnivalButton>
+              </CarnivalCard>
             </vstack>
-          </zstack>
+          </CarnivalBackground>
         </blocks>
       );
     }
@@ -292,47 +346,33 @@ Devvit.addCustomPostType({
     if (initialData.type === 'new-game') {
       return (
         <blocks height="tall">
-          <zstack width="100%" height="100%">
-            {/* Carnival striped background */}
-            <image
-              url={carnivalBackground}
-              imageHeight={400}
-              imageWidth={400}
-              height="100%"
-              width="100%"
-              resizeMode="cover"
-            />
-            <vstack padding="large" gap="medium" alignment="center middle">
-              <vstack 
-                backgroundColor="rgba(255,255,255,0.95)" 
-                cornerRadius="large" 
-                padding="large"
-                border="thick"
-                borderColor="#C0C0C0"
-                alignment="center middle"
-                gap="medium"
-              >
-                <text size="xxlarge" alignment="center">🎪</text>
-                <text size="xlarge" weight="bold" color="black" alignment="center">Configure Your Game</text>
-                <text alignment="center" color="black">
+          <CarnivalBackground>
+            <vstack width="100%" height="100%" alignment="center middle" padding="large">
+              <CarnivalCard>
+                <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪</text>
+                <text size="xlarge" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                  Configure Your Game
+                </text>
+                <text alignment="center" color={CarnivalTheme.colors.text}>
                   This post needs to be configured with your Two Truths One Lie game!
                 </text>
                 
-                <vstack gap="small" padding="medium" backgroundColor="#F0F8FF" cornerRadius="medium">
-                  <text weight="bold" color="black">Ready to create your game?</text>
-                  <text size="small" color="black">Create two true statements and one convincing lie!</text>
+                <vstack gap="small" padding="medium" backgroundColor={CarnivalTheme.colors.background} cornerRadius="medium">
+                  <text weight="bold" color={CarnivalTheme.colors.text}>Ready to create your game?</text>
+                  <text size="small" color={CarnivalTheme.colors.textLight}>
+                    Create two true statements and one convincing lie!
+                  </text>
                 </vstack>
 
-                <button
-                  onPress={() => context.ui.showForm(createGameForm)}
+                <CarnivalButton
                   appearance="primary"
-                  size="large"
+                  onPress={() => context.ui.showForm(createGameForm)}
                 >
-                  <text color="white" weight="bold" size="large">Create Your Game! 🎪</text>
-                </button>
-              </vstack>
+                  Create Your Game! 🎪
+                </CarnivalButton>
+              </CarnivalCard>
             </vstack>
-          </zstack>
+          </CarnivalBackground>
         </blocks>
       );
     }
@@ -344,52 +384,33 @@ Devvit.addCustomPostType({
       if (gameState === 'create') {
         return (
           <blocks height="tall">
-            <zstack width="100%" height="100%">
-              {/* Carnival striped background */}
-              <image
-                url={carnivalBackground}
-                imageHeight={400}
-                imageWidth={400}
-                height="100%"
-                width="100%"
-                resizeMode="cover"
-              />
-              <vstack padding="large" gap="medium">
-                <vstack 
-                  backgroundColor="rgba(255,255,255,0.95)" 
-                  cornerRadius="large" 
-                  padding="large"
-                  border="thick"
-                  borderColor="#C0C0C0"
-                  alignment="center middle"
-                  gap="medium"
-                >
-                  <text size="xxlarge" alignment="center" color="black">🎪 Create Your Game</text>
-                  <text alignment="center" color="black">
+            <CarnivalBackground>
+              <vstack width="100%" height="100%" alignment="center middle" padding="large">
+                <CarnivalCard>
+                  <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
+                  <text alignment="center" color={CarnivalTheme.colors.text}>
                     Use the menu action "[TTOL] New Two Truths One Lie Post" to create posts.
                   </text>
                   
                   <hstack gap="medium">
-                    <button
-                      onPress={() => setGameState('leaderboard')}
+                    <CarnivalButton
                       appearance="secondary"
-                      grow
+                      onPress={() => setGameState('leaderboard')}
                     >
-                      <text color="black" weight="bold">Back</text>
-                    </button>
-                    <button
+                      Back
+                    </CarnivalButton>
+                    <CarnivalButton
+                      appearance="primary"
                       onPress={async () => {
                         context.ui.showToast('Use the menu action "[TTOL] New Two Truths One Lie Post" to create posts.');
                       }}
-                      appearance="primary"
-                      grow
                     >
-                      <text color="white" weight="bold">Create Game Post!</text>
-                    </button>
+                      Create Game Post!
+                    </CarnivalButton>
                   </hstack>
-                </vstack>
+                </CarnivalCard>
               </vstack>
-            </zstack>
+            </CarnivalBackground>
           </blocks>
         );
       }
@@ -401,42 +422,38 @@ Devvit.addCustomPostType({
 
       return (
         <blocks height="tall">
-          <zstack width="100%" height="100%">
-            {/* Carnival striped background */}
-            <image
-              url={carnivalBackground}
-              imageHeight={400}
-              imageWidth={400}
-              height="100%"
-              width="100%"
-              resizeMode="cover"
-            />
-            <vstack padding="large" gap="medium">
-              <vstack 
-                backgroundColor="rgba(255,255,255,0.95)" 
-                cornerRadius="large" 
-                padding="large"
-                border="thick"
-                borderColor="#C0C0C0"
-                gap="medium"
-              >
-                <text size="xxlarge" alignment="center" color="black">🏆 Two Truths One Lie</text>
-                <text alignment="center" color="black">
+          <CarnivalBackground>
+            <vstack width="100%" height="100%" padding="large" gap="medium">
+              <CarnivalCard>
+                <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🏆 Two Truths One Lie</text>
+                <text alignment="center" color={CarnivalTheme.colors.textLight}>
                   Welcome to the carnival of deception! Can you spot the lies?
                 </text>
 
                 {/* User Stats */}
                 {leaderboard.userStats && (
-                  <vstack padding="medium" backgroundColor="#F0F8FF" cornerRadius="medium" border="thin" borderColor="#4A90E2">
-                    <text weight="bold" color="black">Your Stats</text>
+                  <vstack 
+                    padding="medium" 
+                    backgroundColor={CarnivalTheme.colors.background} 
+                    cornerRadius="medium" 
+                    border="thin" 
+                    borderColor={CarnivalTheme.colors.primary}
+                  >
+                    <text weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
                     <hstack gap="large">
                       <vstack>
-                        <text size="small" color="black">Level {leaderboard.userStats.level}</text>
-                        <text size="small" color="black">{leaderboard.userStats.experience} XP</text>
+                        <text size="small" color={CarnivalTheme.colors.text}>
+                          Level {leaderboard.userStats.level}
+                        </text>
+                        <text size="small" color={CarnivalTheme.colors.text}>
+                          {leaderboard.userStats.experience} XP
+                        </text>
                       </vstack>
                       <vstack>
-                        <text size="small" color="black">Games: {leaderboard.userStats.totalGames}</text>
-                        <text size="small" color="black">
+                        <text size="small" color={CarnivalTheme.colors.text}>
+                          Games: {leaderboard.userStats.totalGames}
+                        </text>
+                        <text size="small" color={CarnivalTheme.colors.text}>
                           Accuracy: {leaderboard.userStats.totalGames > 0 
                             ? Math.round((leaderboard.userStats.correctGuesses / leaderboard.userStats.totalGames) * 100) 
                             : 0}%
@@ -448,20 +465,18 @@ Devvit.addCustomPostType({
 
                 {/* Tab Navigation */}
                 <hstack gap="small">
-                  <button
-                    onPress={() => setActiveTab('guessers')}
+                  <CarnivalButton
                     appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
-                    grow
+                    onPress={() => setActiveTab('guessers')}
                   >
-                    <text color={activeTab === 'guessers' ? 'white' : 'black'} weight="bold">🕵️ Best Guessers</text>
-                  </button>
-                  <button
-                    onPress={() => setActiveTab('liars')}
+                    🕵️ Best Guessers
+                  </CarnivalButton>
+                  <CarnivalButton
                     appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
-                    grow
+                    onPress={() => setActiveTab('liars')}
                   >
-                    <text color={activeTab === 'liars' ? 'white' : 'black'} weight="bold">🎭 Best Liars</text>
-                  </button>
+                    🎭 Best Liars
+                  </CarnivalButton>
                 </hstack>
 
                 {/* Leaderboard */}
@@ -471,37 +486,36 @@ Devvit.addCustomPostType({
                       <hstack 
                         key={entry.userId} 
                         padding="small" 
-                        backgroundColor="#F8F9FA" 
+                        backgroundColor={CarnivalTheme.colors.background} 
                         cornerRadius="medium"
                         border="thin"
-                        borderColor="#C0C0C0"
+                        borderColor={CarnivalTheme.colors.shadow}
                       >
-                        <text weight="bold" width="40px" color="black">
+                        <text weight="bold" width="40px" color={CarnivalTheme.colors.text}>
                           {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                         </text>
-                        <text grow color="black">u/{entry.username}</text>
-                        <text weight="bold" color="black">{entry.score}</text>
+                        <text grow color={CarnivalTheme.colors.text}>u/{entry.username}</text>
+                        <text weight="bold" color={CarnivalTheme.colors.text}>{entry.score}</text>
                       </hstack>
                     ))
                   ) : (
                     <vstack alignment="center middle" padding="large">
-                      <text size="large">🎪</text>
-                      <text color="black">No entries yet! Be the first to play!</text>
+                      <text size="large" color={CarnivalTheme.colors.text}>🎪</text>
+                      <text color={CarnivalTheme.colors.textLight}>No entries yet! Be the first to play!</text>
                     </vstack>
                   )}
                 </vstack>
 
                 {/* Action Button */}
-                <button
-                  onPress={() => setGameState('create')}
+                <CarnivalButton
                   appearance="primary"
-                  size="large"
+                  onPress={() => setGameState('create')}
                 >
-                  <text color="white" weight="bold" size="large">Create Your Game 🎪</text>
-                </button>
-              </vstack>
+                  Create Your Game 🎪
+                </CarnivalButton>
+              </CarnivalCard>
             </vstack>
-          </zstack>
+          </CarnivalBackground>
         </blocks>
       );
     }
@@ -515,55 +529,37 @@ Devvit.addCustomPostType({
       if (!hasGuessed) {
         return (
           <blocks height="tall">
-            <zstack width="100%" height="100%">
-              {/* Carnival striped background */}
-              <image
-                url={carnivalBackground}
-                imageHeight={400}
-                imageWidth={400}
-                height="100%"
-                width="100%"
-                resizeMode="cover"
-              />
-              <vstack padding="large" gap="medium">
-                <vstack 
-                  backgroundColor="rgba(255,255,255,0.95)" 
-                  cornerRadius="large" 
-                  padding="large"
-                  border="thick"
-                  borderColor="#C0C0C0"
-                  gap="medium"
-                >
-                  <text size="xxlarge" alignment="center" color="black">🎪 Two Truths One Lie</text>
-                  <text alignment="center" color="black">
+            <CarnivalBackground>
+              <vstack width="100%" height="100%" padding="large" gap="medium">
+                <CarnivalCard>
+                  <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Two Truths One Lie</text>
+                  <text alignment="center" color={CarnivalTheme.colors.textLight}>
                     Can you spot the lie? Choose the statement you think is false!
                   </text>
-                  <text size="small" alignment="center" color="#666">
+                  <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
                     By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
                   </text>
 
                   <vstack gap="small">
                     {statements.map((statement, index) => (
-                      <button
+                      <vstack
                         key={index}
+                        padding="medium"
+                        backgroundColor={selectedIndex === index ? CarnivalTheme.colors.accent : CarnivalTheme.colors.background}
+                        cornerRadius="large"
+                        border="thick"
+                        borderColor={selectedIndex === index ? CarnivalTheme.colors.primary : CarnivalTheme.colors.shadow}
                         onPress={() => setSelectedIndex(index)}
-                        appearance={selectedIndex === index ? 'primary' : 'secondary'}
-                        size="large"
                       >
-                        <vstack 
-                          backgroundColor={selectedIndex === index ? '#FFD700' : '#F8F9FA'} 
-                          cornerRadius="large" 
-                          padding="medium"
-                          border="thick"
-                          borderColor={selectedIndex === index ? '#4A90E2' : '#C0C0C0'}
-                        >
-                          <text alignment="start" color="black" weight="bold">{statement.text}</text>
-                        </vstack>
-                      </button>
+                        <text alignment="start" color={CarnivalTheme.colors.text} weight="bold">
+                          {statement.text}
+                        </text>
+                      </vstack>
                     ))}
                   </vstack>
 
-                  <button
+                  <CarnivalButton
+                    appearance="primary"
                     onPress={async () => {
                       if (selectedIndex === null || !userId || !reddit) return;
 
@@ -656,15 +652,13 @@ Devvit.addCustomPostType({
                         context.ui.showToast('Error submitting guess. Please try again.');
                       }
                     }}
-                    appearance="primary"
-                    size="large"
                     disabled={selectedIndex === null}
                   >
-                    <text color="white" weight="bold" size="large">Submit Guess! 🎯</text>
-                  </button>
-                </vstack>
+                    Submit Guess! 🎯
+                  </CarnivalButton>
+                </CarnivalCard>
               </vstack>
-            </zstack>
+            </CarnivalBackground>
           </blocks>
         );
       }
@@ -672,33 +666,17 @@ Devvit.addCustomPostType({
       // Results interface
       return (
         <blocks height="tall">
-          <zstack width="100%" height="100%">
-            {/* Carnival striped background */}
-            <image
-              url={carnivalBackground}
-              imageHeight={400}
-              imageWidth={400}
-              height="100%"
-              width="100%"
-              resizeMode="cover"
-            />
-            <vstack padding="large" gap="medium">
-              <vstack 
-                backgroundColor="rgba(255,255,255,0.95)" 
-                cornerRadius="large" 
-                padding="large"
-                border="thick"
-                borderColor="#C0C0C0"
-                gap="medium"
-              >
-                <text size="xxlarge" alignment="center" color="black">🎪 Results</text>
-                <text alignment="center" color="black">
+          <CarnivalBackground>
+            <vstack width="100%" height="100%" padding="large" gap="medium">
+              <CarnivalCard>
+                <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
+                <text alignment="center" color={CarnivalTheme.colors.text}>
                   {userGuess?.isCorrect 
                     ? '🎉 Congratulations! You spotted the lie!' 
                     : '😅 Nice try! Better luck next time!'
                   }
                 </text>
-                <text size="small" alignment="center" color="#666">
+                <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
                   By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
                 </text>
 
@@ -718,22 +696,24 @@ Devvit.addCustomPostType({
                         backgroundColor={isLie ? "rgba(255,68,68,0.2)" : "rgba(50,205,50,0.2)"} 
                         cornerRadius="medium"
                         border="thick"
-                        borderColor={isLie ? "#FF4444" : "#32CD32"}
+                        borderColor={isLie ? CarnivalTheme.colors.danger : CarnivalTheme.colors.success}
                       >
                         <hstack>
-                          <text grow weight="bold" color="black">
+                          <text grow weight="bold" color={CarnivalTheme.colors.text}>
                             {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
                           </text>
-                          {isUserChoice && <text color="#4A90E2" weight="bold">(Your choice)</text>}
+                          {isUserChoice && (
+                            <text color={CarnivalTheme.colors.primary} weight="bold">(Your choice)</text>
+                          )}
                         </hstack>
                         
                         {!isLie && statement.description && (
-                          <text size="small" color="#666" style="italic">
+                          <text size="small" color={CarnivalTheme.colors.textLight}>
                             Details: {statement.description}
                           </text>
                         )}
                         
-                        <text size="small" color="#666">
+                        <text size="small" color={CarnivalTheme.colors.textLight}>
                           {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
                         </text>
                       </vstack>
@@ -741,19 +721,19 @@ Devvit.addCustomPostType({
                   })}
                 </vstack>
 
-                <text alignment="center" color="black">
+                <text alignment="center" color={CarnivalTheme.colors.text}>
                   💬 How surprising were the truths? Comment below!
                 </text>
 
-                <button
-                  onPress={() => setGameState('leaderboard')}
+                <CarnivalButton
                   appearance="secondary"
+                  onPress={() => setGameState('leaderboard')}
                 >
-                  <text color="black" weight="bold">View Leaderboard 🏆</text>
-                </button>
-              </vstack>
+                  View Leaderboard 🏆
+                </CarnivalButton>
+              </CarnivalCard>
             </vstack>
-          </zstack>
+          </CarnivalBackground>
         </blocks>
       );
     }
@@ -761,9 +741,13 @@ Devvit.addCustomPostType({
     // Fallback
     return (
       <blocks height="tall">
-        <vstack alignment="center middle" padding="large">
-          <text>Unknown state</text>
-        </vstack>
+        <CarnivalBackground>
+          <vstack width="100%" height="100%" alignment="center middle" padding="large">
+            <CarnivalCard>
+              <text color={CarnivalTheme.colors.text}>Unknown state</text>
+            </CarnivalCard>
+          </vstack>
+        </CarnivalBackground>
       </blocks>
     );
   },
