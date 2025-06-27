@@ -25,7 +25,30 @@ const CarnivalTheme = {
     textLight: '#666666',
     white: '#FFFFFF',
   },
-  background: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3Cpattern id='stripes' patternUnits='userSpaceOnUse' width='40' height='40'%3E%3Crect width='20' height='40' fill='%234A90E2'/%3E%3Crect x='20' width='20' height='40' fill='%2387CEEB'/%3E%3C/pattern%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='1' result='noise'/%3E%3CfeColorMatrix in='noise' type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0.1'/%3E%3C/feComponentTransfer%3E%3CfeComposite operator='over' in2='SourceGraphic'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23stripes)'/%3E%3Crect width='100%25' height='100%25' fill='url(%23stripes)' filter='url(%23noise)' opacity='0.3'/%3E%3C/svg%3E`,
+};
+
+// Create the carnival striped background as a proper SVG
+const createCarnivalBackground = () => {
+  return `data:image/svg+xml,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+      <defs>
+        <pattern id="stripes" patternUnits="userSpaceOnUse" width="40" height="40">
+          <rect width="20" height="40" fill="#4A90E2"/>
+          <rect x="20" width="20" height="40" fill="#87CEEB"/>
+        </pattern>
+        <filter id="noise">
+          <feTurbulence baseFrequency="0.9" numOctaves="1" result="noise"/>
+          <feColorMatrix in="noise" type="saturate" values="0"/>
+          <feComponentTransfer>
+            <feFuncA type="discrete" tableValues="0.1"/>
+          </feComponentTransfer>
+          <feComposite operator="over" in2="SourceGraphic"/>
+        </filter>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#stripes)"/>
+      <rect width="100%" height="100%" fill="url(#stripes)" filter="url(#noise)" opacity="0.3"/>
+    </svg>
+  `)}`;
 };
 
 // Reusable components
@@ -45,52 +68,17 @@ const CarnivalCard = ({ children, borderColor = CarnivalTheme.colors.shadow }: {
 const CarnivalBackground = ({ children }: { children: JSX.Element | JSX.Element[] }) => (
   <zstack width="100%" height="100%">
     <image
-      url={CarnivalTheme.background}
+      url={createCarnivalBackground()}
       imageHeight={400}
       imageWidth={400}
       height="100%"
       width="100%"
       resizeMode="cover"
+      description="Carnival striped background"
     />
     {children}
   </zstack>
 );
-
-const CarnivalButton = ({ 
-  children, 
-  onPress, 
-  appearance = 'primary', 
-  disabled = false,
-  size = 'medium'
-}: { 
-  children: JSX.Element | string, 
-  onPress?: () => void | Promise<void>, 
-  appearance?: 'primary' | 'secondary' | 'success' | 'danger',
-  disabled?: boolean,
-  size?: 'small' | 'medium' | 'large'
-}) => {
-  const colors = {
-    primary: { bg: CarnivalTheme.colors.primary, text: CarnivalTheme.colors.white },
-    secondary: { bg: CarnivalTheme.colors.background, text: CarnivalTheme.colors.text },
-    success: { bg: CarnivalTheme.colors.success, text: CarnivalTheme.colors.white },
-    danger: { bg: CarnivalTheme.colors.danger, text: CarnivalTheme.colors.white },
-  };
-
-  const buttonColor = colors[appearance];
-  
-  return (
-    <button
-      onPress={disabled ? undefined : onPress}
-      appearance={appearance}
-      size={size}
-      disabled={disabled}
-    >
-      <text color={buttonColor.text} weight="bold">
-        {typeof children === 'string' ? children : children}
-      </text>
-    </button>
-  );
-};
 
 // Add the custom post type
 Devvit.addCustomPostType({
@@ -326,15 +314,15 @@ Devvit.addCustomPostType({
                 <text color={CarnivalTheme.colors.text} alignment="center">
                   {error || 'Something went wrong. Please try again.'}
                 </text>
-                <CarnivalButton
-                  appearance="danger"
+                <button
+                  appearance="destructive"
                   onPress={() => {
                     setError('');
                     setGameState('loading');
                   }}
                 >
-                  Retry
-                </CarnivalButton>
+                  <text color={CarnivalTheme.colors.white} weight="bold">Retry</text>
+                </button>
               </CarnivalCard>
             </vstack>
           </CarnivalBackground>
@@ -364,12 +352,12 @@ Devvit.addCustomPostType({
                   </text>
                 </vstack>
 
-                <CarnivalButton
+                <button
                   appearance="primary"
                   onPress={() => context.ui.showForm(createGameForm)}
                 >
-                  Create Your Game! 🎪
-                </CarnivalButton>
+                  <text color={CarnivalTheme.colors.white} weight="bold">Create Your Game! 🎪</text>
+                </button>
               </CarnivalCard>
             </vstack>
           </CarnivalBackground>
@@ -393,20 +381,20 @@ Devvit.addCustomPostType({
                   </text>
                   
                   <hstack gap="medium">
-                    <CarnivalButton
+                    <button
                       appearance="secondary"
                       onPress={() => setGameState('leaderboard')}
                     >
-                      Back
-                    </CarnivalButton>
-                    <CarnivalButton
+                      <text color={CarnivalTheme.colors.text} weight="bold">Back</text>
+                    </button>
+                    <button
                       appearance="primary"
                       onPress={async () => {
                         context.ui.showToast('Use the menu action "[TTOL] New Two Truths One Lie Post" to create posts.');
                       }}
                     >
-                      Create Game Post!
-                    </CarnivalButton>
+                      <text color={CarnivalTheme.colors.white} weight="bold">Create Game Post!</text>
+                    </button>
                   </hstack>
                 </CarnivalCard>
               </vstack>
@@ -465,18 +453,22 @@ Devvit.addCustomPostType({
 
                 {/* Tab Navigation */}
                 <hstack gap="small">
-                  <CarnivalButton
+                  <button
                     appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
                     onPress={() => setActiveTab('guessers')}
                   >
-                    🕵️ Best Guessers
-                  </CarnivalButton>
-                  <CarnivalButton
+                    <text color={activeTab === 'guessers' ? CarnivalTheme.colors.white : CarnivalTheme.colors.text} weight="bold">
+                      🕵️ Best Guessers
+                    </text>
+                  </button>
+                  <button
                     appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
                     onPress={() => setActiveTab('liars')}
                   >
-                    🎭 Best Liars
-                  </CarnivalButton>
+                    <text color={activeTab === 'liars' ? CarnivalTheme.colors.white : CarnivalTheme.colors.text} weight="bold">
+                      🎭 Best Liars
+                    </text>
+                  </button>
                 </hstack>
 
                 {/* Leaderboard */}
@@ -507,12 +499,12 @@ Devvit.addCustomPostType({
                 </vstack>
 
                 {/* Action Button */}
-                <CarnivalButton
+                <button
                   appearance="primary"
                   onPress={() => setGameState('create')}
                 >
-                  Create Your Game 🎪
-                </CarnivalButton>
+                  <text color={CarnivalTheme.colors.white} weight="bold">Create Your Game 🎪</text>
+                </button>
               </CarnivalCard>
             </vstack>
           </CarnivalBackground>
@@ -558,7 +550,7 @@ Devvit.addCustomPostType({
                     ))}
                   </vstack>
 
-                  <CarnivalButton
+                  <button
                     appearance="primary"
                     onPress={async () => {
                       if (selectedIndex === null || !userId || !reddit) return;
@@ -654,8 +646,8 @@ Devvit.addCustomPostType({
                     }}
                     disabled={selectedIndex === null}
                   >
-                    Submit Guess! 🎯
-                  </CarnivalButton>
+                    <text color={CarnivalTheme.colors.white} weight="bold">Submit Guess! 🎯</text>
+                  </button>
                 </CarnivalCard>
               </vstack>
             </CarnivalBackground>
@@ -725,12 +717,12 @@ Devvit.addCustomPostType({
                   💬 How surprising were the truths? Comment below!
                 </text>
 
-                <CarnivalButton
+                <button
                   appearance="secondary"
                   onPress={() => setGameState('leaderboard')}
                 >
-                  View Leaderboard 🏆
-                </CarnivalButton>
+                  <text color={CarnivalTheme.colors.text} weight="bold">View Leaderboard 🏆</text>
+                </button>
               </CarnivalCard>
             </vstack>
           </CarnivalBackground>
