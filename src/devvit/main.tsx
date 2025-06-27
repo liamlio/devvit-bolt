@@ -2,11 +2,12 @@ import { Devvit } from '@devvit/public-api';
 import { Router } from './posts/Router.js';
 import { GameService } from './service/GameService.js';
 
-// Configure Devvit
+// Configure Devvit with userActions enabled
 Devvit.configure({
   redditAPI: true,
   redis: true,
   media: true,
+  userActions: true, // Enable posting as user
 });
 
 // Add the custom post type
@@ -53,6 +54,10 @@ Devvit.addMenuItem({
             </vstack>
           </blocks>
         ),
+        runAs: 'USER', // Post as the user, not the app
+        userGeneratedContent: {
+          text: 'Two Truths One Lie game post created by user'
+        },
       });
       
       await gameService.setPostType(post.id, 'game');
@@ -93,6 +98,10 @@ Devvit.addMenuItem({
             </vstack>
           </blocks>
         ),
+        runAs: 'USER', // Post as the user, not the app
+        userGeneratedContent: {
+          text: 'Two Truths One Lie community hub created by moderator'
+        },
       });
       
       await Promise.all([

@@ -79,6 +79,10 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
             </vstack>
           </blocks>
         ),
+        runAs: 'USER', // Post as the user, not the app
+        userGeneratedContent: {
+          text: `Two Truths One Lie game: "${truth1.text}", "${truth2.text}", "${lie.text}"`
+        },
       });
 
       const lieIndex = Math.floor(Math.random() * 3);
