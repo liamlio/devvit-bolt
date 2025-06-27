@@ -31,6 +31,13 @@ export class GameService {
     return data ? JSON.parse(data) : null;
   }
 
+  // TESTING EXCEPTION: Method to remove user guess for u/liamlio testing
+  // This is for testing purposes only and should be removed in production
+  async removeUserGuess(postId: string, userId: string): Promise<void> {
+    const key = `user_guess:${postId}:${userId}`;
+    await this.redis.del(key);
+  }
+
   // User Score Management
   async getUserScore(userId: string): Promise<UserScore> {
     const key = `user_score:${userId}`;

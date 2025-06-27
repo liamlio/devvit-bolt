@@ -8,12 +8,17 @@ interface GameResultsInterfaceProps {
   gamePost: GamePost;
   userGuess?: UserGuess;
   onViewLeaderboard: () => void;
+  // TESTING EXCEPTION: Optional back button for u/liamlio testing
+  showBackButton?: boolean;
+  onBackToGuessing?: () => void;
 }
 
 export const GameResultsInterface = ({ 
   gamePost, 
   userGuess, 
-  onViewLeaderboard 
+  onViewLeaderboard,
+  showBackButton = false,
+  onBackToGuessing
 }: GameResultsInterfaceProps): JSX.Element => {
   const statements: Statement[] = [gamePost.truth1, gamePost.truth2, gamePost.lie];
 
@@ -78,12 +83,24 @@ export const GameResultsInterface = ({
               💬 How surprising were the truths? Comment below!
             </text>
 
-            <button
-              appearance="secondary"
-              onPress={onViewLeaderboard}
-            >
-              View Leaderboard 🏆
-            </button>
+            <hstack gap="medium">
+              {/* TESTING EXCEPTION: Back button only for u/liamlio */}
+              {showBackButton && onBackToGuessing && (
+                <button
+                  appearance="destructive"
+                  onPress={onBackToGuessing}
+                >
+                  🔄 Test Again (liamlio only)
+                </button>
+              )}
+              
+              <button
+                appearance="secondary"
+                onPress={onViewLeaderboard}
+              >
+                View Leaderboard 🏆
+              </button>
+            </hstack>
           </CarnivalCard>
         </vstack>
       </CarnivalBackground>

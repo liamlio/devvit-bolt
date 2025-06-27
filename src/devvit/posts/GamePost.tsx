@@ -31,10 +31,16 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
 
       let hasGuessed = false;
       let userGuess: UserGuess | undefined;
+      let currentUser: any = null;
       
-      if (userId) {
-        userGuess = await gameService.getUserGuess(postId, userId);
-        hasGuessed = userGuess !== null;
+      if (userId && reddit) {
+        try {
+          currentUser = await reddit.getCurrentUser();
+          userGuess = await gameService.getUserGuess(postId, userId);
+          hasGuessed = userGuess !== null;
+        } catch (err) {
+          console.error('Error getting user info:', err);
+        }
       }
 
       return {
@@ -42,6 +48,7 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
         gamePost,
         hasGuessed,
         userGuess,
+        currentUser,
       };
     } catch (err) {
       console.error('Error loading game data:', err);
@@ -159,7 +166,7 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     if (selectedIndex === null || !userId || !reddit || !gameData || gameData.type !== 'game') return;
 
     try {
-      const { gamePost } = gameData;
+      const { gamePost, currentUser } = gameData;
       
       const existingGuess = await gameService.getUserGuess(postId, userId);
       if (existingGuess) {
@@ -167,12 +174,15 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
         return;
       }
 
-      if (gamePost.authorId === userId) {
+      // TESTING EXCEPTION: Allow u/liamlio to guess on their own posts
+      // This is for testing purposes only and should be removed in production
+      const isTestUser = currentUser?.username === 'liamlio';
+      if (gamePost.authorId === userId && !isTestUser) {
         ui.showToast('You cannot guess on your own post');
         return;
       }
 
-      const user = await reddit.getCurrentUser();
+      const user = currentUser || await reddit.getCurrentUser();
       if (!user) {
         ui.showToast('Unable to get user information');
         return;
@@ -205,7 +215,8 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
         gameService.awardGuesserPoints(userId, user.username, guesserPoints),
       ]);
 
-      if (!isCorrect) {
+      // Don't award liar points if the author is guessing on their own post (testing exception)
+      if (!isCorrect && gamePost.authorId !== userId) {
         await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1);
       }
 
@@ -226,6 +237,37 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     } catch (err) {
       console.error('Error submitting guess:', err);
       ui.showToast('Error submitting guess. Please try again.');
+    }
+  };
+
+  const handleBackToGuessing = async () => {
+    if (!userId || !gameData || gameData.type !== 'game') return;
+
+    try {
+      // TESTING EXCEPTION: Allow u/liamlio to reset their guess and guess again
+      // This is for testing purposes only and should be removed in production
+      const { currentUser } = gameData;
+      const isTestUser = currentUser?.username === 'liamlio';
+      
+      if (!isTestUser) {
+        ui.showToast('This feature is only available for testing');
+        return;
+      }
+
+      // Remove the user's guess to allow them to guess again
+      await gameService.removeUserGuess(postId, userId);
+      
+      // Reset selected index
+      setSelectedIndex(null);
+      
+      ui.showToast('🔄 Reset complete! You can guess again.');
+      
+      // Trigger reload
+      setError('reload');
+      setError('');
+    } catch (err) {
+      console.error('Error resetting guess:', err);
+      ui.showToast('Error resetting guess. Please try again.');
     }
   };
 
@@ -256,7 +298,10 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
 
   // Game post
   if (gameData.type === 'game') {
-    const { gamePost, hasGuessed, userGuess } = gameData;
+    const { gamePost, hasGuessed, userGuess, currentUser } = gameData;
+
+    // TESTING EXCEPTION: Check if this is the test user
+    const isTestUser = currentUser?.username === 'liamlio';
 
     // Game play interface
     if (!hasGuessed) {
@@ -270,7 +315,7 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
       );
     }
 
-    // Results interface
+    // Results interface with optional back button for test user
     return (
       <GameResultsInterface
         gamePost={gamePost}
@@ -279,6 +324,9 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
           // This would need to be handled by the parent component
           ui.showToast('Leaderboard feature coming soon!');
         }}
+        // TESTING EXCEPTION: Show back button only for u/liamlio
+        showBackButton={isTestUser}
+        onBackToGuessing={handleBackToGuessing}
       />
     );
   }
