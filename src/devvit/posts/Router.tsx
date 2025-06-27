@@ -37,7 +37,7 @@ export const Router = ({ postId, userId, redis, reddit, ui }: RouterProps): JSX.
       console.error('Error determining post type:', err);
       throw err;
     }
-  });
+  }, [postId]);
 
   // Handle loading state
   if (loading) {
