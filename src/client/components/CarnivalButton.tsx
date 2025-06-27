@@ -52,7 +52,7 @@ export const CarnivalButton: React.FC<CarnivalButtonProps> = ({
       
       {/* Content */}
       <div className="relative z-10 flex items-center justify-center gap-2">
-        {children}
+        {children[0]}
       </div>
     </button>
   );
