@@ -13,8 +13,8 @@ Devvit.configure({
 // Carnival theme settings
 const CarnivalTheme = {
   colors: {
-    primary: '#4A90E2',
-    secondary: '#87CEEB', 
+    primary: '#3b82f6',      // Blue-500 to match React component
+    secondary: '#93c5fd',    // Blue-300 to match React component
     accent: '#FFD700',
     success: '#32CD32',
     danger: '#FF4444',
@@ -27,26 +27,32 @@ const CarnivalTheme = {
   },
 };
 
-// Create the carnival striped background as a proper SVG
+// Create the carnival striped background to match the React component exactly
 const createCarnivalBackground = () => {
   return `data:image/svg+xml,${encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
       <defs>
-        <pattern id="stripes" patternUnits="userSpaceOnUse" width="40" height="40">
-          <rect width="20" height="40" fill="#4A90E2"/>
-          <rect x="20" width="20" height="40" fill="#87CEEB"/>
+        <!-- Diagonal stripe pattern matching React component -->
+        <pattern id="diagonalStripes" patternUnits="userSpaceOnUse" width="56.57" height="56.57" patternTransform="rotate(45)">
+          <rect width="28.28" height="56.57" fill="#3b82f6"/>
+          <rect x="28.28" width="28.28" height="56.57" fill="#93c5fd"/>
         </pattern>
-        <filter id="noise">
-          <feTurbulence baseFrequency="0.9" numOctaves="1" result="noise"/>
-          <feColorMatrix in="noise" type="saturate" values="0"/>
+        
+        <!-- Noise texture filter -->
+        <filter id="noiseFilter">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/>
+          <feColorMatrix type="saturate" values="0"/>
           <feComponentTransfer>
-            <feFuncA type="discrete" tableValues="0.1"/>
+            <feFuncA type="discrete" tableValues="0.2"/>
           </feComponentTransfer>
-          <feComposite operator="over" in2="SourceGraphic"/>
         </filter>
       </defs>
-      <rect width="100%" height="100%" fill="url(#stripes)"/>
-      <rect width="100%" height="100%" fill="url(#stripes)" filter="url(#noise)" opacity="0.3"/>
+      
+      <!-- Base diagonal stripes with 90% opacity -->
+      <rect width="100%" height="100%" fill="url(#diagonalStripes)" opacity="0.9"/>
+      
+      <!-- Noise texture overlay with 20% opacity -->
+      <rect width="100%" height="100%" fill="white" filter="url(#noiseFilter)" opacity="0.2"/>
     </svg>
   `)}`;
 };
@@ -74,7 +80,7 @@ const CarnivalBackground = ({ children }: { children: JSX.Element | JSX.Element[
       height="100%"
       width="100%"
       resizeMode="cover"
-      description="Carnival striped background"
+      description="Carnival striped background with diagonal blue stripes and noise texture"
     />
     {children}
   </zstack>
