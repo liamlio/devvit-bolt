@@ -31,7 +31,7 @@ export const NewGamePost = ({ onCreateGame }: NewGamePostProps): JSX.Element => 
             appearance="primary"
             onPress={onCreateGame}
           >
-            <text color={CarnivalTheme.colors.white} weight="bold">Create Your Game! 🎪</text>
+            Create Your Game! 🎪
           </button>
         </CarnivalCard>
       </vstack>

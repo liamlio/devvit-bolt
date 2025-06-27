@@ -55,7 +55,7 @@ export const GamePlayInterface = ({
               onPress={onSubmitGuess}
               disabled={selectedIndex === null}
             >
-              <text color={CarnivalTheme.colors.white} weight="bold">Submit Guess! 🎯</text>
+              Submit Guess! 🎯
             </button>
           </CarnivalCard>
         </vstack>

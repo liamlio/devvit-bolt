@@ -23,13 +23,13 @@ export const CreateGameInterface = ({ onBack, onShowToast }: CreateGameInterface
               appearance="secondary"
               onPress={onBack}
             >
-              <text color={CarnivalTheme.colors.text} weight="bold">Back</text>
+              Back
             </button>
             <button
               appearance="primary"
               onPress={() => onShowToast('Use the menu action "[TTOL] New Two Truths One Lie Post" to create posts.')}
             >
-              <text color={CarnivalTheme.colors.white} weight="bold">Create Game Post!</text>
+              Create Game Post!
             </button>
           </hstack>
         </CarnivalCard>

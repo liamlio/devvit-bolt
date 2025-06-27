@@ -82,7 +82,7 @@ export const GameResultsInterface = ({
               appearance="secondary"
               onPress={onViewLeaderboard}
             >
-              <text color={CarnivalTheme.colors.text} weight="bold">View Leaderboard 🏆</text>
+              View Leaderboard 🏆
             </button>
           </CarnivalCard>
         </vstack>

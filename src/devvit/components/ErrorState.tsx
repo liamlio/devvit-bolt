@@ -24,7 +24,7 @@ export const ErrorState = ({ error, onRetry }: ErrorStateProps): JSX.Element => 
             appearance="destructive"
             onPress={onRetry}
           >
-            <text color={CarnivalTheme.colors.white} weight="bold">Retry</text>
+            Retry
           </button>
         </CarnivalCard>
       </vstack>

@@ -72,17 +72,13 @@ export const LeaderboardInterface = ({
                 appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
                 onPress={() => onTabChange('guessers')}
               >
-                <text color={activeTab === 'guessers' ? CarnivalTheme.colors.white : CarnivalTheme.colors.text} weight="bold">
-                  🕵️ Best Guessers
-                </text>
+                🕵️ Best Guessers
               </button>
               <button
                 appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
                 onPress={() => onTabChange('liars')}
               >
-                <text color={activeTab === 'liars' ? CarnivalTheme.colors.white : CarnivalTheme.colors.text} weight="bold">
-                  🎭 Best Liars
-                </text>
+                🎭 Best Liars
               </button>
             </hstack>
 
@@ -118,7 +114,7 @@ export const LeaderboardInterface = ({
               appearance="primary"
               onPress={onCreateGame}
             >
-              <text color={CarnivalTheme.colors.white} weight="bold">Create Your Game 🎪</text>
+              Create Your Game 🎪
             </button>
           </CarnivalCard>
         </vstack>
