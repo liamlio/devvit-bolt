@@ -41,7 +41,7 @@ export const GameResultsInterface = ({
           </text>
           </vstack>
 
-          <vstack gap="xxsmall">
+          <vstack gap="xxsmall" padding="small">
             {statements.map((statement, index) => {
               const isLie = index === gamePost.lieIndex;
               const isUserChoice = userGuess?.guessIndex === index;
