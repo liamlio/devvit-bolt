@@ -1,10 +1,11 @@
-import { Devvit } from '@devvit/public-api';
+import { Devvit, Context } from '@devvit/public-api';
 import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
 import type { LeaderboardEntry, UserScore } from '../../shared/types/game.js';
 
 interface LeaderboardInterfaceProps {
+  context: Context;
   guesserLeaderboard: LeaderboardEntry[];
   liarLeaderboard: LeaderboardEntry[];
   userStats?: UserScore;
@@ -14,6 +15,7 @@ interface LeaderboardInterfaceProps {
 }
 
 export const LeaderboardInterface = ({ 
+  context,
   guesserLeaderboard, 
   liarLeaderboard, 
   userStats, 
@@ -22,11 +24,15 @@ export const LeaderboardInterface = ({
   onCreateGame 
 }: LeaderboardInterfaceProps): JSX.Element => {
   const currentLeaderboard = activeTab === 'guessers' ? guesserLeaderboard : liarLeaderboard;
+  
+  // Get screen width for responsive design
+  const width = context.dimensions?.width || 400;
+  const isSmallScreen = width < 380;
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
-        <CarnivalCard padding="large">
+      <vstack width="100%" height="100%" padding={isSmallScreen ? "medium" : "large"} gap="medium" overflow="scroll">
+        <CarnivalCard padding={isSmallScreen ? "medium" : "large"}>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🏆 Two Truths One Lie</text>
           <text alignment="center" color={CarnivalTheme.colors.textLight}>
             Welcome to the carnival of deception! Can you spot the lies?
@@ -35,7 +41,7 @@ export const LeaderboardInterface = ({
           {/* User Stats */}
           {userStats && (
             <vstack 
-              padding="medium" 
+              padding={isSmallScreen ? "small" : "medium"}
               backgroundColor={CarnivalTheme.colors.background} 
               cornerRadius="medium" 
               border="thin" 
@@ -65,21 +71,40 @@ export const LeaderboardInterface = ({
             </vstack>
           )}
 
-          {/* Tab Navigation */}
-          <hstack gap="small">
-            <button
-              appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
-              onPress={() => onTabChange('guessers')}
-            >
-              🕵️ Best Guessers
-            </button>
-            <button
-              appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
-              onPress={() => onTabChange('liars')}
-            >
-              🎭 Best Liars
-            </button>
-          </hstack>
+          {/* Tab Navigation - Stack vertically on small screens */}
+          {isSmallScreen ? (
+            <vstack gap="small">
+              <button
+                appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
+                onPress={() => onTabChange('guessers')}
+                width="100%"
+              >
+                🕵️ Best Guessers
+              </button>
+              <button
+                appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
+                onPress={() => onTabChange('liars')}
+                width="100%"
+              >
+                🎭 Best Liars
+              </button>
+            </vstack>
+          ) : (
+            <hstack gap="small">
+              <button
+                appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
+                onPress={() => onTabChange('guessers')}
+              >
+                🕵️ Best Guessers
+              </button>
+              <button
+                appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
+                onPress={() => onTabChange('liars')}
+              >
+                🎭 Best Liars
+              </button>
+            </hstack>
+          )}
 
           {/* Leaderboard with scrolling for many entries */}
           <vstack gap="small" maxHeight="300px" overflow="scroll">
@@ -87,7 +112,7 @@ export const LeaderboardInterface = ({
               currentLeaderboard.map((entry, index) => (
                 <hstack 
                   key={entry.userId} 
-                  padding="small" 
+                  padding={isSmallScreen ? "xsmall" : "small"}
                   backgroundColor={CarnivalTheme.colors.background} 
                   cornerRadius="medium"
                   border="thin"
@@ -112,6 +137,7 @@ export const LeaderboardInterface = ({
           <button
             appearance="primary"
             onPress={onCreateGame}
+            width={isSmallScreen ? "100%" : undefined}
           >
             Create Your Game 🎪
           </button>

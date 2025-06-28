@@ -1,10 +1,11 @@
-import { Devvit } from '@devvit/public-api';
+import { Devvit, Context } from '@devvit/public-api';
 import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
 import type { GamePost, Statement, UserGuess } from '../../shared/types/game.js';
 
 interface GameResultsInterfaceProps {
+  context: Context;
   gamePost: GamePost;
   userGuess?: UserGuess;
   onViewLeaderboard: () => void;
@@ -15,6 +16,7 @@ interface GameResultsInterfaceProps {
 }
 
 export const GameResultsInterface = ({ 
+  context,
   gamePost, 
   userGuess, 
   onViewLeaderboard,
@@ -23,10 +25,14 @@ export const GameResultsInterface = ({
   onBackToGuessing
 }: GameResultsInterfaceProps): JSX.Element => {
   const statements: Statement[] = [gamePost.truth1, gamePost.truth2, gamePost.lie];
+  
+  // Get screen width for responsive design
+  const width = context.dimensions?.width || 400;
+  const isSmallScreen = width < 380;
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding="large" gap="small">
+      <vstack width="100%" height="100%" padding={isSmallScreen ? "medium" : "large"} gap="small">
         <CarnivalCard padding="small">
           <vstack width="100%" height="100%" padding="xxsmall" gap="xxsmall">
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
@@ -58,7 +64,7 @@ export const GameResultsInterface = ({
               return (
                 <vstack 
                   key={index} 
-                  padding="medium" 
+                  padding={isSmallScreen ? "small" : "medium"}
                   backgroundColor={isLie ? "rgba(255,68,68,0.2)" : "rgba(50,205,50,0.2)"} 
                   cornerRadius="medium"
                   border="thick"
@@ -94,12 +100,14 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          <hstack gap="medium" alignment="center" padding="xxsmall">
+          {/* Responsive button layout */}
+          <vstack gap="medium" alignment="center" padding="xxsmall">
             {/* TESTING EXCEPTION: Back button only for u/liamlio */}
             {showBackButton && onBackToGuessing && (
               <button
                 appearance="destructive"
                 onPress={onBackToGuessing}
+                width={isSmallScreen ? "100%" : undefined}
               >
                 🔄 Test Again (liamlio only)
               </button>
@@ -108,11 +116,13 @@ export const GameResultsInterface = ({
             <button
               appearance="secondary"
               onPress={onViewLeaderboard}
+              width={isSmallScreen ? "100%" : undefined}
             >
               View Leaderboard 🏆
             </button>
-          </hstack>
-            <text alignment="center" color={CarnivalTheme.colors.text}>
+          </vstack>
+          
+          <text alignment="center" color={CarnivalTheme.colors.text}>
             💬 How surprising were the truths? Comment below!
           </text>
         </CarnivalCard>

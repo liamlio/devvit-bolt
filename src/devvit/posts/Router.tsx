@@ -1,4 +1,4 @@
-import { Devvit, useAsync } from '@devvit/public-api';
+import { Devvit, useAsync, Context } from '@devvit/public-api';
 import { GameService } from '../service/GameService.js';
 import { LoadingState } from '../components/LoadingState.js';
 import { ErrorState } from '../components/ErrorState.js';
@@ -7,14 +7,11 @@ import { PinnedPost } from './PinnedPost.js';
 import { CarnivalBackground } from '../components/CarnivalBackground.js';
 
 interface RouterProps {
-  postId: string;
-  userId?: string;
-  redis: any;
-  reddit?: any;
-  ui: any;
+  context: Context;
 }
 
-export const Router = ({ postId, userId, redis, reddit, ui }: RouterProps): JSX.Element => {
+export const Router = ({ context }: RouterProps): JSX.Element => {
+  const { postId, userId, redis, reddit, ui } = context;
   const gameService = new GameService(redis);
 
   // Determine post type
@@ -59,8 +56,8 @@ export const Router = ({ postId, userId, redis, reddit, ui }: RouterProps): JSX.
 
   // Route to appropriate component with scrollable content layer
   const content = postType === 'pinned' 
-    ? <PinnedPost postId={postId} userId={userId} redis={redis} reddit={reddit} ui={ui} />
-    : <GamePost postId={postId} userId={userId} redis={redis} reddit={reddit} ui={ui} />;
+    ? <PinnedPost context={context} />
+    : <GamePost context={context} />;
 
   return (
     <blocks height="tall">

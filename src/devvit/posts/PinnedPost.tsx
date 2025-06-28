@@ -1,4 +1,4 @@
-import { Devvit, useState, useAsync } from '@devvit/public-api';
+import { Devvit, useState, useAsync, Context } from '@devvit/public-api';
 import { GameService } from '../service/GameService.js';
 import { LoadingState } from '../components/LoadingState.js';
 import { ErrorState } from '../components/ErrorState.js';
@@ -7,14 +7,11 @@ import { CreateGameInterface } from '../components/CreateGameInterface.js';
 import type { GamePost as GamePostType, Statement } from '../../shared/types/game.js';
 
 interface PinnedPostProps {
-  postId: string;
-  userId?: string;
-  redis: any;
-  reddit?: any;
-  ui: any;
+  context: Context;
 }
 
-export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProps): JSX.Element => {
+export const PinnedPost = ({ context }: PinnedPostProps): JSX.Element => {
+  const { postId, userId, redis, reddit, ui } = context;
   const gameService = new GameService(redis);
   const [gameState, setGameState] = useState<'leaderboard' | 'create'>('leaderboard');
   const [activeTab, setActiveTab] = useState<'guessers' | 'liars'>('guessers');
@@ -69,15 +66,10 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
   if (gameState === 'create') {
     return (
       <CreateGameInterface
+        context={context}
         onBack={() => setGameState('leaderboard')}
         onShowToast={(message) => ui.showToast(message)}
         onCreateGame={handleCreateGamePost}
-        ui={ui}
-        postId={postId}
-        userId={userId}
-        authorUsername={leaderboardData.userStats?.username}
-        redis={redis}
-        reddit={reddit}
       />
     );
   }
@@ -85,6 +77,7 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
   // Leaderboard view (default for pinned post)
   return (
     <LeaderboardInterface
+      context={context}
       guesserLeaderboard={leaderboardData.guesserLeaderboard}
       liarLeaderboard={leaderboardData.liarLeaderboard}
       userStats={leaderboardData.userStats}

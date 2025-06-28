@@ -1,4 +1,4 @@
-import { Devvit, useWebView } from '@devvit/public-api';
+import { Devvit, useWebView, Context } from '@devvit/public-api';
 import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
@@ -6,26 +6,23 @@ import type { Statement, GamePost as GamePostType } from '../../shared/types/gam
 import { GameService } from '../service/GameService.js';
 
 interface CreateGameInterfaceProps {
+  context: Context;
   onBack: () => void;
   onShowToast: (message: string) => void;
-  ui: any;
-  postId: string;
-  userId?: string;
-  authorUsername?: string;
-  redis?: any;
-  reddit?: any;
+  onCreateGame?: (truth1: Statement, truth2: Statement, lie: Statement) => Promise<void>;
 }
 
 export const CreateGameInterface = ({ 
+  context,
   onBack, 
   onShowToast, 
-  ui,
-  postId,
-  userId,
-  authorUsername,
-  redis,
-  reddit
+  onCreateGame
 }: CreateGameInterfaceProps): JSX.Element => {
+  const { postId, userId, redis, reddit, ui } = context;
+  
+  // Get screen width for responsive design
+  const width = context.dimensions?.width || 400;
+  const isSmallScreen = width < 380;
 
   const { mount, unmount, postMessage } = useWebView({
     url: 'index.html',
@@ -35,6 +32,17 @@ export const CreateGameInterface = ({
       if (message.type === 'webViewReady') {
         // Send initial data when webview signals it's ready
         console.log('Webview ready, sending initial data');
+        
+        let authorUsername = '';
+        if (userId && reddit) {
+          try {
+            const user = await reddit.getCurrentUser();
+            authorUsername = user?.username || '';
+          } catch (err) {
+            console.error('Error getting current user:', err);
+          }
+        }
+        
         webView.postMessage({
           type: 'INIT_DATA',
           data: {
@@ -147,7 +155,7 @@ export const CreateGameInterface = ({
 
   const handleOpenWebview = async () => {
     try {
-      console.log('Opening webview with data:', { postId, userId, authorUsername });
+      console.log('Opening webview with data:', { postId, userId });
       
       // Mount the webview (this opens it)
       mount();
@@ -159,50 +167,47 @@ export const CreateGameInterface = ({
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding="large" gap="small">
-        <CarnivalCard padding="medium">
+      <vstack width="100%" height="100%" padding={isSmallScreen ? "medium" : "large"} gap="small">
+        <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
             Ready to create your Two Truths One Lie game? Use our enhanced form with real-time character counting!
           </text>
           
-          {/* <vstack 
-            key="0"
-            backgroundColor={CarnivalTheme.colors.background} 
-            cornerRadius="medium"
-            border="thin"
-            borderColor={CarnivalTheme.colors.primary}
-            gap="medium"
-          >
-            <text weight="bold" color={CarnivalTheme.colors.text}>✨ Enhanced Form Features:</text>
-            <text size="small" color={CarnivalTheme.colors.textLight}>
-              • Real-time character counting (150 char limit for statements)
-            </text>
-            <text size="small" color={CarnivalTheme.colors.textLight}>
-              • Instant validation feedback
-            </text>
-            <text size="small" color={CarnivalTheme.colors.textLight}>
-              • Better text editing experience
-            </text>
-            <text size="small" color={CarnivalTheme.colors.textLight}>
-              • Your text is preserved if you need to make edits
-            </text>
-          </vstack> */}
-          
-          <hstack gap="medium" alignment="center">
-            <button
-              appearance="secondary"
-              onPress={onBack}
-            >
-              Back
-            </button>
-            <button
-              appearance="primary"
-              onPress={handleOpenWebview}
-            >
-              Create Post 🎪
-            </button>
-          </hstack>
+          {/* Responsive button layout */}
+          {isSmallScreen ? (
+            <vstack gap="medium" alignment="center">
+              <button
+                appearance="secondary"
+                onPress={onBack}
+                width="100%"
+              >
+                Back
+              </button>
+              <button
+                appearance="primary"
+                onPress={handleOpenWebview}
+                width="100%"
+              >
+                Create Post 🎪
+              </button>
+            </vstack>
+          ) : (
+            <hstack gap="medium" alignment="center">
+              <button
+                appearance="secondary"
+                onPress={onBack}
+              >
+                Back
+              </button>
+              <button
+                appearance="primary"
+                onPress={handleOpenWebview}
+              >
+                Create Post 🎪
+              </button>
+            </hstack>
+          )}
         </CarnivalCard>
       </vstack>
     </CarnivalBackground>

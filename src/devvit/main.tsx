@@ -15,15 +15,9 @@ Devvit.addCustomPostType({
   name: 'ttol',
   height: 'tall',
   render: (context) => {
-    const { postId, userId, redis, reddit, ui } = context;
-    
     return (
       <Router 
-        postId={postId} 
-        userId={userId} 
-        redis={redis} 
-        reddit={reddit} 
-        ui={ui} 
+        context={context}
       />
     );
   },

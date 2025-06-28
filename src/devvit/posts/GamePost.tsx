@@ -1,4 +1,4 @@
-import { Devvit, useState, useAsync } from '@devvit/public-api';
+import { Devvit, useState, useAsync, Context } from '@devvit/public-api';
 import { GameService } from '../service/GameService.js';
 import { LoadingState } from '../components/LoadingState.js';
 import { ErrorState } from '../components/ErrorState.js';
@@ -9,14 +9,11 @@ import { DescriptionViewInterface } from '../components/DescriptionViewInterface
 import type { GamePost as GamePostType, UserGuess, Statement } from '../../shared/types/game.js';
 
 interface GamePostProps {
-  postId: string;
-  userId?: string;
-  redis: any;
-  reddit?: any;
-  ui: any;
+  context: Context;
 }
 
-export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): JSX.Element => {
+export const GamePost = ({ context }: GamePostProps): JSX.Element => {
+  const { postId, userId, redis, reddit, ui } = context;
   const gameService = new GameService(redis);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [error, setError] = useState<string>('');
@@ -204,14 +201,9 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
   if (gameData.type === 'new-game') {
     return (
       <CreateGameInterface
+        context={context}
         onBack={() => ui.showToast('This post needs to be configured first')}
         onShowToast={(message) => ui.showToast(message)}
-        ui={ui}
-        postId={postId}
-        userId={userId}
-        authorUsername={gameData.currentUser?.username}
-        redis={redis}
-        reddit={reddit}
       />
     );
   }
@@ -227,6 +219,7 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     if (gameState === 'description' && viewingDescription) {
       return (
         <DescriptionViewInterface
+          context={context}
           statement={viewingDescription.statement}
           title={viewingDescription.title}
           onBack={handleBackFromDescription}
@@ -238,6 +231,7 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     if (hasGuessed || gameState === 'result') {
       return (
         <GameResultsInterface
+          context={context}
           gamePost={gamePost}
           userGuess={userGuess}
           onViewLeaderboard={() => {
@@ -255,6 +249,7 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     // Game play interface
     return (
       <GamePlayInterface
+        context={context}
         gamePost={gamePost}
         selectedIndex={selectedIndex}
         onSelectStatement={setSelectedIndex}
