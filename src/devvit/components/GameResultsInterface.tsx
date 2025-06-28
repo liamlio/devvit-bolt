@@ -66,7 +66,7 @@ export const GameResultsInterface = ({
                   gap="small"
                 >
                   <hstack>
-                    <text grow weight="bold" color={CarnivalTheme.colors.text} wrap>
+                    <text weight="bold" color={CarnivalTheme.colors.text} wrap>
                       {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
                     </text>
                     {isUserChoice && (
