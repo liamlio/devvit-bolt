@@ -9,7 +9,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        createGameForm: 'src/client/createGameForm/index.html',
+        createGameForm: 'createGameForm/index.html',
       },
     },
   },
