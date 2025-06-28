@@ -167,12 +167,10 @@ export const CreateGameInterface = ({
           </text>
           
           <vstack 
-            padding="medium" 
             backgroundColor={CarnivalTheme.colors.background} 
             cornerRadius="medium"
             border="thin"
             borderColor={CarnivalTheme.colors.primary}
-            gap="small"
           >
             <text weight="bold" color={CarnivalTheme.colors.text}>✨ Enhanced Form Features:</text>
             <text size="small" color={CarnivalTheme.colors.textLight}>
