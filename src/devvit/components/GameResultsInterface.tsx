@@ -93,10 +93,6 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          <text alignment="center" color={CarnivalTheme.colors.text}>
-            💬 How surprising were the truths? Comment below!
-          </text>
-
           <hstack gap="medium">
             {/* TESTING EXCEPTION: Back button only for u/liamlio */}
             {showBackButton && onBackToGuessing && (
@@ -115,6 +111,9 @@ export const GameResultsInterface = ({
               View Leaderboard 🏆
             </button>
           </hstack>
+            <text alignment="center" color={CarnivalTheme.colors.text}>
+            💬 How surprising were the truths? Comment below!
+          </text>
         </CarnivalCard>
       </vstack>
     </CarnivalBackground>
