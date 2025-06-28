@@ -166,7 +166,7 @@ export const CreateGameInterface = ({
             Ready to create your Two Truths One Lie game? Use our enhanced form with real-time character counting!
           </text>
           
-          <vstack 
+          {/* <vstack 
             key="0"
             backgroundColor={CarnivalTheme.colors.background} 
             cornerRadius="medium"
@@ -187,9 +187,9 @@ export const CreateGameInterface = ({
             <text size="small" color={CarnivalTheme.colors.textLight}>
               • Your text is preserved if you need to make edits
             </text>
-          </vstack>
+          </vstack> */}
           
-          <hstack gap="medium">
+          <hstack gap="medium" alignment="center">
             <button
               appearance="secondary"
               onPress={onBack}
