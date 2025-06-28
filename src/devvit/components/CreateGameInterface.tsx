@@ -24,33 +24,35 @@ export const CreateGameInterface = ({
   authorUsername
 }: CreateGameInterfaceProps): JSX.Element => {
 
-  const { webView } = useWebView({
-    id: 'createGameForm',
-    url: '/index.html',
-    onMessage: async (msg) => {
-      console.log('Received message from webview:', msg);
-      if (msg.type === 'CREATE_GAME_SUBMIT') {
+  const { mount, unmount, postMessage } = useWebView({
+    url: 'index.html',
+    onMessage: async (message, webView) => {
+      console.log('Received message from webview:', message);
+      
+      if (message.type === 'webViewReady') {
+        // Send initial data when webview signals it's ready
+        console.log('Webview ready, sending initial data');
+        webView.postMessage({
+          type: 'INIT_DATA',
+          data: {
+            postId,
+            userId,
+            authorUsername,
+          },
+        });
+      } else if (message.type === 'CREATE_GAME_SUBMIT') {
         try {
-          const { truth1, truth2, lie } = msg.data;
+          const { truth1, truth2, lie } = message.data;
           await onCreateGame(truth1, truth2, lie);
-          webView.close();
+          webView.unmount();
         } catch (error) {
           console.error('Error creating game:', error);
           onShowToast('Error creating game. Please try again.');
         }
       }
     },
-    onLoad: () => {
-      console.log('Webview loaded, sending initial data');
-      // Send initial data when webview loads
-      webView.postMessage({
-        type: 'INIT_DATA',
-        data: {
-          postId,
-          userId,
-          authorUsername,
-        },
-      });
+    onUnmount: () => {
+      console.log('Webview closed');
     },
   });
 
@@ -58,8 +60,8 @@ export const CreateGameInterface = ({
     try {
       console.log('Opening webview with data:', { postId, userId, authorUsername });
       
-      // Show the webview
-      webView.show();
+      // Mount the webview (this opens it)
+      mount();
     } catch (error) {
       console.error('Error opening webview:', error);
       onShowToast('Error opening form. Please try again.');

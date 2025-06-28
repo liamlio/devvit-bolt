@@ -35,21 +35,24 @@ export const CreateGameForm: React.FC = () => {
   const [initialData, setInitialData] = useState<InitialData | null>(null);
 
   useEffect(() => {
+    // Send webViewReady message to parent Devvit app when component mounts
+    const sendReadyMessage = () => {
+      console.log('Sending webViewReady message to parent');
+      window.parent.postMessage({ type: 'webViewReady' }, '*');
+    };
+
     // Listen for messages from parent Devvit app
     const handleMessage = (event: MessageEvent) => {
       console.log('Received message in webview:', event.data);
-      if (event.data.type === 'INIT_DATA') {
-        setInitialData(event.data.data);
+      if (event.data.type === 'devvit-message' && event.data.message.type === 'INIT_DATA') {
+        setInitialData(event.data.message.data);
       }
     };
 
     window.addEventListener('message', handleMessage);
     
-    // Also check for initial data that might have been set before the listener
-    const data = (window as any).initialData;
-    if (data) {
-      setInitialData(data);
-    }
+    // Send ready message after a short delay to ensure parent is listening
+    setTimeout(sendReadyMessage, 100);
 
     return () => {
       window.removeEventListener('message', handleMessage);
