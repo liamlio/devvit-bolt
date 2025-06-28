@@ -37,7 +37,7 @@ export const GameResultsInterface = ({
             }
           </text>
           <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
-            By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
+            By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} {gamePost.totalGuesses !== 1 ? 'have' : 'has'} guessed
           </text>
           </vstack>
 
