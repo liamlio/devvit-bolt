@@ -20,7 +20,7 @@ interface InitialData {
 
 const CHARACTER_LIMITS = {
   statement: 150, // Reduced from 200 to 150
-  description: 500,
+  description: 1000,
 };
 
 export const CreateGameForm: React.FC = () => {
