@@ -59,55 +59,6 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     }
   });
 
-  // Handle creating a new game for this post
-  const handleCreateGame = async (truth1: Statement, truth2: Statement, lie: Statement) => {
-    if (!userId || !reddit) {
-      ui.showToast('Must be logged in to create a game');
-      return;
-    }
-
-    try {
-      const user = await reddit.getCurrentUser();
-      if (!user) {
-        ui.showToast('Unable to get user information');
-        return;
-      }
-
-      const userScore = await gameService.getUserScore(userId);
-      if (userScore.level < 1 && userScore.experience < 1) {
-        ui.showToast('You must reach level 1 by playing at least one game before creating your own post');
-        return;
-      }
-
-      const lieIndex = Math.floor(Math.random() * 3);
-      
-      const gamePost: GamePostType = {
-        postId,
-        authorId: userId,
-        authorUsername: user.username,
-        truth1,
-        truth2,
-        lie,
-        lieIndex,
-        createdAt: Date.now(),
-        totalGuesses: 0,
-        correctGuesses: 0,
-        guessBreakdown: [0, 0, 0],
-      };
-
-      await gameService.createGamePost(gamePost);
-      await gameService.setPostType(postId, 'game');
-
-      ui.showToast('Game created successfully! 🎪');
-      // Trigger reload by setting error and clearing it
-      setError('reload');
-      setError('');
-    } catch (error) {
-      console.error('Error creating game:', error);
-      ui.showToast('Error creating game. Please try again.');
-    }
-  };
-
   const handleSubmitGuess = async () => {
     if (selectedIndex === null || !userId || !reddit || !gameData || gameData.type !== 'game') return;
 
@@ -255,7 +206,6 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
       <CreateGameInterface
         onBack={() => ui.showToast('This post needs to be configured first')}
         onShowToast={(message) => ui.showToast(message)}
-        onCreateGame={handleCreateGame}
         ui={ui}
         postId={postId}
         userId={userId}

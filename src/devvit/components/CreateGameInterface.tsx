@@ -8,7 +8,6 @@ import { GameService } from '../service/GameService.js';
 interface CreateGameInterfaceProps {
   onBack: () => void;
   onShowToast: (message: string) => void;
-  onCreateGame: (truth1: Statement, truth2: Statement, lie: Statement) => Promise<void>;
   ui: any;
   postId: string;
   userId?: string;
@@ -20,7 +19,6 @@ interface CreateGameInterfaceProps {
 export const CreateGameInterface = ({ 
   onBack, 
   onShowToast, 
-  onCreateGame, 
   ui,
   postId,
   userId,
@@ -50,29 +48,15 @@ export const CreateGameInterface = ({
           console.log('Processing game creation:', message.data);
           const { truth1, truth2, lie } = message.data;
           
-          // If this is being called from the pinned post, create a new post
-          // If this is being called from an existing post, just configure it
+          // Always create a new post
           if (redis && reddit && userId) {
             const gameService = new GameService(redis);
-            const pinnedPostId = await gameService.getPinnedPost();
-            
-            if (postId === pinnedPostId) {
-              // We're in the pinned post - create a new post
-              console.log('Creating new post from pinned post');
-              await createNewGamePost(truth1, truth2, lie, gameService, reddit, userId, ui, webView);
-            } else {
-              // We're in an existing post - configure it
-              console.log('Configuring existing post');
-              await onCreateGame(truth1, truth2, lie);
-              webView.unmount();
-              onShowToast('Game created successfully! 🎪');
-            }
+            console.log('Creating new post');
+            await createNewGamePost(truth1, truth2, lie, gameService, reddit, userId, ui, webView);
           } else {
-            // Fallback to the original method
-            console.log('Using fallback method');
-            await onCreateGame(truth1, truth2, lie);
+            console.log('Missing required dependencies for new post creation');
             webView.unmount();
-            onShowToast('Game created successfully! 🎪');
+            onShowToast('Error: Missing required information to create post');
           }
         } catch (error) {
           console.error('Error creating game:', error);
@@ -192,7 +176,7 @@ export const CreateGameInterface = ({
           >
             <text weight="bold" color={CarnivalTheme.colors.text}>✨ Enhanced Form Features:</text>
             <text size="small" color={CarnivalTheme.colors.textLight}>
-              • Real-time character counting
+              • Real-time character counting (150 char limit for statements)
             </text>
             <text size="small" color={CarnivalTheme.colors.textLight}>
               • Instant validation feedback
