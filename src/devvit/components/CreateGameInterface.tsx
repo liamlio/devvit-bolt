@@ -111,6 +111,6 @@ export const CreateGameInterface = ({
         </hstack>
       </CarnivalCard>
     </vstack>
-    </CarnivalBackground>CarnivalBackground>
+    </CarnivalBackground>
   );
 };
