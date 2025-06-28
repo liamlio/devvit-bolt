@@ -72,7 +72,7 @@ export const GameResultsInterface = ({
                     <button
                       appearance="secondary"
                       size="small"
-                      onPress={() => onViewDescription(statement, `Truth #${index + 1} Details`)}
+                      onPress={() => onViewDescription(statement, statement.text)}
                     >
                       📖 Expand Description
                     </button>
