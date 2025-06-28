@@ -47,6 +47,7 @@ export const CreateGameInterface = ({
         });
       } else if (message.type === 'CREATE_GAME_SUBMIT') {
         try {
+          console.log('Processing game creation:', message.data);
           const { truth1, truth2, lie } = message.data;
           
           // If this is being called from the pinned post, create a new post
@@ -57,15 +58,18 @@ export const CreateGameInterface = ({
             
             if (postId === pinnedPostId) {
               // We're in the pinned post - create a new post
+              console.log('Creating new post from pinned post');
               await createNewGamePost(truth1, truth2, lie, gameService, reddit, userId, ui, webView);
             } else {
               // We're in an existing post - configure it
+              console.log('Configuring existing post');
               await onCreateGame(truth1, truth2, lie);
               webView.unmount();
               onShowToast('Game created successfully! 🎪');
             }
           } else {
             // Fallback to the original method
+            console.log('Using fallback method');
             await onCreateGame(truth1, truth2, lie);
             webView.unmount();
             onShowToast('Game created successfully! 🎪');
@@ -73,6 +77,7 @@ export const CreateGameInterface = ({
         } catch (error) {
           console.error('Error creating game:', error);
           onShowToast('Error creating game. Please try again.');
+          webView.unmount();
         }
       }
     },
@@ -91,15 +96,19 @@ export const CreateGameInterface = ({
     ui: any,
     webView: any
   ) => {
+    console.log('Creating new game post...');
+    
     const user = await reddit.getCurrentUser();
     if (!user) {
       onShowToast('Unable to get user information');
+      webView.unmount();
       return;
     }
 
     const userScore = await gameService.getUserScore(userId);
     if (userScore.level < 1 && userScore.experience < 1) {
       onShowToast('You must reach level 1 by playing at least one game before creating your own post');
+      webView.unmount();
       return;
     }
 
@@ -144,6 +153,8 @@ export const CreateGameInterface = ({
     await gameService.createGamePost(gamePost);
     await gameService.setPostType(post.id, 'game');
 
+    console.log('Game post created successfully, closing webview and redirecting');
+    
     // Close webview and redirect to new post
     webView.unmount();
     ui.showToast('Game post created successfully! 🎪');

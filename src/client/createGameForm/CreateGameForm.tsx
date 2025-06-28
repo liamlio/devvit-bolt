@@ -35,22 +35,28 @@ export const CreateGameForm: React.FC = () => {
   const [initialData, setInitialData] = useState<InitialData | null>(null);
 
   useEffect(() => {
-    // Send webViewReady message to parent Devvit app when component mounts
-    const sendReadyMessage = () => {
-      console.log('Sending webViewReady message to parent');
-      window.parent.postMessage({ type: 'webViewReady' }, '*');
-    };
-
     // Listen for messages from parent Devvit app
     const handleMessage = (event: MessageEvent) => {
       console.log('Received message in webview:', event.data);
-      if (event.data.type === 'devvit-message' && event.data.message.type === 'INIT_DATA') {
-        setInitialData(event.data.message.data);
+      
+      // Handle messages from Devvit (they come wrapped in devvit-message)
+      if (event.data.type === 'devvit-message') {
+        const message = event.data.message;
+        if (message.type === 'INIT_DATA') {
+          console.log('Setting initial data:', message.data);
+          setInitialData(message.data);
+        }
       }
     };
 
     window.addEventListener('message', handleMessage);
     
+    // Send ready message to parent Devvit app
+    const sendReadyMessage = () => {
+      console.log('Sending webViewReady message to parent');
+      window.parent.postMessage({ type: 'webViewReady' }, '*');
+    };
+
     // Send ready message after a short delay to ensure parent is listening
     setTimeout(sendReadyMessage, 100);
 
@@ -110,7 +116,7 @@ export const CreateGameForm: React.FC = () => {
 
     try {
       // Clean up form data
-      const cleanFormData: FormData = {
+      const cleanFormData = {
         truth1: {
           text: formData.truth1.text.trim(),
           description: formData.truth1.description?.trim() || undefined,
@@ -124,21 +130,17 @@ export const CreateGameForm: React.FC = () => {
         },
       };
 
-      console.log('Submitting form data:', cleanFormData);
+      console.log('Submitting form data to parent:', cleanFormData);
 
       // Send data back to parent Devvit app
       window.parent.postMessage({
         type: 'CREATE_GAME_SUBMIT',
-        data: {
-          ...cleanFormData,
-          initialData,
-        }
+        data: cleanFormData
       }, '*');
 
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors(['An error occurred while submitting the form. Please try again.']);
-    } finally {
       setIsSubmitting(false);
     }
   };
