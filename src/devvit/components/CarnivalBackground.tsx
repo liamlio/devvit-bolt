@@ -5,7 +5,7 @@ interface CarnivalBackgroundProps {
   children: JSX.Element | JSX.Element[];
 }
 
-export const CarnivalBackground = ({ children }: CarnivalBackgroundProps): JSX.Element => (
+const CarnivalBackground = ({ children }: CarnivalBackgroundProps): JSX.Element => (
   <zstack width="100%" height="100%">
     <image
       url={createCarnivalBackground()}
@@ -19,3 +19,5 @@ export const CarnivalBackground = ({ children }: CarnivalBackgroundProps): JSX.E
     {children}
   </zstack>
 );
+
+export default CarnivalBackground;
