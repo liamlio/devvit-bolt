@@ -26,7 +26,7 @@ export const GameResultsInterface = ({
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding="xxsmall" gap="xxsmall">
+      <vstack width="100%" height="100%" padding="large" gap="xxsmall">
         <CarnivalCard>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
