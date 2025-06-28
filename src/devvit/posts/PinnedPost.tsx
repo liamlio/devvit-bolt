@@ -1,4 +1,4 @@
-import { Devvit, useState, useAsync } from '@devvit/public-api';
+import { Devvit, useState, useAsync, useForm } from '@devvit/public-api';
 import { GameService } from '../service/GameService.js';
 import { LoadingState } from '../components/LoadingState.js';
 import { ErrorState } from '../components/ErrorState.js';
@@ -18,30 +18,6 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
   const gameService = new GameService(redis);
   const [gameState, setGameState] = useState<'leaderboard' | 'create'>('leaderboard');
   const [activeTab, setActiveTab] = useState<'guessers' | 'liars'>('guessers');
-
-  // Load leaderboard data
-  const { data: leaderboardData, loading } = useAsync(async () => {
-    try {
-      const [guesserLeaderboard, liarLeaderboard] = await Promise.all([
-        gameService.getLeaderboard('guesser', 'alltime', 10),
-        gameService.getLeaderboard('liar', 'alltime', 10),
-      ]);
-
-      let userStats;
-      if (userId) {
-        userStats = await gameService.getUserScore(userId);
-      }
-
-      return {
-        guesserLeaderboard,
-        liarLeaderboard,
-        userStats,
-      };
-    } catch (err) {
-      console.error('Error loading leaderboard data:', err);
-      throw err;
-    }
-  });
 
   // Improvement 3: Create a new post when clicking "Create Game"
   const handleCreateGamePost = async (truth1: Statement, truth2: Statement, lie: Statement) => {
@@ -112,6 +88,97 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
     }
   };
 
+  // Create game form definition
+  const createGameForm = useForm(
+    {
+      title: '🎪 Create Your Two Truths One Lie Game',
+      description: 'Create two true statements and one lie. Players will try to guess which statement is false!',
+      acceptLabel: 'Create Game! 🎪',
+      cancelLabel: 'Cancel',
+      fields: [
+        {
+          type: 'paragraph',
+          name: 'truth1',
+          label: 'Truth #1 ✅',
+          helpText: 'Enter your first true statement',
+          required: true,
+        },
+        {
+          type: 'string',
+          name: 'truth1Description',
+          label: 'Truth #1 Details (Optional)',
+          helpText: 'Add details to make it more believable',
+          required: false,
+        },
+        {
+          type: 'paragraph',
+          name: 'truth2',
+          label: 'Truth #2 ✅',
+          helpText: 'Enter your second true statement',
+          required: true,
+        },
+        {
+          type: 'string',
+          name: 'truth2Description',
+          label: 'Truth #2 Details (Optional)',
+          helpText: 'Add details to make it more believable',
+          required: false,
+        },
+        {
+          type: 'paragraph',
+          name: 'lie',
+          label: 'The Lie ❌',
+          helpText: 'Enter your convincing lie',
+          required: true,
+        },
+      ],
+    },
+    async (values) => {
+      try {
+        const truth1: Statement = {
+          text: values.truth1!,
+          description: values.truth1Description || undefined,
+        };
+        const truth2: Statement = {
+          text: values.truth2!,
+          description: values.truth2Description || undefined,
+        };
+        const lie: Statement = {
+          text: values.lie!,
+        };
+
+        await handleCreateGamePost(truth1, truth2, lie);
+      } catch (error) {
+        console.error('Error creating game:', error);
+        ui.showToast('Error creating game. Please try again.');
+      }
+    }
+  );
+
+  // Load leaderboard data
+  const { data: leaderboardData, loading } = useAsync(async () => {
+    try {
+      const [guesserLeaderboard, liarLeaderboard] = await Promise.all([
+        gameService.getLeaderboard('guesser', 'alltime', 10),
+        gameService.getLeaderboard('liar', 'alltime', 10),
+      ]);
+
+      let userStats;
+      if (userId) {
+        userStats = await gameService.getUserScore(userId);
+      }
+
+      return {
+        guesserLeaderboard,
+        liarLeaderboard,
+        userStats,
+      };
+    } catch (err) {
+      console.error('Error loading leaderboard data:', err);
+      throw err;
+    }
+  });
+
   // Handle loading state
   if (loading) {
     return <LoadingState />;
@@ -135,7 +202,7 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
       <CreateGameInterface
         onBack={() => setGameState('leaderboard')}
         onShowToast={(message) => ui.showToast(message)}
-        onCreateGame={handleCreateGamePost}
+        onShowCreateGameForm={() => ui.showForm(createGameForm)}
       />
     );
   }
