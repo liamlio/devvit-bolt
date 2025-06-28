@@ -1,5 +1,5 @@
 import { Devvit } from '@devvit/public-api';
-import { CarnivalBackground } from './CarnivalBackground.js';
+import CarnivalBackground from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
 

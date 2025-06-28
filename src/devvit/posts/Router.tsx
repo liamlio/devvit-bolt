@@ -4,7 +4,7 @@ import { LoadingState } from '../components/LoadingState.js';
 import { ErrorState } from '../components/ErrorState.js';
 import { GamePost } from './GamePost.js';
 import { PinnedPost } from './PinnedPost.js';
-import { CarnivalBackground } from '../components/CarnivalBackground.js';
+import CarnivalBackground from '../components/CarnivalBackground.js';
 
 interface RouterProps {
   postId: string;
