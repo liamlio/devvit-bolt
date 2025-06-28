@@ -6,7 +6,7 @@ import { CarnivalTheme } from './CarnivalTheme.js';
 export const LoadingState = (): JSX.Element => (
   <CarnivalBackground>
     <vstack width="100%" height="100%" alignment="center middle" padding="large">
-      <CarnivalCard>
+      <CarnivalCard padding="large">
         <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪</text>
         <text size="large" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
           Loading Two Truths One Lie...

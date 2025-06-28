@@ -26,7 +26,7 @@ export const LeaderboardInterface = ({
   return (
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
-        <CarnivalCard>
+        <CarnivalCard padding="large">
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🏆 Two Truths One Lie</text>
           <text alignment="center" color={CarnivalTheme.colors.textLight}>
             Welcome to the carnival of deception! Can you spot the lies?

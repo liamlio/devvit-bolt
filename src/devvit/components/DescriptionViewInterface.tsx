@@ -18,7 +18,7 @@ export const DescriptionViewInterface = ({
   return (
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="large" gap="medium">
-        <CarnivalCard>
+        <CarnivalCard padding="large">
           <hstack alignment="middle">
             <button
               appearance="secondary"

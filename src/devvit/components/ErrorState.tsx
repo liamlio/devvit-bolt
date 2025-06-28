@@ -11,7 +11,7 @@ interface ErrorStateProps {
 export const ErrorState = ({ error, onRetry }: ErrorStateProps): JSX.Element => (
   <CarnivalBackground>
     <vstack width="100%" height="100%" alignment="center middle" padding="large">
-      <CarnivalCard borderColor={CarnivalTheme.colors.danger}>
+      <CarnivalCard padding="large" borderColor={CarnivalTheme.colors.danger}>
         <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>⚠️</text>
         <text size="large" weight="bold" color={CarnivalTheme.colors.danger} alignment="center">
           Error Loading Game

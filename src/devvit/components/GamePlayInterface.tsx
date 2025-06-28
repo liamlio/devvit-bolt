@@ -22,7 +22,7 @@ export const GamePlayInterface = ({
   return (
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
-        <CarnivalCard>
+        <CarnivalCard padding="large">
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Two Truths One Lie</text>
           <text alignment="center" color={CarnivalTheme.colors.textLight}>
             Can you spot the lie? Choose the statement you think is false!
