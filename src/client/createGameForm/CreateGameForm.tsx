@@ -103,7 +103,11 @@ export const CreateGameForm: React.FC = () => {
   };
 
   // Handle button click instead of form submission
-  const handleCreateGame = async () => {
+  const handleCreateGame = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    // Prevent any default behavior
+    event.preventDefault();
+    event.stopPropagation();
+    
     const validationErrors = validateForm();
     setErrors(validationErrors);
 
@@ -168,6 +172,14 @@ export const CreateGameForm: React.FC = () => {
     );
   };
 
+  // Handle Enter key in textareas to prevent any form submission
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      handleCreateGame(event as any);
+    }
+  };
+
   return (
     <div className="create-game-form">
       <div className="form-header">
@@ -189,8 +201,8 @@ export const CreateGameForm: React.FC = () => {
         </div>
       )}
 
-      {/* Remove form element and onSubmit - use div instead */}
-      <div className="game-form">
+      {/* Use div instead of form to prevent any form submission */}
+      <div className="game-form" onKeyDown={handleKeyDown}>
         {/* Truth #1 */}
         <div className="form-group">
           <label htmlFor="truth1">
