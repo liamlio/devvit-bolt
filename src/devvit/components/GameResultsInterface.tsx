@@ -23,96 +23,94 @@ export const GameResultsInterface = ({
   const statements: Statement[] = [gamePost.truth1, gamePost.truth2, gamePost.lie];
 
   return (
-    <blocks height="tall">
-      <CarnivalBackground>
-        <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
-          <CarnivalCard>
-            <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
-            <text alignment="center" color={CarnivalTheme.colors.text}>
-              {userGuess?.isCorrect 
-                ? '🎉 Congratulations! You spotted the lie!' 
-                : '😅 Nice try! Better luck next time!'
-              }
-            </text>
-            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
-              By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
-            </text>
+    <CarnivalBackground>
+      <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
+        <CarnivalCard>
+          <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
+          <text alignment="center" color={CarnivalTheme.colors.text}>
+            {userGuess?.isCorrect 
+              ? '🎉 Congratulations! You spotted the lie!' 
+              : '😅 Nice try! Better luck next time!'
+            }
+          </text>
+          <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+            By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
+          </text>
 
-            <vstack gap="small" overflow="scroll">
-              {statements.map((statement, index) => {
-                const isLie = index === gamePost.lieIndex;
-                const isUserChoice = userGuess?.guessIndex === index;
-                const votes = gamePost.guessBreakdown[index];
-                const percentage = gamePost.totalGuesses > 0 
-                  ? Math.round((votes / gamePost.totalGuesses) * 100) 
-                  : 0;
+          <vstack gap="small" overflow="scroll">
+            {statements.map((statement, index) => {
+              const isLie = index === gamePost.lieIndex;
+              const isUserChoice = userGuess?.guessIndex === index;
+              const votes = gamePost.guessBreakdown[index];
+              const percentage = gamePost.totalGuesses > 0 
+                ? Math.round((votes / gamePost.totalGuesses) * 100) 
+                : 0;
 
-                return (
-                  <vstack 
-                    key={index} 
-                    padding="medium" 
-                    backgroundColor={isLie ? "rgba(255,68,68,0.2)" : "rgba(50,205,50,0.2)"} 
-                    cornerRadius="medium"
-                    border="thick"
-                    borderColor={isLie ? CarnivalTheme.colors.danger : CarnivalTheme.colors.success}
-                  >
-                    <hstack>
-                      <text grow weight="bold" color={CarnivalTheme.colors.text} wrap>
-                        {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
-                      </text>
-                      {isUserChoice && (
-                        <text color={CarnivalTheme.colors.primary} weight="bold">(Your choice)</text>
-                      )}
-                    </hstack>
-                    
-                    {/* Expandable text for long descriptions with scrolling */}
-                    {!isLie && statement.description && (
-                      <vstack 
-                        padding="small" 
-                        backgroundColor="rgba(255,255,255,0.8)" 
-                        cornerRadius="small"
-                        maxHeight="150px"
-                        overflow="scroll"
-                      >
-                        <text size="small" color={CarnivalTheme.colors.textLight} wrap>
-                          Details: {statement.description}
-                        </text>
-                      </vstack>
-                    )}
-                    
-                    <text size="small" color={CarnivalTheme.colors.textLight}>
-                      {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
-                    </text>
-                  </vstack>
-                );
-              })}
-            </vstack>
-
-            <text alignment="center" color={CarnivalTheme.colors.text}>
-              💬 How surprising were the truths? Comment below!
-            </text>
-
-            <hstack gap="medium">
-              {/* TESTING EXCEPTION: Back button only for u/liamlio */}
-              {showBackButton && onBackToGuessing && (
-                <button
-                  appearance="destructive"
-                  onPress={onBackToGuessing}
+              return (
+                <vstack 
+                  key={index} 
+                  padding="medium" 
+                  backgroundColor={isLie ? "rgba(255,68,68,0.2)" : "rgba(50,205,50,0.2)"} 
+                  cornerRadius="medium"
+                  border="thick"
+                  borderColor={isLie ? CarnivalTheme.colors.danger : CarnivalTheme.colors.success}
                 >
-                  🔄 Test Again (liamlio only)
-                </button>
-              )}
-              
+                  <hstack>
+                    <text grow weight="bold" color={CarnivalTheme.colors.text} wrap>
+                      {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
+                    </text>
+                    {isUserChoice && (
+                      <text color={CarnivalTheme.colors.primary} weight="bold">(Your choice)</text>
+                    )}
+                  </hstack>
+                  
+                  {/* Expandable text for long descriptions with scrolling */}
+                  {!isLie && statement.description && (
+                    <vstack 
+                      padding="small" 
+                      backgroundColor="rgba(255,255,255,0.8)" 
+                      cornerRadius="small"
+                      maxHeight="150px"
+                      overflow="scroll"
+                    >
+                      <text size="small" color={CarnivalTheme.colors.textLight} wrap>
+                        Details: {statement.description}
+                      </text>
+                    </vstack>
+                  )}
+                  
+                  <text size="small" color={CarnivalTheme.colors.textLight}>
+                    {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                  </text>
+                </vstack>
+              );
+            })}
+          </vstack>
+
+          <text alignment="center" color={CarnivalTheme.colors.text}>
+            💬 How surprising were the truths? Comment below!
+          </text>
+
+          <hstack gap="medium">
+            {/* TESTING EXCEPTION: Back button only for u/liamlio */}
+            {showBackButton && onBackToGuessing && (
               <button
-                appearance="secondary"
-                onPress={onViewLeaderboard}
+                appearance="destructive"
+                onPress={onBackToGuessing}
               >
-                View Leaderboard 🏆
+                🔄 Test Again (liamlio only)
               </button>
-            </hstack>
-          </CarnivalCard>
-        </vstack>
-      </CarnivalBackground>
-    </blocks>
+            )}
+            
+            <button
+              appearance="secondary"
+              onPress={onViewLeaderboard}
+            >
+              View Leaderboard 🏆
+            </button>
+          </hstack>
+        </CarnivalCard>
+      </vstack>
+    </CarnivalBackground>
   );
 };

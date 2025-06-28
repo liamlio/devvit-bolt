@@ -11,32 +11,30 @@ interface CreateGameInterfaceProps {
 
 export const CreateGameInterface = ({ onBack, onShowToast, onShowCreateGameForm }: CreateGameInterfaceProps): JSX.Element => {
   return (
-    <blocks height="tall">
-      <CarnivalBackground>
-        <vstack width="100%" height="100%" alignment="center middle" padding="large" overflow="scroll">
-          <CarnivalCard>
-            <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
-            <text alignment="center" color={CarnivalTheme.colors.text}>
-              Ready to create your Two Truths One Lie game? Fill out the form to get started!
-            </text>
-            
-            <hstack gap="medium">
-              <button
-                appearance="secondary"
-                onPress={onBack}
-              >
-                Back
-              </button>
-              <button
-                appearance="primary"
-                onPress={onShowCreateGameForm}
-              >
-                Create Game! 🎪
-              </button>
-            </hstack>
-          </CarnivalCard>
-        </vstack>
-      </CarnivalBackground>
-    </blocks>
+    <CarnivalBackground>
+      <vstack width="100%" height="100%" alignment="center middle" padding="large" overflow="scroll">
+        <CarnivalCard>
+          <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
+          <text alignment="center" color={CarnivalTheme.colors.text}>
+            Ready to create your Two Truths One Lie game? Fill out the form to get started!
+          </text>
+          
+          <hstack gap="medium">
+            <button
+              appearance="secondary"
+              onPress={onBack}
+            >
+              Back
+            </button>
+            <button
+              appearance="primary"
+              onPress={onShowCreateGameForm}
+            >
+              Create Game! 🎪
+            </button>
+          </hstack>
+        </CarnivalCard>
+      </vstack>
+    </CarnivalBackground>
   );
 };

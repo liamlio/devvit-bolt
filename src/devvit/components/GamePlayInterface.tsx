@@ -20,46 +20,44 @@ export const GamePlayInterface = ({
   const statements: Statement[] = [gamePost.truth1, gamePost.truth2, gamePost.lie];
 
   return (
-    <blocks height="tall">
-      <CarnivalBackground>
-        <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
-          <CarnivalCard>
-            <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Two Truths One Lie</text>
-            <text alignment="center" color={CarnivalTheme.colors.textLight}>
-              Can you spot the lie? Choose the statement you think is false!
-            </text>
-            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
-              By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
-            </text>
+    <CarnivalBackground>
+      <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
+        <CarnivalCard>
+          <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Two Truths One Lie</text>
+          <text alignment="center" color={CarnivalTheme.colors.textLight}>
+            Can you spot the lie? Choose the statement you think is false!
+          </text>
+          <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+            By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
+          </text>
 
-            <vstack gap="small" overflow="scroll">
-              {statements.map((statement, index) => (
-                <vstack
-                  key={index}
-                  padding="medium"
-                  backgroundColor={selectedIndex === index ? CarnivalTheme.colors.accent : CarnivalTheme.colors.background}
-                  cornerRadius="large"
-                  border="thick"
-                  borderColor={selectedIndex === index ? CarnivalTheme.colors.primary : CarnivalTheme.colors.shadow}
-                  onPress={() => onSelectStatement(index)}
-                >
-                  <text alignment="start" color={CarnivalTheme.colors.text} weight="bold" wrap>
-                    {statement.text}
-                  </text>
-                </vstack>
-              ))}
-            </vstack>
+          <vstack gap="small" overflow="scroll">
+            {statements.map((statement, index) => (
+              <vstack
+                key={index}
+                padding="medium"
+                backgroundColor={selectedIndex === index ? CarnivalTheme.colors.accent : CarnivalTheme.colors.background}
+                cornerRadius="large"
+                border="thick"
+                borderColor={selectedIndex === index ? CarnivalTheme.colors.primary : CarnivalTheme.colors.shadow}
+                onPress={() => onSelectStatement(index)}
+              >
+                <text alignment="start" color={CarnivalTheme.colors.text} weight="bold" wrap>
+                  {statement.text}
+                </text>
+              </vstack>
+            ))}
+          </vstack>
 
-            <button
-              appearance="primary"
-              onPress={onSubmitGuess}
-              disabled={selectedIndex === null}
-            >
-              Submit Guess! 🎯
-            </button>
-          </CarnivalCard>
-        </vstack>
-      </CarnivalBackground>
-    </blocks>
+          <button
+            appearance="primary"
+            onPress={onSubmitGuess}
+            disabled={selectedIndex === null}
+          >
+            Submit Guess! 🎯
+          </button>
+        </CarnivalCard>
+      </vstack>
+    </CarnivalBackground>
   );
 };

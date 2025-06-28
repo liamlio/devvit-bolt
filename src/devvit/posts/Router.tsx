@@ -4,6 +4,7 @@ import { LoadingState } from '../components/LoadingState.js';
 import { ErrorState } from '../components/ErrorState.js';
 import { GamePost } from './GamePost.js';
 import { PinnedPost } from './PinnedPost.js';
+import { CarnivalBackground } from '../components/CarnivalBackground.js';
 
 interface RouterProps {
   postId: string;
@@ -56,10 +57,18 @@ export const Router = ({ postId, userId, redis, reddit, ui }: RouterProps): JSX.
     );
   }
 
-  // Route to appropriate component
-  if (postType === 'pinned') {
-    return <PinnedPost postId={postId} userId={userId} redis={redis} ui={ui} />;
-  } else {
-    return <GamePost postId={postId} userId={userId} redis={redis} reddit={reddit} ui={ui} />;
-  }
+  // Route to appropriate component with scrollable content layer
+  const content = postType === 'pinned' 
+    ? <PinnedPost postId={postId} userId={userId} redis={redis} reddit={reddit} ui={ui} />
+    : <GamePost postId={postId} userId={userId} redis={redis} reddit={reddit} ui={ui} />;
+
+  return (
+    <blocks height="tall">
+      <CarnivalBackground>
+        <vstack width="100%" height="100%" overflow="scroll">
+          {content}
+        </vstack>
+      </CarnivalBackground>
+    </blocks>
+  );
 };
