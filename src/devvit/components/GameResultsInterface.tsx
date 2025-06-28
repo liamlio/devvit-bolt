@@ -28,6 +28,7 @@ export const GameResultsInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="large" gap="small">
         <CarnivalCard>
+          <vstack width="100%" height="100%" padding="xxsmall" gap="xxsmall">
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
             {userGuess?.isCorrect 
