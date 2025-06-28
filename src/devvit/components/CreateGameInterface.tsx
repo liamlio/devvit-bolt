@@ -1,4 +1,4 @@
-import { Devvit } from '@devvit/public-api';
+import { Devvit, useWebView } from '@devvit/public-api';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
 import type { Statement } from '../../shared/types/game.js';
@@ -23,19 +23,34 @@ export const CreateGameInterface = ({
   authorUsername
 }: CreateGameInterfaceProps): JSX.Element => {
 
+  const webView = useWebView({
+    id: 'createGameForm',
+    url: 'createGameForm/index.html',
+    onMessage: async (msg) => {
+      if (msg.type === 'CREATE_GAME_SUBMIT') {
+        try {
+          const { truth1, truth2, lie } = msg.data;
+          await onCreateGame(truth1, truth2, lie);
+          ui.webView.close();
+        } catch (error) {
+          console.error('Error creating game:', error);
+          onShowToast('Error creating game. Please try again.');
+        }
+      }
+    },
+  });
+
   const handleOpenWebview = () => {
     try {
-      ui.webView.postMessage('devvit-message', {
-        type: 'webview',
+      webView.postMessage({
+        type: 'INIT_DATA',
         data: {
-          url: 'createGameForm/index.html',
-          initialData: {
-            postId,
-            userId,
-            authorUsername,
-          },
+          postId,
+          userId,
+          authorUsername,
         },
       });
+      ui.webView.show(webView);
     } catch (error) {
       console.error('Error opening webview:', error);
       onShowToast('Error opening form. Please try again.');
