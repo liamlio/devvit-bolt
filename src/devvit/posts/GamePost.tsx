@@ -256,7 +256,10 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
         onBack={() => ui.showToast('This post needs to be configured first')}
         onShowToast={(message) => ui.showToast(message)}
         onCreateGame={handleCreateGame}
-        ui={ui} // Pass ui prop
+        ui={ui}
+        postId={postId}
+        userId={userId}
+        authorUsername={gameData.currentUser?.username}
       />
     );
   }
