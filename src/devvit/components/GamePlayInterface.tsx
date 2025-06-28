@@ -21,7 +21,7 @@ export const GamePlayInterface = ({
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding="xlarge" gap="medium" overflow="scroll">
+      <vstack width="100%" height="100%" padding="xxlarge" gap="medium" overflow="scroll">
         <CarnivalCard padding="large">
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Two Truths One Lie</text>
           <text alignment="center" color={CarnivalTheme.colors.textLight}>
