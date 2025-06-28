@@ -8,9 +8,10 @@ interface CreateGameInterfaceProps {
   onBack: () => void;
   onShowToast: (message: string) => void;
   onCreateGame: (truth1: Statement, truth2: Statement, lie: Statement) => Promise<void>;
+  ui: any; // Add ui prop to access showForm
 }
 
-export const CreateGameInterface = ({ onBack, onShowToast, onCreateGame }: CreateGameInterfaceProps): JSX.Element => {
+export const CreateGameInterface = ({ onBack, onShowToast, onCreateGame, ui }: CreateGameInterfaceProps): JSX.Element => {
   // Character limits
   const CHARACTER_LIMITS = {
     statement: 200,
@@ -161,7 +162,7 @@ Character Limits:
             <button
               appearance="primary"
               onPress={() => {
-                createGameForm.showForm();
+                ui.showForm(createGameForm);
               }}
             >
               Create Game! 🎪

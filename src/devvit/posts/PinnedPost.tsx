@@ -136,6 +136,7 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
         onBack={() => setGameState('leaderboard')}
         onShowToast={(message) => ui.showToast(message)}
         onCreateGame={handleCreateGamePost}
+        ui={ui} // Pass ui prop
       />
     );
   }
