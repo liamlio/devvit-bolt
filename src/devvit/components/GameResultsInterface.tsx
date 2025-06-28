@@ -39,6 +39,7 @@ export const GameResultsInterface = ({
           <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
             By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
           </text>
+          </vstack>vstack width="100%" height="100%" padding="large" gap="small">
 
           <vstack gap="xxsmall">
             {statements.map((statement, index) => {
