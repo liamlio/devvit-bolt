@@ -5,6 +5,7 @@ import { ErrorState } from '../components/ErrorState.js';
 import { NewGamePost } from '../components/NewGamePost.js';
 import { GamePlayInterface } from '../components/GamePlayInterface.js';
 import { GameResultsInterface } from '../components/GameResultsInterface.js';
+import { DescriptionViewInterface } from '../components/DescriptionViewInterface.js';
 import type { GamePost as GamePostType, UserGuess, Statement } from '../../shared/types/game.js';
 
 interface GamePostProps {
@@ -19,7 +20,14 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
   const gameService = new GameService(redis);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [error, setError] = useState<string>('');
-  const [gameState, setGameState] = useState<'play' | 'result'>('play');
+  const [gameState, setGameState] = useState<'play' | 'result' | 'description'>('play');
+  const [viewingDescription, setViewingDescription] = useState<{ statement: Statement; title: string } | null>(null);
+
+  // Character limits
+  const CHARACTER_LIMITS = {
+    statement: 200,
+    description: 500,
+  };
 
   // Load game data
   const { data: gameData, loading } = useAsync(async () => {
@@ -57,7 +65,7 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     }
   });
 
-  // Create game form
+  // Create game form with character limits
   const createGameForm = useForm(
     {
       title: '🎪 Create Your Two Truths One Lie Game',
@@ -68,35 +76,35 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
         {
           type: 'paragraph',
           name: 'truth1',
-          label: 'Truth #1 ✅',
+          label: `Truth #1 ✅ (max ${CHARACTER_LIMITS.statement} chars)`,
           helpText: 'Enter your first true statement',
           required: true,
         },
         {
-          type: 'string',
+          type: 'paragraph',
           name: 'truth1Description',
-          label: 'Truth #1 Details (Optional)',
+          label: `Truth #1 Details (Optional, max ${CHARACTER_LIMITS.description} chars)`,
           helpText: 'Add details to make it more believable',
           required: false,
         },
         {
           type: 'paragraph',
           name: 'truth2',
-          label: 'Truth #2 ✅',
+          label: `Truth #2 ✅ (max ${CHARACTER_LIMITS.statement} chars)`,
           helpText: 'Enter your second true statement',
           required: true,
         },
         {
-          type: 'string',
+          type: 'paragraph',
           name: 'truth2Description',
-          label: 'Truth #2 Details (Optional)',
+          label: `Truth #2 Details (Optional, max ${CHARACTER_LIMITS.description} chars)`,
           helpText: 'Add details to make it more believable',
           required: false,
         },
         {
           type: 'paragraph',
           name: 'lie',
-          label: 'The Lie ❌',
+          label: `The Lie ❌ (max ${CHARACTER_LIMITS.statement} chars)`,
           helpText: 'Enter your convincing lie',
           required: true,
         },
@@ -106,6 +114,28 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
       try {
         if (!userId || !reddit) {
           ui.showToast('Must be logged in to create a game');
+          return;
+        }
+
+        // Validate character limits
+        if (values.truth1!.length > CHARACTER_LIMITS.statement) {
+          ui.showToast(`Truth #1 exceeds ${CHARACTER_LIMITS.statement} character limit`);
+          return;
+        }
+        if (values.truth2!.length > CHARACTER_LIMITS.statement) {
+          ui.showToast(`Truth #2 exceeds ${CHARACTER_LIMITS.statement} character limit`);
+          return;
+        }
+        if (values.lie!.length > CHARACTER_LIMITS.statement) {
+          ui.showToast(`The lie exceeds ${CHARACTER_LIMITS.statement} character limit`);
+          return;
+        }
+        if (values.truth1Description && values.truth1Description.length > CHARACTER_LIMITS.description) {
+          ui.showToast(`Truth #1 description exceeds ${CHARACTER_LIMITS.description} character limit`);
+          return;
+        }
+        if (values.truth2Description && values.truth2Description.length > CHARACTER_LIMITS.description) {
+          ui.showToast(`Truth #2 description exceeds ${CHARACTER_LIMITS.description} character limit`);
           return;
         }
 
@@ -230,7 +260,7 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
         ui.showToast(`Level up! You are now ${newLevel.name}!`);
       }
 
-      // Improvement 4: Change UI to post-guess state instead of just showing toast
+      // Change UI to post-guess state instead of just showing toast
       setGameState('result');
       
       // Trigger reload to get updated data
@@ -274,6 +304,16 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     }
   };
 
+  const handleViewDescription = (statement: Statement, title: string) => {
+    setViewingDescription({ statement, title });
+    setGameState('description');
+  };
+
+  const handleBackFromDescription = () => {
+    setViewingDescription(null);
+    setGameState('result');
+  };
+
   // Handle loading state
   if (loading) {
     return <LoadingState />;
@@ -306,7 +346,18 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     // TESTING EXCEPTION: Check if this is the test user
     const isTestUser = currentUser?.username === 'liamlio';
 
-    // Improvement 4: Show results immediately after guessing, or if already guessed
+    // Description view
+    if (gameState === 'description' && viewingDescription) {
+      return (
+        <DescriptionViewInterface
+          statement={viewingDescription.statement}
+          title={viewingDescription.title}
+          onBack={handleBackFromDescription}
+        />
+      );
+    }
+
+    // Show results immediately after guessing, or if already guessed
     if (hasGuessed || gameState === 'result') {
       return (
         <GameResultsInterface
@@ -316,6 +367,7 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
             // This would need to be handled by the parent component
             ui.showToast('Leaderboard feature coming soon!');
           }}
+          onViewDescription={handleViewDescription}
           // TESTING EXCEPTION: Show back button only for u/liamlio
           showBackButton={isTestUser}
           onBackToGuessing={handleBackToGuessing}

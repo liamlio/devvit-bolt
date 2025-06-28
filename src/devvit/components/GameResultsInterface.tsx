@@ -8,6 +8,7 @@ interface GameResultsInterfaceProps {
   gamePost: GamePost;
   userGuess?: UserGuess;
   onViewLeaderboard: () => void;
+  onViewDescription: (statement: Statement, title: string) => void;
   // TESTING EXCEPTION: Optional back button for u/liamlio testing
   showBackButton?: boolean;
   onBackToGuessing?: () => void;
@@ -17,6 +18,7 @@ export const GameResultsInterface = ({
   gamePost, 
   userGuess, 
   onViewLeaderboard,
+  onViewDescription,
   showBackButton = false,
   onBackToGuessing
 }: GameResultsInterfaceProps): JSX.Element => {
@@ -24,7 +26,7 @@ export const GameResultsInterface = ({
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding="large" gap="medium" overflow="scroll">
+      <vstack width="100%" height="100%" padding="large" gap="medium">
         <CarnivalCard>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
@@ -37,7 +39,7 @@ export const GameResultsInterface = ({
             By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
           </text>
 
-          <vstack gap="small" overflow="scroll">
+          <vstack gap="small">
             {statements.map((statement, index) => {
               const isLie = index === gamePost.lieIndex;
               const isUserChoice = userGuess?.guessIndex === index;
@@ -54,6 +56,7 @@ export const GameResultsInterface = ({
                   cornerRadius="medium"
                   border="thick"
                   borderColor={isLie ? CarnivalTheme.colors.danger : CarnivalTheme.colors.success}
+                  gap="small"
                 >
                   <hstack>
                     <text grow weight="bold" color={CarnivalTheme.colors.text} wrap>
@@ -64,19 +67,15 @@ export const GameResultsInterface = ({
                     )}
                   </hstack>
                   
-                  {/* Expandable text for long descriptions with scrolling */}
+                  {/* Show expand button for truths with descriptions */}
                   {!isLie && statement.description && (
-                    <vstack 
-                      padding="small" 
-                      backgroundColor="rgba(255,255,255,0.8)" 
-                      cornerRadius="small"
-                      maxHeight="150px"
-                      overflow="scroll"
+                    <button
+                      appearance="secondary"
+                      size="small"
+                      onPress={() => onViewDescription(statement, `Truth #${index + 1} Details`)}
                     >
-                      <text size="small" color={CarnivalTheme.colors.textLight} wrap>
-                        Details: {statement.description}
-                      </text>
-                    </vstack>
+                      📖 Expand Description
+                    </button>
                   )}
                   
                   <text size="small" color={CarnivalTheme.colors.textLight}>
