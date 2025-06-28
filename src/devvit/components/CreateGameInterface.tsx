@@ -26,7 +26,7 @@ export const CreateGameInterface = ({
 
   const { webView } = useWebView({
     id: 'createGameForm',
-    url: 'index.html',
+    url: '/index.html',
     onMessage: async (msg) => {
       console.log('Received message from webview:', msg);
       if (msg.type === 'CREATE_GAME_SUBMIT') {
