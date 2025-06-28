@@ -102,9 +102,8 @@ export const CreateGameForm: React.FC = () => {
     return newErrors;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  // Handle button click instead of form submission
+  const handleCreateGame = async () => {
     const validationErrors = validateForm();
     setErrors(validationErrors);
 
@@ -190,7 +189,8 @@ export const CreateGameForm: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="game-form">
+      {/* Remove form element and onSubmit - use div instead */}
+      <div className="game-form">
         {/* Truth #1 */}
         <div className="form-group">
           <label htmlFor="truth1">
@@ -203,7 +203,6 @@ export const CreateGameForm: React.FC = () => {
             onChange={(e) => updateFormField('truth1', 'text', e.target.value)}
             placeholder="Enter your first true statement..."
             rows={3}
-            required
           />
         </div>
 
@@ -233,7 +232,6 @@ export const CreateGameForm: React.FC = () => {
             onChange={(e) => updateFormField('truth2', 'text', e.target.value)}
             placeholder="Enter your second true statement..."
             rows={3}
-            required
           />
         </div>
 
@@ -263,20 +261,21 @@ export const CreateGameForm: React.FC = () => {
             onChange={(e) => updateFormField('lie', 'text', e.target.value)}
             placeholder="Enter your convincing lie..."
             rows={3}
-            required
           />
         </div>
 
         <div className="form-actions">
+          {/* Use button with onClick instead of form submission */}
           <button
-            type="submit"
+            type="button"
+            onClick={handleCreateGame}
             disabled={isSubmitting}
             className="submit-button"
           >
             {isSubmitting ? 'Creating Game...' : 'Create Game! 🎪'}
           </button>
         </div>
-      </form>
+      </div>
 
       <div className="form-footer">
         <p>💡 <strong>Tips:</strong></p>
