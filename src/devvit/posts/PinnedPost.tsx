@@ -19,73 +19,10 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
   const [gameState, setGameState] = useState<'leaderboard' | 'create'>('leaderboard');
   const [activeTab, setActiveTab] = useState<'guessers' | 'liars'>('guessers');
 
-  // Create a new post when clicking "Create Game"
+  // This will be handled by the CreateGameInterface component now
   const handleCreateGamePost = async (truth1: Statement, truth2: Statement, lie: Statement) => {
-    if (!userId || !reddit) {
-      ui.showToast('Must be logged in to create a game');
-      return;
-    }
-
-    try {
-      const user = await reddit.getCurrentUser();
-      if (!user) {
-        ui.showToast('Unable to get user information');
-        return;
-      }
-
-      const userScore = await gameService.getUserScore(userId);
-      if (userScore.level < 1 && userScore.experience < 1) {
-        ui.showToast('You must reach level 1 by playing at least one game before creating your own post');
-        return;
-      }
-
-      const subreddit = await reddit.getCurrentSubreddit();
-      
-      // Create a new post by the user, not the app
-      const post = await reddit.submitPost({
-        title: '🎪 Two Truths One Lie - Can You Spot the Lie? 🎪',
-        subredditName: subreddit.name,
-        customPostType: 'ttol',
-        preview: (
-          <blocks>
-            <vstack alignment="center middle" padding="large">
-              <text size="xxlarge">🎪</text>
-              <text size="large" weight="bold">Two Truths One Lie</text>
-              <text color="neutral-content-weak">Ready to play...</text>
-            </vstack>
-          </blocks>
-        ),
-        runAs: 'USER', // Post as the user, not the app
-        userGeneratedContent: {
-          text: `Two Truths One Lie game: "${truth1.text}", "${truth2.text}", "${lie.text}"`
-        },
-      });
-
-      const lieIndex = Math.floor(Math.random() * 3);
-      
-      const gamePost: GamePostType = {
-        postId: post.id,
-        authorId: userId,
-        authorUsername: user.username,
-        truth1,
-        truth2,
-        lie,
-        lieIndex,
-        createdAt: Date.now(),
-        totalGuesses: 0,
-        correctGuesses: 0,
-        guessBreakdown: [0, 0, 0],
-      };
-
-      await gameService.createGamePost(gamePost);
-      await gameService.setPostType(post.id, 'game');
-
-      ui.showToast('Game post created successfully! 🎪');
-      ui.navigateTo(post.url);
-    } catch (error) {
-      console.error('Error creating game post:', error);
-      ui.showToast('Error creating game post. Please try again.');
-    }
+    // This is now handled in CreateGameInterface component
+    console.log('handleCreateGamePost called with:', { truth1, truth2, lie });
   };
 
   // Load leaderboard data
@@ -139,6 +76,8 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
         postId={postId}
         userId={userId}
         authorUsername={leaderboardData.userStats?.username}
+        redis={redis}
+        reddit={reddit}
       />
     );
   }

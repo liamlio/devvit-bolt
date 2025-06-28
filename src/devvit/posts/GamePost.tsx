@@ -260,6 +260,8 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
         postId={postId}
         userId={userId}
         authorUsername={gameData.currentUser?.username}
+        redis={redis}
+        reddit={reddit}
       />
     );
   }
