@@ -10,7 +10,7 @@ export const CarnivalCard = ({ children, borderColor = CarnivalTheme.colors.shad
   <vstack 
     backgroundColor="rgba(255,255,255,0.95)" 
     cornerRadius="large" 
-    padding="large"
+    padding="small"
     border="thick"
     borderColor={borderColor}
     gap="medium"
