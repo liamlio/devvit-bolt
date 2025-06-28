@@ -167,6 +167,7 @@ export const CreateGameInterface = ({
           </text>
           
           <vstack 
+            key="0"
             backgroundColor={CarnivalTheme.colors.background} 
             cornerRadius="medium"
             border="thin"
