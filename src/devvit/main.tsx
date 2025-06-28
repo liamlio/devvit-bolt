@@ -122,4 +122,13 @@ Devvit.addMenuItem({
   },
 });
 
+// Handle webview messages
+Devvit.addTrigger({
+  event: 'PostSubmit',
+  onEvent: async (event, context) => {
+    // Handle webview form submissions here if needed
+    console.log('Post submitted:', event);
+  },
+});
+
 export default Devvit;
