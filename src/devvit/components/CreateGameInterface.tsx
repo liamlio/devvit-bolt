@@ -1,4 +1,5 @@
 import { Devvit, useWebView } from '@devvit/public-api';
+import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
 import type { Statement } from '../../shared/types/game.js';
@@ -23,16 +24,16 @@ export const CreateGameInterface = ({
   authorUsername
 }: CreateGameInterfaceProps): JSX.Element => {
 
-  const webView = useWebView({
+  const { webView } = useWebView({
     id: 'createGameForm',
-    url: 'createGameForm/index.html',
+    url: 'index.html',
     onMessage: async (msg) => {
       console.log('Received message from webview:', msg);
       if (msg.type === 'CREATE_GAME_SUBMIT') {
         try {
           const { truth1, truth2, lie } = msg.data;
           await onCreateGame(truth1, truth2, lie);
-          ui.webView.close();
+          webView.close();
         } catch (error) {
           console.error('Error creating game:', error);
           onShowToast('Error creating game. Please try again.');
@@ -46,7 +47,7 @@ export const CreateGameInterface = ({
       console.log('Opening webview with data:', { postId, userId, authorUsername });
       
       // Send initial data to the webview
-      await webView.postMessage({
+      webView.postMessage({
         type: 'INIT_DATA',
         data: {
           postId,
@@ -56,7 +57,7 @@ export const CreateGameInterface = ({
       });
       
       // Show the webview
-      ui.webView.show(webView);
+      webView.show();
     } catch (error) {
       console.error('Error opening webview:', error);
       onShowToast('Error opening form. Please try again.');
@@ -65,52 +66,52 @@ export const CreateGameInterface = ({
 
   return (
     <CarnivalBackground>
-    <vstack width="100%" height="100%" alignment="center middle" padding="large">
-      <CarnivalCard>
-        <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
-        <text alignment="center" color={CarnivalTheme.colors.text}>
-          Ready to create your Two Truths One Lie game? Use our enhanced form with real-time character counting!
-        </text>
-        
-        <vstack 
-          padding="medium" 
-          backgroundColor={CarnivalTheme.colors.background} 
-          cornerRadius="medium"
-          border="thin"
-          borderColor={CarnivalTheme.colors.primary}
-          gap="small"
-        >
-          <text weight="bold" color={CarnivalTheme.colors.text}>✨ Enhanced Form Features:</text>
-          <text size="small" color={CarnivalTheme.colors.textLight}>
-            • Real-time character counting
+      <vstack width="100%" height="100%" alignment="center middle" padding="large">
+        <CarnivalCard>
+          <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
+          <text alignment="center" color={CarnivalTheme.colors.text}>
+            Ready to create your Two Truths One Lie game? Use our enhanced form with real-time character counting!
           </text>
-          <text size="small" color={CarnivalTheme.colors.textLight}>
-            • Instant validation feedback
-          </text>
-          <text size="small" color={CarnivalTheme.colors.textLight}>
-            • Better text editing experience
-          </text>
-          <text size="small" color={CarnivalTheme.colors.textLight}>
-            • Your text is preserved if you need to make edits
-          </text>
-        </vstack>
-        
-        <hstack gap="medium">
-          <button
-            appearance="secondary"
-            onPress={onBack}
+          
+          <vstack 
+            padding="medium" 
+            backgroundColor={CarnivalTheme.colors.background} 
+            cornerRadius="medium"
+            border="thin"
+            borderColor={CarnivalTheme.colors.primary}
+            gap="small"
           >
-            Back
-          </button>
-          <button
-            appearance="primary"
-            onPress={handleOpenWebview}
-          >
-            Create Post 🎪
-          </button>
-        </hstack>
-      </CarnivalCard>
-    </vstack>
+            <text weight="bold" color={CarnivalTheme.colors.text}>✨ Enhanced Form Features:</text>
+            <text size="small" color={CarnivalTheme.colors.textLight}>
+              • Real-time character counting
+            </text>
+            <text size="small" color={CarnivalTheme.colors.textLight}>
+              • Instant validation feedback
+            </text>
+            <text size="small" color={CarnivalTheme.colors.textLight}>
+              • Better text editing experience
+            </text>
+            <text size="small" color={CarnivalTheme.colors.textLight}>
+              • Your text is preserved if you need to make edits
+            </text>
+          </vstack>
+          
+          <hstack gap="medium">
+            <button
+              appearance="secondary"
+              onPress={onBack}
+            >
+              Back
+            </button>
+            <button
+              appearance="primary"
+              onPress={handleOpenWebview}
+            >
+              Create Post 🎪
+            </button>
+          </hstack>
+        </CarnivalCard>
+      </vstack>
     </CarnivalBackground>
   );
 };
