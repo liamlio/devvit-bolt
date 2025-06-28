@@ -159,8 +159,8 @@ export const CreateGameInterface = ({
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" alignment="center middle" gap="medium">
-        <CarnivalCard padding="medium">
+      <vstack width="100%" height="100%" padding="xlarge" gap="small">
+        <CarnivalCard padding="small">
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
             Ready to create your Two Truths One Lie game? Use our enhanced form with real-time character counting!
