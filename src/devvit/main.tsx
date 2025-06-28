@@ -13,7 +13,7 @@ Devvit.configure({
 // Add the custom post type
 Devvit.addCustomPostType({
   name: 'ttol',
-  height: 'regular',
+  height: 'tall',
   render: (context) => {
     const { postId, userId, redis, reddit, ui } = context;
     
