@@ -6,7 +6,7 @@ interface CarnivalBackgroundProps {
 }
 
 export const CarnivalBackground = ({ children }: CarnivalBackgroundProps): JSX.Element => (
-  <zstack width="100%" height="100%" padding="small">
+  <zstack width="100%" height="100%">
     <image
       url={createCarnivalBackground()}
       imageHeight={400}
