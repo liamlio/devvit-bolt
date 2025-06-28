@@ -11,7 +11,7 @@
     "dev": "node setup-devvit.cjs",
     "dev:devvit": "devvit playtest twotruthsonelie",
     "dev:client": "vite serve src/client --port 3000",
-    "build:client": "vite build src/client --outDir ../../webroot",
+    "build:client": "vite build --outDir ../../webroot",
     "lint": "eslint ./src",
     "lint:fix": "eslint --fix ./src",
     "login": "devvit login --copy-paste",
