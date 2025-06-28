@@ -227,7 +227,7 @@ export const CreateGameForm: React.FC = () => {
             id="truth1Description"
             value={formData.truth1.description || ''}
             onChange={(e) => updateFormField('truth1', 'description', e.target.value)}
-            placeholder="Add details to make it more believable..."
+            placeholder="Color in the details if you want to give more context on your truth..."
             rows={2}
           />
         </div>
@@ -256,7 +256,7 @@ export const CreateGameForm: React.FC = () => {
             id="truth2Description"
             value={formData.truth2.description || ''}
             onChange={(e) => updateFormField('truth2', 'description', e.target.value)}
-            placeholder="Add details to make it more believable..."
+            placeholder="Color in the details if you want to give more context on your truth..."
             rows={2}
           />
         </div>
