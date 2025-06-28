@@ -1,8 +1,8 @@
-import { Devvit, useState, useAsync, useForm } from '@devvit/public-api';
+import { Devvit, useState, useAsync } from '@devvit/public-api';
 import { GameService } from '../service/GameService.js';
 import { LoadingState } from '../components/LoadingState.js';
 import { ErrorState } from '../components/ErrorState.js';
-import { NewGamePost } from '../components/NewGamePost.js';
+import { CreateGameInterface } from '../components/CreateGameInterface.js';
 import { GamePlayInterface } from '../components/GamePlayInterface.js';
 import { GameResultsInterface } from '../components/GameResultsInterface.js';
 import { DescriptionViewInterface } from '../components/DescriptionViewInterface.js';
@@ -20,14 +20,8 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
   const gameService = new GameService(redis);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [error, setError] = useState<string>('');
-  const [gameState, setGameState] = useState<'play' | 'result' | 'description'>('play');
+  const [gameState, setGameState] = useState<'play' | 'result' | 'description' | 'create'>('play');
   const [viewingDescription, setViewingDescription] = useState<{ statement: Statement; title: string } | null>(null);
-
-  // Character limits
-  const CHARACTER_LIMITS = {
-    statement: 200,
-    description: 500,
-  };
 
   // Load game data
   const { data: gameData, loading } = useAsync(async () => {
@@ -65,133 +59,54 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
     }
   });
 
-  // Create game form with character limits
-  const createGameForm = useForm(
-    {
-      title: '🎪 Create Your Two Truths One Lie Game',
-      description: 'Create two true statements and one lie. Players will try to guess which statement is false!',
-      acceptLabel: 'Create Game Post! 🎪',
-      cancelLabel: 'Cancel',
-      fields: [
-        {
-          type: 'paragraph',
-          name: 'truth1',
-          label: `Truth #1 ✅ (max ${CHARACTER_LIMITS.statement} chars)`,
-          helpText: 'Enter your first true statement',
-          required: true,
-        },
-        {
-          type: 'paragraph',
-          name: 'truth1Description',
-          label: `Truth #1 Details (Optional, max ${CHARACTER_LIMITS.description} chars)`,
-          helpText: 'Add details to make it more believable',
-          required: false,
-        },
-        {
-          type: 'paragraph',
-          name: 'truth2',
-          label: `Truth #2 ✅ (max ${CHARACTER_LIMITS.statement} chars)`,
-          helpText: 'Enter your second true statement',
-          required: true,
-        },
-        {
-          type: 'paragraph',
-          name: 'truth2Description',
-          label: `Truth #2 Details (Optional, max ${CHARACTER_LIMITS.description} chars)`,
-          helpText: 'Add details to make it more believable',
-          required: false,
-        },
-        {
-          type: 'paragraph',
-          name: 'lie',
-          label: `The Lie ❌ (max ${CHARACTER_LIMITS.statement} chars)`,
-          helpText: 'Enter your convincing lie',
-          required: true,
-        },
-      ],
-    },
-    async (values) => {
-      try {
-        if (!userId || !reddit) {
-          ui.showToast('Must be logged in to create a game');
-          return;
-        }
-
-        // Validate character limits
-        if (values.truth1!.length > CHARACTER_LIMITS.statement) {
-          ui.showToast(`Truth #1 exceeds ${CHARACTER_LIMITS.statement} character limit`);
-          return;
-        }
-        if (values.truth2!.length > CHARACTER_LIMITS.statement) {
-          ui.showToast(`Truth #2 exceeds ${CHARACTER_LIMITS.statement} character limit`);
-          return;
-        }
-        if (values.lie!.length > CHARACTER_LIMITS.statement) {
-          ui.showToast(`The lie exceeds ${CHARACTER_LIMITS.statement} character limit`);
-          return;
-        }
-        if (values.truth1Description && values.truth1Description.length > CHARACTER_LIMITS.description) {
-          ui.showToast(`Truth #1 description exceeds ${CHARACTER_LIMITS.description} character limit`);
-          return;
-        }
-        if (values.truth2Description && values.truth2Description.length > CHARACTER_LIMITS.description) {
-          ui.showToast(`Truth #2 description exceeds ${CHARACTER_LIMITS.description} character limit`);
-          return;
-        }
-
-        const user = await reddit.getCurrentUser();
-        if (!user) {
-          ui.showToast('Unable to get user information');
-          return;
-        }
-
-        const userScore = await gameService.getUserScore(userId);
-        if (userScore.level < 1 && userScore.experience < 1) {
-          ui.showToast('You must reach level 1 by playing at least one game before creating your own post');
-          return;
-        }
-
-        const lieIndex = Math.floor(Math.random() * 3);
-        
-        const truth1: Statement = {
-          text: values.truth1!,
-          description: values.truth1Description || undefined,
-        };
-        const truth2: Statement = {
-          text: values.truth2!,
-          description: values.truth2Description || undefined,
-        };
-        const lie: Statement = {
-          text: values.lie!,
-        };
-
-        const gamePost: GamePostType = {
-          postId,
-          authorId: userId,
-          authorUsername: user.username,
-          truth1,
-          truth2,
-          lie,
-          lieIndex,
-          createdAt: Date.now(),
-          totalGuesses: 0,
-          correctGuesses: 0,
-          guessBreakdown: [0, 0, 0],
-        };
-
-        await gameService.createGamePost(gamePost);
-        await gameService.setPostType(postId, 'game');
-
-        ui.showToast('Game created successfully! 🎪');
-        // Trigger reload by setting error and clearing it
-        setError('reload');
-        setError('');
-      } catch (error) {
-        console.error('Error creating game:', error);
-        ui.showToast('Error creating game. Please try again.');
-      }
+  // Handle creating a new game for this post
+  const handleCreateGame = async (truth1: Statement, truth2: Statement, lie: Statement) => {
+    if (!userId || !reddit) {
+      ui.showToast('Must be logged in to create a game');
+      return;
     }
-  );
+
+    try {
+      const user = await reddit.getCurrentUser();
+      if (!user) {
+        ui.showToast('Unable to get user information');
+        return;
+      }
+
+      const userScore = await gameService.getUserScore(userId);
+      if (userScore.level < 1 && userScore.experience < 1) {
+        ui.showToast('You must reach level 1 by playing at least one game before creating your own post');
+        return;
+      }
+
+      const lieIndex = Math.floor(Math.random() * 3);
+      
+      const gamePost: GamePostType = {
+        postId,
+        authorId: userId,
+        authorUsername: user.username,
+        truth1,
+        truth2,
+        lie,
+        lieIndex,
+        createdAt: Date.now(),
+        totalGuesses: 0,
+        correctGuesses: 0,
+        guessBreakdown: [0, 0, 0],
+      };
+
+      await gameService.createGamePost(gamePost);
+      await gameService.setPostType(postId, 'game');
+
+      ui.showToast('Game created successfully! 🎪');
+      // Trigger reload by setting error and clearing it
+      setError('reload');
+      setError('');
+    } catch (error) {
+      console.error('Error creating game:', error);
+      ui.showToast('Error creating game. Please try again.');
+    }
+  };
 
   const handleSubmitGuess = async () => {
     if (selectedIndex === null || !userId || !reddit || !gameData || gameData.type !== 'game') return;
@@ -336,7 +251,13 @@ export const GamePost = ({ postId, userId, redis, reddit, ui }: GamePostProps): 
 
   // New game post that needs to be configured
   if (gameData.type === 'new-game') {
-    return <NewGamePost onCreateGame={() => ui.showForm(createGameForm)} />;
+    return (
+      <CreateGameInterface
+        onBack={() => ui.showToast('This post needs to be configured first')}
+        onShowToast={(message) => ui.showToast(message)}
+        onCreateGame={handleCreateGame}
+      />
+    );
   }
 
   // Game post

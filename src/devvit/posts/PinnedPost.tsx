@@ -1,4 +1,4 @@
-import { Devvit, useState, useAsync, useForm } from '@devvit/public-api';
+import { Devvit, useState, useAsync } from '@devvit/public-api';
 import { GameService } from '../service/GameService.js';
 import { LoadingState } from '../components/LoadingState.js';
 import { ErrorState } from '../components/ErrorState.js';
@@ -19,13 +19,7 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
   const [gameState, setGameState] = useState<'leaderboard' | 'create'>('leaderboard');
   const [activeTab, setActiveTab] = useState<'guessers' | 'liars'>('guessers');
 
-  // Character limits
-  const CHARACTER_LIMITS = {
-    statement: 200,
-    description: 500,
-  };
-
-  // Improvement 3: Create a new post when clicking "Create Game"
+  // Create a new post when clicking "Create Game"
   const handleCreateGamePost = async (truth1: Statement, truth2: Statement, lie: Statement) => {
     if (!userId || !reddit) {
       ui.showToast('Must be logged in to create a game');
@@ -47,7 +41,7 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
 
       const subreddit = await reddit.getCurrentSubreddit();
       
-      // Improvement 3: Create a new post by the user, not the app
+      // Create a new post by the user, not the app
       const post = await reddit.submitPost({
         title: '🎪 Two Truths One Lie - Can You Spot the Lie? 🎪',
         subredditName: subreddit.name,
@@ -93,95 +87,6 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
       ui.showToast('Error creating game post. Please try again.');
     }
   };
-
-  // Create game form definition with character limits
-  const createGameForm = useForm(
-    {
-      title: '🎪 Create Your Two Truths One Lie Game',
-      description: 'Create two true statements and one lie. Players will try to guess which statement is false!',
-      acceptLabel: 'Create Game! 🎪',
-      cancelLabel: 'Cancel',
-      fields: [
-        {
-          type: 'paragraph',
-          name: 'truth1',
-          label: `Truth #1 ✅ (max ${CHARACTER_LIMITS.statement} chars)`,
-          helpText: 'Enter your first true statement',
-          required: true,
-        },
-        {
-          type: 'paragraph',
-          name: 'truth1Description',
-          label: `Truth #1 Details (Optional, max ${CHARACTER_LIMITS.description} chars)`,
-          helpText: 'Add details to make it more believable',
-          required: false,
-        },
-        {
-          type: 'paragraph',
-          name: 'truth2',
-          label: `Truth #2 ✅ (max ${CHARACTER_LIMITS.statement} chars)`,
-          helpText: 'Enter your second true statement',
-          required: true,
-        },
-        {
-          type: 'paragraph',
-          name: 'truth2Description',
-          label: `Truth #2 Details (Optional, max ${CHARACTER_LIMITS.description} chars)`,
-          helpText: 'Add details to make it more believable',
-          required: false,
-        },
-        {
-          type: 'paragraph',
-          name: 'lie',
-          label: `The Lie ❌ (max ${CHARACTER_LIMITS.statement} chars)`,
-          helpText: 'Enter your convincing lie',
-          required: true,
-        },
-      ],
-    },
-    async (values) => {
-      try {
-        // Validate character limits
-        if (values.truth1!.length > CHARACTER_LIMITS.statement) {
-          ui.showToast(`Truth #1 exceeds ${CHARACTER_LIMITS.statement} character limit`);
-          return;
-        }
-        if (values.truth2!.length > CHARACTER_LIMITS.statement) {
-          ui.showToast(`Truth #2 exceeds ${CHARACTER_LIMITS.statement} character limit`);
-          return;
-        }
-        if (values.lie!.length > CHARACTER_LIMITS.statement) {
-          ui.showToast(`The lie exceeds ${CHARACTER_LIMITS.statement} character limit`);
-          return;
-        }
-        if (values.truth1Description && values.truth1Description.length > CHARACTER_LIMITS.description) {
-          ui.showToast(`Truth #1 description exceeds ${CHARACTER_LIMITS.description} character limit`);
-          return;
-        }
-        if (values.truth2Description && values.truth2Description.length > CHARACTER_LIMITS.description) {
-          ui.showToast(`Truth #2 description exceeds ${CHARACTER_LIMITS.description} character limit`);
-          return;
-        }
-
-        const truth1: Statement = {
-          text: values.truth1!,
-          description: values.truth1Description || undefined,
-        };
-        const truth2: Statement = {
-          text: values.truth2!,
-          description: values.truth2Description || undefined,
-        };
-        const lie: Statement = {
-          text: values.lie!,
-        };
-
-        await handleCreateGamePost(truth1, truth2, lie);
-      } catch (error) {
-        console.error('Error creating game:', error);
-        ui.showToast('Error creating game. Please try again.');
-      }
-    }
-  );
 
   // Load leaderboard data
   const { data: leaderboardData, loading } = useAsync(async () => {
@@ -230,7 +135,7 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
       <CreateGameInterface
         onBack={() => setGameState('leaderboard')}
         onShowToast={(message) => ui.showToast(message)}
-        onShowCreateGameForm={() => ui.showForm(createGameForm)}
+        onCreateGame={handleCreateGamePost}
       />
     );
   }
