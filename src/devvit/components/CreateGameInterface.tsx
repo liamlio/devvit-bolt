@@ -40,13 +40,9 @@ export const CreateGameInterface = ({
         }
       }
     },
-  });
-
-  const handleOpenWebview = async () => {
-    try {
-      console.log('Opening webview with data:', { postId, userId, authorUsername });
-      
-      // Send initial data to the webview
+    onLoad: () => {
+      console.log('Webview loaded, sending initial data');
+      // Send initial data when webview loads
       webView.postMessage({
         type: 'INIT_DATA',
         data: {
@@ -55,6 +51,12 @@ export const CreateGameInterface = ({
           authorUsername,
         },
       });
+    },
+  });
+
+  const handleOpenWebview = async () => {
+    try {
+      console.log('Opening webview with data:', { postId, userId, authorUsername });
       
       // Show the webview
       webView.show();
