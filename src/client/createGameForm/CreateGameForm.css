@@ -28,6 +28,12 @@
   font-size: 16px;
 }
 
+.user-info {
+  color: #3b82f6 !important;
+  font-weight: 600 !important;
+  margin-top: 10px !important;
+}
+
 .error-container {
   background: #fef2f2;
   border: 2px solid #fca5a5;

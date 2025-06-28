@@ -27,6 +27,7 @@ export const CreateGameInterface = ({
     id: 'createGameForm',
     url: 'createGameForm/index.html',
     onMessage: async (msg) => {
+      console.log('Received message from webview:', msg);
       if (msg.type === 'CREATE_GAME_SUBMIT') {
         try {
           const { truth1, truth2, lie } = msg.data;
@@ -40,9 +41,12 @@ export const CreateGameInterface = ({
     },
   });
 
-  const handleOpenWebview = () => {
+  const handleOpenWebview = async () => {
     try {
-      webView.postMessage({
+      console.log('Opening webview with data:', { postId, userId, authorUsername });
+      
+      // Send initial data to the webview
+      await webView.postMessage({
         type: 'INIT_DATA',
         data: {
           postId,
@@ -50,6 +54,8 @@ export const CreateGameInterface = ({
           authorUsername,
         },
       });
+      
+      // Show the webview
       ui.webView.show(webView);
     } catch (error) {
       console.error('Error opening webview:', error);

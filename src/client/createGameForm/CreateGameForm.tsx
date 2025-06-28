@@ -35,11 +35,25 @@ export const CreateGameForm: React.FC = () => {
   const [initialData, setInitialData] = useState<InitialData | null>(null);
 
   useEffect(() => {
-    // Get initial data from parent Devvit app
+    // Listen for messages from parent Devvit app
+    const handleMessage = (event: MessageEvent) => {
+      console.log('Received message in webview:', event.data);
+      if (event.data.type === 'INIT_DATA') {
+        setInitialData(event.data.data);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    
+    // Also check for initial data that might have been set before the listener
     const data = (window as any).initialData;
     if (data) {
       setInitialData(data);
     }
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
   }, []);
 
   const validateForm = (): string[] => {
@@ -107,6 +121,8 @@ export const CreateGameForm: React.FC = () => {
         },
       };
 
+      console.log('Submitting form data:', cleanFormData);
+
       // Send data back to parent Devvit app
       window.parent.postMessage({
         type: 'CREATE_GAME_SUBMIT',
@@ -153,6 +169,9 @@ export const CreateGameForm: React.FC = () => {
       <div className="form-header">
         <h1>🎪 Create Your Two Truths One Lie Game</h1>
         <p>Create two true statements and one lie. Players will try to guess which statement is false!</p>
+        {initialData && (
+          <p className="user-info">Creating as: u/{initialData.authorUsername}</p>
+        )}
       </div>
 
       {errors.length > 0 && (

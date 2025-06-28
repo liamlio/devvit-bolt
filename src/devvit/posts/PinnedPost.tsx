@@ -123,7 +123,6 @@ export const PinnedPost = ({ postId, userId, redis, reddit, ui }: PinnedPostProp
       <ErrorState 
         error="Failed to load leaderboard data" 
         onRetry={() => {
-          // Trigger reload
           window.location.reload();
         }} 
       />
