@@ -172,7 +172,7 @@ export const CreateGameInterface = ({
             cornerRadius="medium"
             border="thin"
             borderColor={CarnivalTheme.colors.primary}
-            gap="small"
+            gap="medium"
           >
             <text weight="bold" color={CarnivalTheme.colors.text}>✨ Enhanced Form Features:</text>
             <text size="small" color={CarnivalTheme.colors.textLight}>
