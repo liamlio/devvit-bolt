@@ -35,30 +35,16 @@ export const DescriptionViewInterface = ({
           </hstack>
 
           <vstack 
-            padding="medium" 
+            padding="large" 
             backgroundColor={CarnivalTheme.colors.background} 
             cornerRadius="medium"
             border="thin"
             borderColor={CarnivalTheme.colors.success}
             gap="medium"
           >
-            <text weight="bold" color={CarnivalTheme.colors.text} size="medium">
-              Statement:
+            <text color={CarnivalTheme.colors.text} wrap size="medium">
+              {statement.description}
             </text>
-            <text color={CarnivalTheme.colors.text} wrap>
-              {statement.text}
-            </text>
-
-            {statement.description && (
-              <>
-                <text weight="bold" color={CarnivalTheme.colors.text} size="medium">
-                  Details:
-                </text>
-                <text color={CarnivalTheme.colors.text} wrap>
-                  {statement.description}
-                </text>
-              </>
-            )}
           </vstack>
 
           <text size="small" color={CarnivalTheme.colors.textLight} alignment="center">

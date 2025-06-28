@@ -48,6 +48,11 @@ export const GameResultsInterface = ({
                 ? Math.round((votes / gamePost.totalGuesses) * 100) 
                 : 0;
 
+              // Determine the title for the description view
+              let descriptionTitle = '';
+              if (index === 0) descriptionTitle = 'Truth #1 Details';
+              else if (index === 1) descriptionTitle = 'Truth #2 Details';
+
               return (
                 <vstack 
                   key={index} 
@@ -72,7 +77,7 @@ export const GameResultsInterface = ({
                     <button
                       appearance="secondary"
                       size="small"
-                      onPress={() => onViewDescription(statement, statement.text)}
+                      onPress={() => onViewDescription(statement, descriptionTitle)}
                     >
                       📖 Expand Description
                     </button>
