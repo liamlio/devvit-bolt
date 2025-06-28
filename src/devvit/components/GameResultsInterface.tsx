@@ -93,7 +93,7 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          <hstack gap="medium" alignment="center">
+          <hstack gap="medium" alignment="center" padding="xxsmall">
             {/* TESTING EXCEPTION: Back button only for u/liamlio */}
             {showBackButton && onBackToGuessing && (
               <button
