@@ -27,19 +27,33 @@ function updateDevvitName() {
   }
 }
 
+function checkDevvitAuth() {
+  try {
+    // Try to run a simple devvit command to check if auth is valid
+    execSync('devvit whoami', { stdio: 'pipe', timeout: 10000 });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 async function runChecks() {
   let allPassed = true;
   const checks = [];
 
-  // Check 1: Devvit login
+  // Check 1: Devvit login - now validates the token works
   const devvitTokenPath = path.join(os.homedir(), '.devvit', 'token');
-  const isLoggedIn = fs.existsSync(devvitTokenPath);
+  const tokenExists = fs.existsSync(devvitTokenPath);
+  const isAuthValid = tokenExists && checkDevvitAuth();
+  
   checks.push({
     name: 'Authentication',
-    passed: isLoggedIn,
-    message: isLoggedIn
+    passed: isAuthValid,
+    message: isAuthValid
       ? "You're logged in to Devvit!"
-      : 'Please run `npm run login` to authenticate with Reddit',
+      : tokenExists 
+        ? 'Your Devvit token has expired. Please run `npm run login` to re-authenticate'
+        : 'Please run `npm run login` to authenticate with Reddit',
   });
 
   // Check 2: App upload check
@@ -88,9 +102,16 @@ async function main() {
     // Step 3: If all checks pass, run dev:devvit
     if (checksPass) {
       console.log('\nAll checks passed! Starting Devvit playtest...');
+      console.log('If you encounter "fetch failed" errors, try running `npm run login` to refresh your authentication.\n');
+      
       const devProcess = exec('npm run dev:devvit', (error, stdout, stderr) => {
         if (error) {
           console.error(`Error running dev:devvit: ${error.message}`);
+          if (error.message.includes('fetch failed') || error.message.includes('TypeError: fetch failed')) {
+            console.error('\n🔧 Troubleshooting tip: This error usually indicates an authentication issue.');
+            console.error('   Try running: npm run login');
+            console.error('   Then run: npm run dev');
+          }
           process.exit(1);
         }
       });
@@ -103,6 +124,11 @@ async function main() {
     }
   } catch (error) {
     console.error('Error:', error.message);
+    if (error.message.includes('fetch failed') || error.message.includes('TypeError: fetch failed')) {
+      console.error('\n🔧 Troubleshooting tip: This error usually indicates an authentication issue.');
+      console.error('   Try running: npm run login');
+      console.error('   Then run: npm run dev');
+    }
     process.exit(1);
   }
 }
