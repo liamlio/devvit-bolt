@@ -26,7 +26,7 @@ export const GameResultsInterface = ({
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding="small" gap="xxsmall">
+      <vstack width="100%" height="100%" padding="xxsmall" gap="xxsmall">
         <CarnivalCard>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
@@ -39,7 +39,7 @@ export const GameResultsInterface = ({
             By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} have guessed
           </text>
 
-          <vstack gap="small">
+          <vstack gap="xxsmall">
             {statements.map((statement, index) => {
               const isLie = index === gamePost.lieIndex;
               const isUserChoice = userGuess?.guessIndex === index;
