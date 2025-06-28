@@ -19,7 +19,7 @@ interface InitialData {
 }
 
 const CHARACTER_LIMITS = {
-  statement: 125,
+  statement: 100,
   description: 1000,
 };
 
