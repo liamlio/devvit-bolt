@@ -6,10 +6,5 @@ export default defineConfig({
   root: 'src/client',
   build: {
     outDir: '../../webroot',
-    rollupOptions: {
-      input: {
-        createGameForm: 'index.html',
-      },
-    },
   },
 });
