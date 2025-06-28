@@ -65,13 +65,18 @@ export const GameResultsInterface = ({
                   borderColor={isLie ? CarnivalTheme.colors.danger : CarnivalTheme.colors.success}
                   gap="small"
                 >
-                  <hstack>
-                    <text weight="bold" color={CarnivalTheme.colors.text} wrap>
+                  <hstack alignment="middle">
+                    <text grow weight="bold" color={CarnivalTheme.colors.text} wrap>
                       {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
                     </text>
-                    {isUserChoice && (
-                      <text color={CarnivalTheme.colors.primary} weight="bold">(Your choice)</text>
-                    )}
+                    <vstack alignment="end" gap="xxsmall">
+                      {isUserChoice && (
+                        <text color={CarnivalTheme.colors.primary} weight="bold" size="small">(Your choice)</text>
+                      )}
+                      <text size="small" color={CarnivalTheme.colors.textLight}>
+                        {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                      </text>
+                    </vstack>
                   </hstack>
                   
                   {/* Show expand button for truths with descriptions */}
@@ -84,10 +89,6 @@ export const GameResultsInterface = ({
                       📖 Expand Description
                     </button>
                   )}
-                  
-                  <text size="small" color={CarnivalTheme.colors.textLight}>
-                    {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
-                  </text>
                 </vstack>
               );
             })}
