@@ -1,4 +1,4 @@
-import { Devvit, Context } from '@devvit/public-api';
+import { Devvit, Context, useAsync } from '@devvit/public-api';
 import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
@@ -36,12 +36,54 @@ export const LeaderboardInterface = ({
   onBack,
   showBackButton = false
 }: LeaderboardInterfaceProps): JSX.Element => {
+  const { reddit, ui } = context;
+  
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
 
   // NEW: State for toggling between guesser and liar leaderboards on small screens
   const [activeLeaderboard, setActiveLeaderboard] = useState<'guessers' | 'liars'>('guessers');
+
+  // NEW: Check if user is subscribed to the subreddit
+  const { data: subscriptionData } = useAsync(async () => {
+    if (!reddit) return { isSubscribed: false, subredditName: '' };
+    
+    try {
+      const subreddit = await reddit.getCurrentSubreddit();
+      const user = await reddit.getCurrentUser();
+      
+      if (!user) return { isSubscribed: false, subredditName: subreddit.name };
+      
+      // Check if user is subscribed to this subreddit
+      const subscription = await reddit.getSubscriptionBySubredditName(subreddit.name);
+      
+      return {
+        isSubscribed: !!subscription,
+        subredditName: subreddit.name,
+      };
+    } catch (error) {
+      console.error('Error checking subscription status:', error);
+      return { isSubscribed: false, subredditName: '' };
+    }
+  });
+
+  // NEW: Handle subscribe action
+  const handleSubscribe = async () => {
+    if (!reddit || !subscriptionData) return;
+    
+    try {
+      const subreddit = await reddit.getCurrentSubreddit();
+      await reddit.subscribe(subreddit.name);
+      ui.showToast(`🎪 Welcome to r/${subreddit.name}! You're now subscribed!`);
+      
+      // Refresh subscription data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error subscribing to subreddit:', error);
+      ui.showToast('Error subscribing to community. Please try again.');
+    }
+  };
 
   // Show only top 3 for preview
   const topGuessers = guesserLeaderboard.slice(0, 3);
@@ -135,7 +177,7 @@ export const LeaderboardInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
         <CarnivalCard padding="medium">
-          {/* NEW: Header with optional back button */}
+          {/* NEW: Header with optional back button and subscribe button */}
           {showBackButton && onBack ? (
             <hstack alignment="middle" gap="medium">
               <button
@@ -146,10 +188,36 @@ export const LeaderboardInterface = ({
                 ← Back
               </button>
               <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>🏆 Two Truths One Lie</text>
-              <spacer width="60px" /> {/* Balance the back button */}
+              {/* NEW: Subscribe button in top right */}
+              {subscriptionData && !subscriptionData.isSubscribed && (
+                <button
+                  appearance="primary"
+                  onPress={handleSubscribe}
+                  size="small"
+                  backgroundColor={CarnivalTheme.colors.accent}
+                >
+                  ➕ Subscribe
+                </button>
+              )}
+              {subscriptionData && subscriptionData.isSubscribed && (
+                <spacer width="60px" />
+              )}
             </hstack>
           ) : (
-            <text size="large" alignment="center" color={CarnivalTheme.colors.text}>🏆 Two Truths One Lie</text>
+            <hstack alignment="middle" gap="medium">
+              <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>🏆 Two Truths One Lie</text>
+              {/* NEW: Subscribe button in top right */}
+              {subscriptionData && !subscriptionData.isSubscribed && (
+                <button
+                  appearance="primary"
+                  onPress={handleSubscribe}
+                  size="small"
+                  backgroundColor={CarnivalTheme.colors.accent}
+                >
+                  ➕ Subscribe
+                </button>
+              )}
+            </hstack>
           )}
           
           <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
