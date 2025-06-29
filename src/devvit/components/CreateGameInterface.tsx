@@ -219,14 +219,8 @@ export const CreateGameInterface = ({
   if (levelLoading) {
     return (
       <CarnivalBackground>
-        <vstack 
-          width="100%" 
-          height="100%" 
-          padding={isSmallScreen ? "xsmall" : "large"} 
-          gap="xsmall"
-          alignment="center middle"
-        >
-          <CarnivalCard padding={isSmallScreen ? "small" : "medium"}>
+        <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
+          <CarnivalCard padding="medium">
             <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪</text>
             <text alignment="center" color={CarnivalTheme.colors.text}>
               Checking your level...
@@ -244,21 +238,15 @@ export const CreateGameInterface = ({
     
     return (
       <CarnivalBackground>
-        <vstack 
-          width="100%" 
-          height="100%" 
-          padding={isSmallScreen ? "small" : "large"} 
-          gap="small"
-          alignment={isSmallScreen ? "center top" : "center middle"}
-        >
-          <CarnivalCard padding={isSmallScreen ? "small" : "large"} borderColor={CarnivalTheme.colors.warning}>
+        <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
+          <CarnivalCard padding="large" borderColor={CarnivalTheme.colors.warning}>
             <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🤡</text>
             <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text}>
               Level Up Required!
             </text>
             
             <vstack 
-              padding={isSmallScreen ? "small" : "medium"}
+              padding="medium"
               backgroundColor="rgba(255, 165, 0, 0.1)" 
               cornerRadius="medium"
               border="thin"
@@ -278,7 +266,7 @@ export const CreateGameInterface = ({
                 🎯 How to Level Up:
               </text>
               <vstack 
-                padding={isSmallScreen ? "small" : "medium"}
+                padding="medium"
                 backgroundColor={CarnivalTheme.colors.background} 
                 cornerRadius="medium"
                 gap="small"
@@ -301,7 +289,7 @@ export const CreateGameInterface = ({
             
             {/* Responsive button layout */}
             {isSmallScreen ? (
-              <vstack gap="small" alignment="center">
+              <vstack gap="medium" alignment="center">
                 <button
                   appearance="secondary"
                   onPress={onBack}
@@ -329,14 +317,8 @@ export const CreateGameInterface = ({
   // Show create game interface for level 1+ users
   return (
     <CarnivalBackground>
-      <vstack 
-        width="100%" 
-        height="100%" 
-        padding={isSmallScreen ? "small" : "large"} 
-        gap="small"
-        alignment={isSmallScreen ? "center top" : "center middle"}
-      >
-        <CarnivalCard padding={isSmallScreen ? "small" : "medium"}>
+      <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
+        <CarnivalCard padding="medium">
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
             Ready to create your Two Truths One Lie game?
@@ -392,11 +374,11 @@ export const CreateGameInterface = ({
         </CarnivalCard>
 
         {/* MOVED: Tips section now appears below the main create game card */}
-        <CarnivalCard padding={isSmallScreen ? "small" : "medium"} borderColor={CarnivalTheme.colors.accent}>
+        <CarnivalCard padding="medium" borderColor={CarnivalTheme.colors.accent}>
           <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text}>
             💡 Tips for Creating Viral Games
           </text>
-          <vstack gap="xsmall">
+          <vstack gap="small">
             <text size="small" color={CarnivalTheme.colors.text}>
               • Create truths with HUGE shock factors - the more unbelievable but true, the better!
             </text>
