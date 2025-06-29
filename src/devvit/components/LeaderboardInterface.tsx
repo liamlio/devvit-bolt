@@ -148,7 +148,7 @@ export const LeaderboardInterface = ({
   return (
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="xsmall" overflow="scroll">
-        <CarnivalCard padding="medium">
+        <CarnivalCard padding="medium" gap="small">
           {/* UPDATED: Header layout without subscribe button */}
           {isSmallScreen ? (
             /* Small screen: Stack title and back button vertically */
