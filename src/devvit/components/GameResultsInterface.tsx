@@ -24,7 +24,20 @@ export const GameResultsInterface = ({
   showBackButton = false,
   onBackToGuessing
 }: GameResultsInterfaceProps): JSX.Element => {
-  const statements: Statement[] = [gamePost.truth1, gamePost.truth2, gamePost.lie];
+  // FIXED: Create the statements array in the same order as displayed in GamePlayInterface
+  const statements: Statement[] = [null, null, null];
+  
+  // Place the lie at the correct position
+  statements[gamePost.lieIndex] = gamePost.lie;
+  
+  // Fill remaining positions with truths
+  let truthIndex = 0;
+  for (let i = 0; i < 3; i++) {
+    if (statements[i] === null) {
+      statements[i] = truthIndex === 0 ? gamePost.truth1 : gamePost.truth2;
+      truthIndex++;
+    }
+  }
   
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
@@ -56,10 +69,10 @@ export const GameResultsInterface = ({
                 ? Math.round((votes / gamePost.totalGuesses) * 100) 
                 : 0;
 
-              // Determine the title for the description view
+              // Determine the title for the description view based on the original statement
               let descriptionTitle = '';
-              if (index === 0) descriptionTitle = 'Truth #1 Details';
-              else if (index === 1) descriptionTitle = 'Truth #2 Details';
+              if (statement === gamePost.truth1) descriptionTitle = 'Truth #1 Details';
+              else if (statement === gamePost.truth2) descriptionTitle = 'Truth #2 Details';
 
               return (
                 <vstack 

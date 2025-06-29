@@ -19,7 +19,21 @@ export const GamePlayInterface = ({
   onSelectStatement, 
   onSubmitGuess 
 }: GamePlayInterfaceProps): JSX.Element => {
-  const statements: Statement[] = [gamePost.truth1, gamePost.truth2, gamePost.lie];
+  // FIXED: Create the statements array in the order they should be displayed
+  // The lieIndex tells us where the lie should appear in the display
+  const statements: Statement[] = [null, null, null];
+  
+  // Place the lie at the correct position
+  statements[gamePost.lieIndex] = gamePost.lie;
+  
+  // Fill remaining positions with truths
+  let truthIndex = 0;
+  for (let i = 0; i < 3; i++) {
+    if (statements[i] === null) {
+      statements[i] = truthIndex === 0 ? gamePost.truth1 : gamePost.truth2;
+      truthIndex++;
+    }
+  }
   
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;

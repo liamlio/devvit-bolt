@@ -126,34 +126,38 @@ export const CreateGameInterface = ({
       },
     });
 
-    // FIXED: Properly randomize the positions while maintaining correct lie tracking
-    // Create array with statements and their types
-    const statementsWithTypes = [
-      { statement: truth1, type: 'truth1' },
-      { statement: truth2, type: 'truth2' },
-      { statement: lie, type: 'lie' }
-    ];
+    // FIXED: Proper randomization that maintains statement integrity
+    // Create array of statements in their original order
+    const originalStatements = [truth1, truth2, lie];
     
-    // Shuffle the array to randomize positions
-    for (let i = statementsWithTypes.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [statementsWithTypes[i], statementsWithTypes[j]] = [statementsWithTypes[j], statementsWithTypes[i]];
+    // Generate a random position for the lie (0, 1, or 2)
+    const lieIndex = Math.floor(Math.random() * 3);
+    
+    // Create the shuffled array by placing statements in random positions
+    const shuffledStatements = [null, null, null];
+    
+    // Place the lie at the random position
+    shuffledStatements[lieIndex] = lie;
+    
+    // Fill remaining positions with truths
+    let truthIndex = 0;
+    for (let i = 0; i < 3; i++) {
+      if (shuffledStatements[i] === null) {
+        shuffledStatements[i] = truthIndex === 0 ? truth1 : truth2;
+        truthIndex++;
+      }
     }
-    
-    // Find where the lie ended up after shuffling
-    const lieIndex = statementsWithTypes.findIndex(item => item.type === 'lie');
-    
-    // Extract the shuffled statements
-    const shuffledStatements = statementsWithTypes.map(item => item.statement);
     
     const gamePost: GamePostType = {
       postId: post.id,
       authorId: userId,
       authorUsername: user.username,
-      truth1: shuffledStatements[0], // First position after shuffle
-      truth2: shuffledStatements[1], // Second position after shuffle  
-      lie: shuffledStatements[2],    // Third position after shuffle
-      lieIndex, // This now correctly reflects where the original lie is positioned
+      // Keep original statements in their designated fields
+      truth1,
+      truth2,
+      lie,
+      // lieIndex now correctly indicates where the lie appears in the game
+      lieIndex,
       createdAt: Date.now(),
       totalGuesses: 0,
       correctGuesses: 0,
