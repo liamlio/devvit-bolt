@@ -33,8 +33,8 @@ export const LeaderboardInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding={isSmallScreen ? "medium" : "large"} gap="medium" overflow="scroll">
         <CarnivalCard padding={isSmallScreen ? "medium" : "large"}>
-          <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🏆 Two Truths One Lie</text>
-          <text size={isSmallScreen ? "small" : "medium"} alignment="center" color={CarnivalTheme.colors.textLight}>
+          <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text}>🏆 Two Truths One Lie</text>
+          <text size={isSmallScreen ? "xsmall" : "small"} alignment="center" color={CarnivalTheme.colors.textLight}>
             Welcome to the carnival of deception! Can you spot the lies?
           </text>
 
@@ -47,21 +47,21 @@ export const LeaderboardInterface = ({
               border="thin" 
               borderColor={CarnivalTheme.colors.primary}
             >
-              <text weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
+              <text size={isSmallScreen ? "small" : "medium"} weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
               <hstack gap="large">
                 <vstack>
-                  <text size="small" color={CarnivalTheme.colors.text}>
+                  <text size={isSmallScreen ? "xsmall" : "small"} color={CarnivalTheme.colors.text}>
                     Level {userStats.level}
                   </text>
-                  <text size="small" color={CarnivalTheme.colors.text}>
+                  <text size={isSmallScreen ? "xsmall" : "small"} color={CarnivalTheme.colors.text}>
                     {userStats.experience} XP
                   </text>
                 </vstack>
                 <vstack>
-                  <text size="small" color={CarnivalTheme.colors.text}>
+                  <text size={isSmallScreen ? "xsmall" : "small"} color={CarnivalTheme.colors.text}>
                     Games: {userStats.totalGames}
                   </text>
-                  <text size="small" color={CarnivalTheme.colors.text}>
+                  <text size={isSmallScreen ? "xsmall" : "small"} color={CarnivalTheme.colors.text}>
                     Accuracy: {userStats.totalGames > 0 
                       ? Math.round((userStats.correctGuesses / userStats.totalGames) * 100) 
                       : 0}%
@@ -78,6 +78,7 @@ export const LeaderboardInterface = ({
                 appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
                 onPress={() => onTabChange('guessers')}
                 width="100%"
+                size="small"
               >
                 🕵️ Best Guessers
               </button>
@@ -85,6 +86,7 @@ export const LeaderboardInterface = ({
                 appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
                 onPress={() => onTabChange('liars')}
                 width="100%"
+                size="small"
               >
                 🎭 Best Liars
               </button>
@@ -109,28 +111,47 @@ export const LeaderboardInterface = ({
           )}
 
           {/* Leaderboard with scrolling for many entries */}
-          <vstack gap="small" maxHeight="300px" overflow="scroll">
+          <vstack gap="xsmall" maxHeight={isSmallScreen ? "250px" : "300px"} overflow="scroll">
             {currentLeaderboard.length > 0 ? (
-              currentLeaderboard.map((entry, index) => (
-                <hstack 
-                  key={entry.userId} 
-                  padding={isSmallScreen ? "xsmall" : "small"}
-                  backgroundColor={CarnivalTheme.colors.background} 
-                  cornerRadius="medium"
-                  border="thin"
-                  borderColor={CarnivalTheme.colors.shadow}
-                >
-                  <text weight="bold" width="40px" color={CarnivalTheme.colors.text}>
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                  </text>
-                  <text grow color={CarnivalTheme.colors.text}>u/{entry.username}</text>
-                  <text weight="bold" color={CarnivalTheme.colors.text}>{entry.score}</text>
-                </hstack>
-              ))
+              currentLeaderboard.map((entry, index) => {
+                // Create descriptive labels based on the active tab
+                const scoreLabel = activeTab === 'guessers' 
+                  ? `${entry.score} correct guess${entry.score !== 1 ? 'es' : ''}`
+                  : `${entry.score} player${entry.score !== 1 ? 's' : ''} fooled`;
+
+                return (
+                  <hstack 
+                    key={entry.userId} 
+                    padding={isSmallScreen ? "xsmall" : "small"}
+                    backgroundColor={CarnivalTheme.colors.background} 
+                    cornerRadius="medium"
+                    border="thin"
+                    borderColor={CarnivalTheme.colors.shadow}
+                    alignment="middle"
+                  >
+                    <text size={isSmallScreen ? "small" : "medium"} weight="bold" width="40px" color={CarnivalTheme.colors.text}>
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                    </text>
+                    <text size={isSmallScreen ? "small" : "medium"} grow color={CarnivalTheme.colors.text}>
+                      u/{entry.username}
+                    </text>
+                    <vstack alignment="end" gap="xxsmall">
+                      <text size={isSmallScreen ? "small" : "medium"} weight="bold" color={CarnivalTheme.colors.text}>
+                        {entry.score}
+                      </text>
+                      <text size={isSmallScreen ? "xsmall" : "small"} color={CarnivalTheme.colors.textLight}>
+                        {activeTab === 'guessers' ? 'correct' : 'fooled'}
+                      </text>
+                    </vstack>
+                  </hstack>
+                );
+              })
             ) : (
               <vstack alignment="center middle" padding="large">
                 <text size="large" color={CarnivalTheme.colors.text}>🎪</text>
-                <text color={CarnivalTheme.colors.textLight}>No entries yet! Be the first to play!</text>
+                <text size={isSmallScreen ? "small" : "medium"} color={CarnivalTheme.colors.textLight}>
+                  No entries yet! Be the first to play!
+                </text>
               </vstack>
             )}
           </vstack>
@@ -140,6 +161,7 @@ export const LeaderboardInterface = ({
             appearance="primary"
             onPress={onCreateGame}
             width={isSmallScreen ? "100%" : undefined}
+            size={isSmallScreen ? "small" : "medium"}
           >
             Create Your Game 🎪
           </button>
