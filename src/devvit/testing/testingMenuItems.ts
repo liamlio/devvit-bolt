@@ -12,7 +12,7 @@ export const resetLiamlioLevel = Devvit.addMenuItem({
     try {
       const gameService = new GameService(redis);
       const targetUsername = 'liamlio';
-      const targetUserId = 't2_13bqqk';
+      const targetUserId = `t2_13bqqk`;
       
       // Get current user score
       const userScore = await gameService.getUserScore(targetUserId);
@@ -55,7 +55,7 @@ export const levelUpLiamlio = Devvit.addMenuItem({
     try {
       const gameService = new GameService(redis);
       const targetUsername = 'liamlio';
-      const targetUserId = `user_${targetUsername}`;
+      const targetUserId = `t2_13bqqk`;
       
       // Get current user score
       const userScore = await gameService.getUserScore(targetUserId);
