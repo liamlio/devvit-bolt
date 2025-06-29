@@ -69,6 +69,7 @@ export class GameService {
     const key = `user_score:${userScore.userId}`;
     await this.redis.set(key, JSON.stringify(userScore));
 
+    // CRITICAL: Update leaderboards immediately after updating user score
     await this.updateLeaderboards(userScore);
 
     const leveledUp = newLevel.level > oldLevel;
@@ -81,23 +82,37 @@ export class GameService {
   private async updateLeaderboards(userScore: UserScore): Promise<void> {
     const weekNumber = this.getWeekNumber();
     
-    await this.redis.zAdd(`leaderboard:guesser:weekly:${weekNumber}`, {
-      member: userScore.userId,
-      score: userScore.weeklyGuesserPoints,
-    });
-    await this.redis.zAdd('leaderboard:guesser:alltime', {
-      member: userScore.userId,
-      score: userScore.guesserPoints,
+    console.log(`Updating leaderboards for user ${userScore.username}:`, {
+      weeklyGuesserPoints: userScore.weeklyGuesserPoints,
+      allTimeGuesserPoints: userScore.guesserPoints,
+      weeklyLiarPoints: userScore.weeklyLiarPoints,
+      allTimeLiarPoints: userScore.liarPoints,
+      weekNumber
     });
 
-    await this.redis.zAdd(`leaderboard:liar:weekly:${weekNumber}`, {
-      member: userScore.userId,
-      score: userScore.weeklyLiarPoints,
-    });
-    await this.redis.zAdd('leaderboard:liar:alltime', {
-      member: userScore.userId,
-      score: userScore.liarPoints,
-    });
+    // Update all four leaderboards
+    await Promise.all([
+      // Weekly leaderboards
+      this.redis.zAdd(`leaderboard:guesser:weekly:${weekNumber}`, {
+        member: userScore.userId,
+        score: userScore.weeklyGuesserPoints,
+      }),
+      this.redis.zAdd(`leaderboard:liar:weekly:${weekNumber}`, {
+        member: userScore.userId,
+        score: userScore.weeklyLiarPoints,
+      }),
+      // All-time leaderboards
+      this.redis.zAdd('leaderboard:guesser:alltime', {
+        member: userScore.userId,
+        score: userScore.guesserPoints,
+      }),
+      this.redis.zAdd('leaderboard:liar:alltime', {
+        member: userScore.userId,
+        score: userScore.liarPoints,
+      }),
+    ]);
+
+    console.log(`Successfully updated leaderboards for user ${userScore.username}`);
   }
 
   async getLeaderboard(type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime', limit: number = 10): Promise<LeaderboardEntry[]> {
@@ -106,22 +121,39 @@ export class GameService {
       ? `leaderboard:${type}:weekly:${weekNumber}`
       : `leaderboard:${type}:alltime`;
 
-    const results = await this.redis.zRange(key, 0, limit - 1, { withScores: true });
-    results.reverse();
-    
-    const leaderboard: LeaderboardEntry[] = [];
-    for (let i = 0; i < results.length; i++) {
-      const { member: userId, score } = results[i];
-      const userScore = await this.getUserScore(userId);
-      leaderboard.push({
-        userId,
-        username: userScore.username,
-        score,
-        rank: i + 1,
-      });
-    }
+    console.log(`Getting leaderboard for ${type} ${timeframe}, key: ${key}`);
 
-    return leaderboard;
+    try {
+      // Get top entries with scores in descending order
+      const results = await this.redis.zRange(key, 0, limit - 1, { 
+        withScores: true, 
+        reverse: true // This ensures highest scores come first
+      });
+      
+      console.log(`Raw leaderboard results for ${key}:`, results);
+      
+      const leaderboard: LeaderboardEntry[] = [];
+      for (let i = 0; i < results.length; i++) {
+        const { member: userId, score } = results[i];
+        const userScore = await this.getUserScore(userId);
+        
+        // Only include users with actual scores > 0
+        if (score > 0) {
+          leaderboard.push({
+            userId,
+            username: userScore.username || `User_${userId.slice(-4)}`,
+            score,
+            rank: i + 1,
+          });
+        }
+      }
+
+      console.log(`Processed leaderboard for ${key}:`, leaderboard);
+      return leaderboard;
+    } catch (error) {
+      console.error(`Error getting leaderboard for ${key}:`, error);
+      return [];
+    }
   }
 
   async getUserLeaderboardRank(userId: string, type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime'): Promise<number | null> {
@@ -130,19 +162,24 @@ export class GameService {
       ? `leaderboard:${type}:weekly:${weekNumber}`
       : `leaderboard:${type}:alltime`;
 
+    console.log(`Getting user rank for ${userId} in ${key}`);
+
     try {
-      // Get all members with scores in descending order
-      const allMembers = await this.redis.zRange(key, 0, -1, { withScores: true });
+      // Get the user's rank using Redis ZREVRANK (reverse rank for descending order)
+      const rank = await this.redis.zRevRank(key, userId);
       
-      // Sort by score descending (highest first)
-      allMembers.sort((a: any, b: any) => b.score - a.score);
+      if (rank === null || rank === undefined) {
+        console.log(`User ${userId} not found in leaderboard ${key}`);
+        return null;
+      }
       
-      // Find the user's position
-      const userIndex = allMembers.findIndex((member: any) => member.member === userId);
+      // zRevRank returns 0-based index, convert to 1-based ranking
+      const userRank = rank + 1;
+      console.log(`User ${userId} rank in ${key}: ${userRank}`);
       
-      return userIndex !== -1 ? userIndex + 1 : null; // Convert 0-based to 1-based ranking
+      return userRank;
     } catch (error) {
-      console.error('Error getting user leaderboard rank:', error);
+      console.error(`Error getting user leaderboard rank for ${key}:`, error);
       return null;
     }
   }
@@ -177,11 +214,12 @@ export class GameService {
 
   // Utility Methods
   private getWeekNumber(): number {
+    // Use a consistent week calculation based on Unix epoch
     const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 1);
-    const diff = now.getTime() - start.getTime();
-    const oneWeek = 1000 * 60 * 60 * 24 * 7;
-    return Math.floor(diff / oneWeek);
+    const epochStart = new Date('1970-01-01');
+    const diffTime = now.getTime() - epochStart.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return Math.floor(diffDays / 7);
   }
 
   getLevelByExperience(experience: number): { level: number; name: string } {
@@ -204,14 +242,21 @@ export class GameService {
   }
 
   async awardExperience(userId: string, username: string, points: number): Promise<{ leveledUp: boolean; newLevel?: number }> {
+    console.log(`Awarding ${points} experience to ${username} (${userId})`);
+    
     const userScore = await this.getUserScore(userId);
     userScore.username = username;
     userScore.experience += points;
     
-    return await this.updateUserScore(userScore);
+    const result = await this.updateUserScore(userScore);
+    console.log(`Experience awarded. New total: ${userScore.experience}`);
+    
+    return result;
   }
 
   async awardGuesserPoints(userId: string, username: string, points: number): Promise<{ leveledUp: boolean; newLevel?: number }> {
+    console.log(`Awarding ${points} guesser points to ${username} (${userId})`);
+    
     const userScore = await this.getUserScore(userId);
     userScore.username = username;
     userScore.guesserPoints += points;
@@ -219,15 +264,40 @@ export class GameService {
     userScore.totalGames += 1;
     if (points > 0) userScore.correctGuesses += 1;
     
-    return await this.updateUserScore(userScore);
+    const result = await this.updateUserScore(userScore);
+    console.log(`Guesser points awarded. New totals - All-time: ${userScore.guesserPoints}, Weekly: ${userScore.weeklyGuesserPoints}`);
+    
+    return result;
   }
 
   async awardLiarPoints(userId: string, username: string, points: number): Promise<{ leveledUp: boolean; newLevel?: number }> {
+    console.log(`Awarding ${points} liar points to ${username} (${userId})`);
+    
     const userScore = await this.getUserScore(userId);
     userScore.username = username;
     userScore.liarPoints += points;
     userScore.weeklyLiarPoints += points;
     
-    return await this.updateUserScore(userScore);
+    const result = await this.updateUserScore(userScore);
+    console.log(`Liar points awarded. New totals - All-time: ${userScore.liarPoints}, Weekly: ${userScore.weeklyLiarPoints}`);
+    
+    return result;
+  }
+
+  // Debug method to check leaderboard state
+  async debugLeaderboards(): Promise<void> {
+    const weekNumber = this.getWeekNumber();
+    const keys = [
+      'leaderboard:guesser:alltime',
+      'leaderboard:liar:alltime',
+      `leaderboard:guesser:weekly:${weekNumber}`,
+      `leaderboard:liar:weekly:${weekNumber}`,
+    ];
+
+    for (const key of keys) {
+      const count = await this.redis.zCard(key);
+      const top3 = await this.redis.zRange(key, 0, 2, { withScores: true, reverse: true });
+      console.log(`Leaderboard ${key}: ${count} entries, top 3:`, top3);
+    }
   }
 }
