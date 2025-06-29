@@ -5,6 +5,14 @@ import { CarnivalTheme } from './CarnivalTheme.js';
 import { GameService } from '../service/GameService.js';
 import type { GamePost, Statement, UserGuess } from '../../shared/types/game.js';
 
+function includesCaseInsensitive(array: string[], target: string): boolean {
+  return array.some((item) => item.toLowerCase() === target.toLowerCase());
+}
+
+function dictionaryContainsWord(dictionaries: Dictionary[], word: string): boolean {
+  return dictionaries.some((entry) => includesCaseInsensitive(entry.words, word));
+}
+
 interface GameResultsInterfaceProps {
   context: Context;
   gamePost: GamePost;
@@ -121,7 +129,7 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* UPDATED: New button layout with bigger Create Post button */}
+          {/* FIXED: Button layout with proper callback usage */}
           <vstack gap="small" alignment="center" padding="xxsmall">
             {/* TESTING EXCEPTION: Back button only for u/liamlio */}
             {showBackButton && onBackToGuessing && (
@@ -145,7 +153,7 @@ export const GameResultsInterface = ({
               ➕ Create Post
             </button>
             
-            {/* UPDATED: Return to Hub and View Leaderboard side by side */}
+            {/* FIXED: Return to Hub and View Leaderboard using proper callbacks */}
             <hstack gap="small" width="100%">
               <button
                 appearance="secondary"
