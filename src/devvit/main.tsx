@@ -354,6 +354,78 @@ Devvit.addMenuItem({
   },
 });
 
+// NEW: Test menu item to force update all weekly leaderboard users' flairs
+Devvit.addMenuItem({
+  label: '[TTOL Testing] Force Update Weekly Flairs',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (_event, context) => {
+    const { redis, ui, reddit } = context;
+    
+    try {
+      const gameService = new GameService(redis);
+      const gameSettings = await gameService.getGameSettings();
+      
+      if (!gameSettings.subredditName) {
+        ui.showToast({ text: 'No subreddit configured! Install the game first.' });
+        return;
+      }
+
+      // Get all users from current weekly leaderboards
+      const weekNumber = gameService.getWeekNumber();
+      const [weeklyGuessers, weeklyLiars] = await Promise.all([
+        redis.zRange(`leaderboard:guesser:weekly:${weekNumber}`, 0, -1),
+        redis.zRange(`leaderboard:liar:weekly:${weekNumber}`, 0, -1),
+      ]);
+
+      // Collect all unique user IDs from both leaderboards
+      const allUserIds = new Set<string>();
+      weeklyGuessers.forEach(entry => allUserIds.add(entry.member));
+      weeklyLiars.forEach(entry => allUserIds.add(entry.member));
+
+      if (allUserIds.size === 0) {
+        ui.showToast({ text: 'No users found on weekly leaderboards! Add test data first.' });
+        return;
+      }
+
+      console.log(`Force updating flairs for ${allUserIds.size} users on weekly leaderboards`);
+
+      // Update flair for each user
+      let updatedCount = 0;
+      let errorCount = 0;
+      
+      for (const userId of allUserIds) {
+        try {
+          const userScore = await gameService.getUserScore(userId);
+          if (userScore.username) {
+            await gameService.updateUserFlair(userScore.username, gameSettings.subredditName, reddit);
+            updatedCount++;
+            console.log(`✅ Updated flair for u/${userScore.username}`);
+          } else {
+            console.log(`⚠️ No username found for user ${userId}`);
+            errorCount++;
+          }
+        } catch (error) {
+          console.error(`❌ Failed to update flair for user ${userId}:`, error);
+          errorCount++;
+        }
+      }
+
+      const successMessage = `Updated ${updatedCount}/${allUserIds.size} weekly leaderboard flairs! 🎪`;
+      const errorMessage = errorCount > 0 ? ` (${errorCount} errors - check logs)` : '';
+      
+      ui.showToast({ text: successMessage + errorMessage });
+      console.log(`Force flair update complete: ${updatedCount} success, ${errorCount} errors`);
+
+    } catch (error) {
+      console.error('Error during force flair update:', error);
+      ui.showToast({
+        text: error instanceof Error ? `Error: ${error.message}` : 'Error updating flairs!',
+      });
+    }
+  },
+});
+
 // Handle webview messages
 Devvit.addTrigger({
   event: 'PostSubmit',
