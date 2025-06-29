@@ -219,7 +219,7 @@ export const CreateGameInterface = ({
   if (levelLoading) {
     return (
       <CarnivalBackground>
-        <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
+        <vstack width="100%" height="100%" padding="medium" gap="small" alignment="center middle">
           <CarnivalCard padding="medium">
             <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪</text>
             <text alignment="center" color={CarnivalTheme.colors.text}>
@@ -238,10 +238,10 @@ export const CreateGameInterface = ({
     
     return (
       <CarnivalBackground>
-        <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
+        <vstack width="100%" height="100%" padding="medium" gap="small" alignment="center middle">
           <CarnivalCard padding="large" borderColor={CarnivalTheme.colors.warning}>
             <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🤡</text>
-            <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text}>
+            <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text} wrap>
               Level Up Required!
             </text>
             
@@ -253,16 +253,16 @@ export const CreateGameInterface = ({
               borderColor={CarnivalTheme.colors.warning}
               gap="small"
             >
-              <text alignment="center" color={CarnivalTheme.colors.text}>
+              <text alignment="center" color={CarnivalTheme.colors.text} wrap>
                 You are currently Level {userLevelData.userLevel}: {levelInfo.name}
               </text>
-              <text alignment="center" color={CarnivalTheme.colors.text}>
+              <text alignment="center" color={CarnivalTheme.colors.text} wrap>
                 You need to reach Level 1: {nextLevelInfo.name} before you can create posts.
               </text>
             </vstack>
 
             <vstack gap="small">
-              <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text}>
+              <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text} wrap>
                 🎯 How to Level Up:
               </text>
               <vstack 
@@ -271,25 +271,25 @@ export const CreateGameInterface = ({
                 cornerRadius="medium"
                 gap="small"
               >
-                <text alignment="center" color={CarnivalTheme.colors.text}>
+                <text alignment="center" color={CarnivalTheme.colors.text} wrap>
                   Play 1 game to earn 1 XP and reach Level 1!
                 </text>
-                <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+                <text size="small" alignment="center" color={CarnivalTheme.colors.textLight} wrap>
                   • Participate in any Two Truths One Lie game (+1 XP)
                 </text>
-                <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+                <text size="small" alignment="center" color={CarnivalTheme.colors.textLight} wrap>
                   • Guess correctly for bonus XP (+2 XP total)
                 </text>
               </vstack>
             </vstack>
 
-            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight} wrap>
               💡 Find existing games in the community to start playing!
             </text>
             
             {/* Responsive button layout */}
             {isSmallScreen ? (
-              <vstack gap="medium" alignment="center">
+              <vstack gap="small" alignment="center">
                 <button
                   appearance="secondary"
                   onPress={onBack}
@@ -317,22 +317,22 @@ export const CreateGameInterface = ({
   // Show create game interface for level 1+ users
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
+      <vstack width="100%" height="100%" padding="medium" gap="small" alignment="center middle">
         <CarnivalCard padding="medium">
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
-          <text alignment="center" color={CarnivalTheme.colors.text}>
+          <text alignment="center" color={CarnivalTheme.colors.text} wrap>
             Ready to create your Two Truths One Lie game?
           </text>
           
           {userLevelData?.username && (
-            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight} wrap>
               Creating as: u/{userLevelData.username} • Level {userLevelData.userLevel}
             </text>
           )}
           
           {/* NEW: Mobile loading notice for small screens */}
           {isSmallScreen && (
-            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight} wrap>
               Notice: Create post form will take a few seconds to load on mobile
             </text>
           )}
@@ -375,23 +375,23 @@ export const CreateGameInterface = ({
 
         {/* MOVED: Tips section now appears below the main create game card */}
         <CarnivalCard padding="medium" borderColor={CarnivalTheme.colors.accent}>
-          <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text}>
+          <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text} wrap>
             💡 Tips for Creating Viral Games
           </text>
           <vstack gap="small">
-            <text size="small" color={CarnivalTheme.colors.text}>
+            <text size="small" color={CarnivalTheme.colors.text} wrap>
               • Create truths with HUGE shock factors - the more unbelievable but true, the better!
             </text>
-            <text size="small" color={CarnivalTheme.colors.text}>
+            <text size="small" color={CarnivalTheme.colors.text} wrap>
               • Make your lie sound completely plausible and boring
             </text>
-            <text size="small" color={CarnivalTheme.colors.text}>
+            <text size="small" color={CarnivalTheme.colors.text} wrap>
               • Use wild, jaw-dropping details in your truth descriptions to maximize engagement
             </text>
-            <text size="small" color={CarnivalTheme.colors.text}>
+            <text size="small" color={CarnivalTheme.colors.text} wrap>
               • Think: "What would make people say 'NO WAY that's true!'"
             </text>
-            <text size="small" color={CarnivalTheme.colors.accent}>
+            <text size="small" color={CarnivalTheme.colors.accent} wrap>
               • Bonus: Posts with 5+ guesses earn you +10 XP!
             </text>
           </vstack>
