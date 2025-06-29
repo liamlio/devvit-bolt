@@ -241,7 +241,7 @@ export class GameService {
     return await this.redis.get('pinned_post');
   }
 
-  // User Flair Management
+  // User Flair Management - UPDATED for scalable flair system
   async updateUserFlair(username: string, subredditName: string, reddit: any): Promise<void> {
     try {
       // Get user's current level and stats
@@ -270,6 +270,16 @@ export class GameService {
     }
   }
 
+  // UPDATED: Only update flair on level up, not on every point award
+  private async updateFlairOnLevelUp(username: string, subredditName: string, reddit: any): Promise<void> {
+    try {
+      await this.updateUserFlair(username, subredditName, reddit);
+      console.log(`Updated flair for ${username} due to level up`);
+    } catch (error) {
+      console.error(`Error updating flair on level up for ${username}:`, error);
+    }
+  }
+
   private getLevelFlairColor(level: number): string {
     // Carnival-themed colors for each level (now 9 levels: 0-8)
     const carnivalColors = [
@@ -288,10 +298,11 @@ export class GameService {
   }
 
   // Utility Methods
-  private getWeekNumber(): number {
+  getWeekNumber(): number {
     // Use a consistent week calculation based on Unix epoch
+    // Week starts on Monday (ISO week)
     const now = new Date();
-    const epochStart = new Date('1970-01-01');
+    const epochStart = new Date('1970-01-05'); // First Monday after epoch
     const diffTime = now.getTime() - epochStart.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     return Math.floor(diffDays / 7);
@@ -329,11 +340,11 @@ export class GameService {
     const result = await this.updateUserScore(userScore, reddit, scheduler);
     console.log(`Experience awarded. New total: ${userScore.experience}`);
     
-    // Update flair if level changed and we have reddit API access
+    // UPDATED: Only update flair if level changed
     if (result.leveledUp && reddit) {
       const gameSettings = await this.getGameSettings();
       if (gameSettings.subredditName) {
-        await this.updateUserFlair(username, gameSettings.subredditName, reddit);
+        await this.updateFlairOnLevelUp(username, gameSettings.subredditName, reddit);
       }
     }
     
@@ -354,11 +365,11 @@ export class GameService {
     const result = await this.updateUserScore(userScore, reddit, scheduler);
     console.log(`Guesser points awarded. New totals - All-time: ${userScore.guesserPoints}, Weekly: ${userScore.weeklyGuesserPoints}`);
     
-    // Always update flair after awarding guesser points (since weekly rank may change)
-    if (reddit) {
+    // UPDATED: Only update flair if level changed (weekly rank updates happen hourly)
+    if (result.leveledUp && reddit) {
       const gameSettings = await this.getGameSettings();
       if (gameSettings.subredditName) {
-        await this.updateUserFlair(username, gameSettings.subredditName, reddit);
+        await this.updateFlairOnLevelUp(username, gameSettings.subredditName, reddit);
       }
     }
     
@@ -377,11 +388,11 @@ export class GameService {
     const result = await this.updateUserScore(userScore, reddit, scheduler);
     console.log(`Liar points awarded. New totals - All-time: ${userScore.liarPoints}, Weekly: ${userScore.weeklyLiarPoints}`);
     
-    // Update flair if level changed and we have reddit API access
+    // UPDATED: Only update flair if level changed
     if (result.leveledUp && reddit) {
       const gameSettings = await this.getGameSettings();
       if (gameSettings.subredditName) {
-        await this.updateUserFlair(username, gameSettings.subredditName, reddit);
+        await this.updateFlairOnLevelUp(username, gameSettings.subredditName, reddit);
       }
     }
     
