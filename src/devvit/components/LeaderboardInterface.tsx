@@ -190,7 +190,7 @@ export const LeaderboardInterface = ({
               ) : (
                 <spacer width="60px" />
               )}
-              
+              <spacer width="60px" />
               {/* Center: Title and subtitle - FIXED: Properly centered */}
               <vstack gap="xsmall" alignment="center" grow>
                 <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
