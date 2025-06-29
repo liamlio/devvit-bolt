@@ -2,6 +2,9 @@ import { Devvit } from '@devvit/public-api';
 import { Router } from './posts/Router.js';
 import { GameService } from './service/GameService.js';
 
+// Import the level-up job
+import './jobs/userLevelUp.js';
+
 // Import testing menu items
 import './testing/testingMenuItems.js';
 

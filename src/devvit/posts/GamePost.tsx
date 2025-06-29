@@ -13,7 +13,7 @@ interface GamePostProps {
 }
 
 export const GamePost = ({ context }: GamePostProps): JSX.Element => {
-  const { postId, userId, redis, reddit, ui } = context;
+  const { postId, userId, redis, reddit, ui, scheduler } = context;
   const gameService = new GameService(redis);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [error, setError] = useState<string>('');
@@ -111,17 +111,17 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       const experiencePoints = isCorrect ? 2 : 1; // CHANGED: Reduced from 4 to 2
       const guesserPoints = isCorrect ? 1 : 0;
       
-      // Save to database and update flair
+      // Save to database and update flair with scheduler access for level-up notifications
       const [experienceResult, guesserResult] = await Promise.all([
         gameService.saveUserGuess(newUserGuess),
         gameService.updateGamePost(updatedGamePost),
-        gameService.awardExperience(userId, user.username, experiencePoints, reddit),
-        gameService.awardGuesserPoints(userId, user.username, guesserPoints, reddit),
+        gameService.awardExperience(userId, user.username, experiencePoints, reddit, scheduler),
+        gameService.awardGuesserPoints(userId, user.username, guesserPoints, reddit, scheduler),
       ]);
 
       // Don't award liar points if the author is guessing on their own post (testing exception)
       if (!isCorrect && gamePost.authorId !== userId) {
-        await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1, reddit);
+        await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1, reddit, scheduler);
       }
 
       const userScore = await gameService.getUserScore(userId);
@@ -129,7 +129,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       
       if (newLevel.level > userScore.level) {
         userScore.level = newLevel.level;
-        await gameService.updateUserScore(userScore);
+        await gameService.updateUserScore(userScore, reddit, scheduler);
         ui.showToast(`Level up! You are now ${newLevel.name}!`);
       }
 

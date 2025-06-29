@@ -61,7 +61,7 @@ export class GameService {
     };
   }
 
-  async updateUserScore(userScore: UserScore): Promise<{ leveledUp: boolean; newLevel?: number }> {
+  async updateUserScore(userScore: UserScore, reddit?: any, scheduler?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
     const oldLevel = userScore.level;
     const newLevel = this.getLevelByExperience(userScore.experience);
     userScore.level = newLevel.level;
@@ -73,6 +73,32 @@ export class GameService {
     await this.updateLeaderboards(userScore);
 
     const leveledUp = newLevel.level > oldLevel;
+    
+    // Schedule level-up notification if user leveled up
+    if (leveledUp && scheduler && reddit) {
+      try {
+        const gameSettings = await this.getGameSettings();
+        if (gameSettings.subredditName) {
+          await scheduler.runJob({
+            name: 'USER_LEVEL_UP',
+            data: {
+              userId: userScore.userId,
+              username: userScore.username,
+              oldLevel,
+              newLevel: newLevel.level,
+              experience: userScore.experience,
+              subredditName: gameSettings.subredditName,
+            },
+            runAt: new Date(Date.now() + 5000), // Send message after 5 seconds
+          });
+          
+          console.log(`Scheduled level-up notification for u/${userScore.username}: Level ${oldLevel} → ${newLevel.level}`);
+        }
+      } catch (error) {
+        console.error(`Failed to schedule level-up notification for u/${userScore.username}:`, error);
+      }
+    }
+
     return {
       leveledUp,
       newLevel: leveledUp ? newLevel.level : undefined,
@@ -292,7 +318,7 @@ export class GameService {
     return levels[0]; // Return level 0 (Huge Clown) as default
   }
 
-  async awardExperience(userId: string, username: string, points: number, reddit?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
+  async awardExperience(userId: string, username: string, points: number, reddit?: any, scheduler?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
     console.log(`Awarding ${points} experience to ${username} (${userId})`);
     
     const userScore = await this.getUserScore(userId);
@@ -300,7 +326,7 @@ export class GameService {
     userScore.username = username;
     userScore.experience += points;
     
-    const result = await this.updateUserScore(userScore);
+    const result = await this.updateUserScore(userScore, reddit, scheduler);
     console.log(`Experience awarded. New total: ${userScore.experience}`);
     
     // Update flair if level changed and we have reddit API access
@@ -314,7 +340,7 @@ export class GameService {
     return result;
   }
 
-  async awardGuesserPoints(userId: string, username: string, points: number, reddit?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
+  async awardGuesserPoints(userId: string, username: string, points: number, reddit?: any, scheduler?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
     console.log(`Awarding ${points} guesser points to ${username} (${userId})`);
     
     const userScore = await this.getUserScore(userId);
@@ -325,7 +351,7 @@ export class GameService {
     userScore.totalGames += 1;
     if (points > 0) userScore.correctGuesses += 1;
     
-    const result = await this.updateUserScore(userScore);
+    const result = await this.updateUserScore(userScore, reddit, scheduler);
     console.log(`Guesser points awarded. New totals - All-time: ${userScore.guesserPoints}, Weekly: ${userScore.weeklyGuesserPoints}`);
     
     // Always update flair after awarding guesser points (since weekly rank may change)
@@ -339,7 +365,7 @@ export class GameService {
     return result;
   }
 
-  async awardLiarPoints(userId: string, username: string, points: number, reddit?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
+  async awardLiarPoints(userId: string, username: string, points: number, reddit?: any, scheduler?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
     console.log(`Awarding ${points} liar points to ${username} (${userId})`);
     
     const userScore = await this.getUserScore(userId);
@@ -348,7 +374,7 @@ export class GameService {
     userScore.liarPoints += points;
     userScore.weeklyLiarPoints += points;
     
-    const result = await this.updateUserScore(userScore);
+    const result = await this.updateUserScore(userScore, reddit, scheduler);
     console.log(`Liar points awarded. New totals - All-time: ${userScore.liarPoints}, Weekly: ${userScore.weeklyLiarPoints}`);
     
     // Update flair if level changed and we have reddit API access
