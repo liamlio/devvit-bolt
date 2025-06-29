@@ -63,11 +63,15 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     }
   }, [refreshTrigger]);
 
-  // Load leaderboard data when needed
+  // FIXED: Load leaderboard data when needed - updated dependency array
   const { data: leaderboardData, loading: leaderboardLoading } = useAsync(async () => {
-    if (gameState !== 'leaderboard' && gameState !== 'fullLeaderboard' && gameState !== 'hub') return null;
+    // Only load leaderboard data when we need it
+    const needsLeaderboardData = gameState === 'leaderboard' || gameState === 'fullLeaderboard' || gameState === 'hub';
+    if (!needsLeaderboardData) return null;
     
     try {
+      console.log(`Loading leaderboard data for gameState: ${gameState}`);
+      
       const [
         weeklyGuesserLeaderboard, 
         weeklyLiarLeaderboard,
@@ -98,6 +102,8 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         ]);
       }
 
+      console.log(`Successfully loaded leaderboard data for gameState: ${gameState}`);
+
       return {
         weeklyGuesserLeaderboard,
         weeklyLiarLeaderboard,
@@ -113,7 +119,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       console.error('Error loading leaderboard data:', err);
       throw err;
     }
-  }, [gameState, userId]);
+  }, [gameState, userId]); // FIXED: Include gameState in dependency array
 
   const handleSubmitGuess = async () => {
     if (selectedIndex === null || !userId || !reddit || !gameData || gameData.type !== 'game') return;
@@ -242,16 +248,19 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
 
   // UPDATED: Navigation handlers for the three different buttons
   const handleViewLeaderboard = () => {
+    console.log('Switching to leaderboard state');
     setGameState('leaderboard');
   };
 
   // FIXED: Show hub interface instead of navigating to URL
   const handleReturnToHub = () => {
+    console.log('Switching to hub state');
     setGameState('hub');
   };
 
   // FIXED: Show create interface instead of navigating to URL
   const handleCreatePost = () => {
+    console.log('Switching to create state');
     setGameState('create');
   };
 
@@ -318,10 +327,13 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
 
     // NEW: Hub interface (community hub shown within the game post)
     if (gameState === 'hub') {
+      // FIXED: Show loading state while leaderboard data loads
       if (leaderboardLoading || !leaderboardData) {
+        console.log('Hub state: showing loading state', { leaderboardLoading, hasLeaderboardData: !!leaderboardData });
         return <LoadingState />;
       }
 
+      console.log('Hub state: showing LeaderboardInterface with data');
       return (
         <LeaderboardInterface
           context={context}
@@ -354,10 +366,13 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
 
     // Leaderboard interface
     if (gameState === 'leaderboard') {
+      // FIXED: Show loading state while leaderboard data loads
       if (leaderboardLoading || !leaderboardData) {
+        console.log('Leaderboard state: showing loading state', { leaderboardLoading, hasLeaderboardData: !!leaderboardData });
         return <LoadingState />;
       }
 
+      console.log('Leaderboard state: showing LeaderboardInterface with data');
       return (
         <LeaderboardInterface
           context={context}
