@@ -268,6 +268,12 @@ export class GameService {
   // UPDATED: User Flair Management with better debugging and user lookup
   async updateUserFlair(username: string, subredditName: string, reddit: any): Promise<void> {
     try {
+      // Skip flair updates for test users
+      if (username.includes('_test_ttol')) {
+        console.log(`🧪 Skipping flair update for test user: u/${username}`);
+        return;
+      }
+
       console.log(`🎨 Starting flair update for u/${username}`);
       
       // FIXED: Find user by username instead of assuming userId format
