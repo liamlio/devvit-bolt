@@ -82,16 +82,17 @@ export const LeaderboardInterface = ({
     const gameService = new GameService(context.redis);
     const currentLevel = gameService.getLevelByExperience(userStats.experience);
     
-    // Get all levels to find the next one
+    // Get all levels to find the next one (now 9 levels: 0-8)
     const levels = [
-      { level: 0, name: 'Clown', experienceRequired: 0 },
-      { level: 1, name: 'Rookie Detective', experienceRequired: 1 },
-      { level: 2, name: 'Truth Seeker', experienceRequired: 10 },
-      { level: 3, name: 'Lie Detector', experienceRequired: 20 },
-      { level: 4, name: 'Master Sleuth', experienceRequired: 35 },
-      { level: 5, name: 'Truth Master', experienceRequired: 55 },
-      { level: 6, name: 'Carnival Legend', experienceRequired: 80 },
-      { level: 7, name: 'Ultimate Detective', experienceRequired: 110 },
+      { level: 0, name: 'Huge Clown', experienceRequired: 0 },
+      { level: 1, name: 'Clown', experienceRequired: 1 },
+      { level: 2, name: 'Rookie Detective', experienceRequired: 10 },
+      { level: 3, name: 'Truth Seeker', experienceRequired: 20 },
+      { level: 4, name: 'Lie Detector', experienceRequired: 35 },
+      { level: 5, name: 'Master Sleuth', experienceRequired: 55 },
+      { level: 6, name: 'Truth Master', experienceRequired: 80 },
+      { level: 7, name: 'Carnival Legend', experienceRequired: 110 },
+      { level: 8, name: 'Ultimate Detective', experienceRequired: 150 },
     ];
 
     const nextLevelIndex = levels.findIndex(l => l.level === currentLevel.level + 1);

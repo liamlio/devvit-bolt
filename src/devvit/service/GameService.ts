@@ -245,16 +245,17 @@ export class GameService {
   }
 
   private getLevelFlairColor(level: number): string {
-    // Carnival-themed colors for each level
+    // Carnival-themed colors for each level (now 9 levels: 0-8)
     const carnivalColors = [
-      '#FF69B4', // Level 0 - Hot Pink (Clown)
-      '#87CEEB', // Level 1 - Sky Blue (Rookie Detective)
-      '#98FB98', // Level 2 - Pale Green (Truth Seeker)
-      '#FFD700', // Level 3 - Gold (Lie Detector)
-      '#FF6347', // Level 4 - Tomato Red (Master Sleuth)
-      '#DA70D6', // Level 5 - Orchid Purple (Truth Master)
-      '#FF4500', // Level 6 - Orange Red (Carnival Legend)
-      '#8A2BE2', // Level 7 - Blue Violet (Ultimate Detective)
+      '#FF1493', // Level 0 - Deep Pink (Huge Clown)
+      '#FF69B4', // Level 1 - Hot Pink (Clown)
+      '#87CEEB', // Level 2 - Sky Blue (Rookie Detective)
+      '#98FB98', // Level 3 - Pale Green (Truth Seeker)
+      '#FFD700', // Level 4 - Gold (Lie Detector)
+      '#FF6347', // Level 5 - Tomato Red (Master Sleuth)
+      '#DA70D6', // Level 6 - Orchid Purple (Truth Master)
+      '#FF4500', // Level 7 - Orange Red (Carnival Legend)
+      '#8A2BE2', // Level 8 - Blue Violet (Ultimate Detective)
     ];
     
     return carnivalColors[Math.min(level, carnivalColors.length - 1)] || carnivalColors[0];
@@ -272,14 +273,15 @@ export class GameService {
 
   getLevelByExperience(experience: number): { level: number; name: string } {
     const levels = [
-      { level: 0, name: 'Clown', experienceRequired: 0 }, // Start at level 0
-      { level: 1, name: 'Rookie Detective', experienceRequired: 1 },
-      { level: 2, name: 'Truth Seeker', experienceRequired: 10 },
-      { level: 3, name: 'Lie Detector', experienceRequired: 20 },
-      { level: 4, name: 'Master Sleuth', experienceRequired: 35 },
-      { level: 5, name: 'Truth Master', experienceRequired: 55 },
-      { level: 6, name: 'Carnival Legend', experienceRequired: 80 },
-      { level: 7, name: 'Ultimate Detective', experienceRequired: 110 },
+      { level: 0, name: 'Huge Clown', experienceRequired: 0 }, // Level 0 - Start here
+      { level: 1, name: 'Clown', experienceRequired: 1 }, // Level 1 - Shifted from old level 0
+      { level: 2, name: 'Rookie Detective', experienceRequired: 10 }, // Level 2 - Shifted from old level 1
+      { level: 3, name: 'Truth Seeker', experienceRequired: 20 }, // Level 3 - Shifted from old level 2
+      { level: 4, name: 'Lie Detector', experienceRequired: 35 }, // Level 4 - Shifted from old level 3
+      { level: 5, name: 'Master Sleuth', experienceRequired: 55 }, // Level 5 - Shifted from old level 4
+      { level: 6, name: 'Truth Master', experienceRequired: 80 }, // Level 6 - Shifted from old level 5
+      { level: 7, name: 'Carnival Legend', experienceRequired: 110 }, // Level 7 - Shifted from old level 6
+      { level: 8, name: 'Ultimate Detective', experienceRequired: 150 }, // Level 8 - Shifted from old level 7
     ];
 
     for (let i = levels.length - 1; i >= 0; i--) {
@@ -287,7 +289,7 @@ export class GameService {
         return levels[i];
       }
     }
-    return levels[0]; // Return level 0 (Clown) as default
+    return levels[0]; // Return level 0 (Huge Clown) as default
   }
 
   async awardExperience(userId: string, username: string, points: number, reddit?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
