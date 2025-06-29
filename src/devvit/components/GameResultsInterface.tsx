@@ -105,26 +105,50 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          <hstack gap="small" alignment="center" padding="xxsmall">
-            {/* TESTING EXCEPTION: Back button only for u/liamlio */}
-            {showBackButton && onBackToGuessing && (
+          {/* Responsive button layout - horizontal on small screens, vertical on large */}
+          {isSmallScreen ? (
+            <hstack gap="small" alignment="center" padding="xxsmall">
+              {/* TESTING EXCEPTION: Back button only for u/liamlio */}
+              {showBackButton && onBackToGuessing && (
+                <button
+                  appearance="destructive"
+                  onPress={onBackToGuessing}
+                  size="small"
+                >
+                  🔄 Test Again
+                </button>
+              )}
+              
               <button
-                appearance="destructive"
-                onPress={onBackToGuessing}
-                width={isSmallScreen ? "100%" : "200px"}
+                appearance="secondary"
+                onPress={onViewLeaderboard}
+                size="small"
               >
-                🔄 Test Again (liamlio only)
+                View Leaderboard 🏆
               </button>
-            )}
-            
-            <button
-              appearance="secondary"
-              onPress={onViewLeaderboard}
-              width={isSmallScreen ? "100%" : "200px"}
-            >
-              View Leaderboard 🏆
-            </button>
-          </hstack>
+            </hstack>
+          ) : (
+            <vstack gap="small" alignment="center" padding="xxsmall">
+              {/* TESTING EXCEPTION: Back button only for u/liamlio */}
+              {showBackButton && onBackToGuessing && (
+                <button
+                  appearance="destructive"
+                  onPress={onBackToGuessing}
+                  width="200px"
+                >
+                  🔄 Test Again (liamlio only)
+                </button>
+              )}
+              
+              <button
+                appearance="secondary"
+                onPress={onViewLeaderboard}
+                width="200px"
+              >
+                View Leaderboard 🏆
+              </button>
+            </vstack>
+          )}
           
           <text size={isSmallScreen ? "xsmall" : "small"} alignment="center" color={CarnivalTheme.colors.text}>
             💬 How surprising were the truths? Comment below!
