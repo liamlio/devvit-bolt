@@ -190,6 +190,16 @@ export const CreateGameForm: React.FC = () => {
         )}
       </div>
 
+      {/* MOVED: Tips section now appears before errors and form */}
+      <div className="form-footer">
+        <p>💡 <strong>Tips:</strong></p>
+        <ul>
+          <li>Make your truths surprising but believable</li>
+          <li>Craft a lie that sounds plausible</li>
+          <li>Use details to make truths more convincing</li>
+        </ul>
+      </div>
+
       {errors.length > 0 && (
         <div className="error-container">
           <h3>Please fix these issues:</h3>
@@ -287,15 +297,6 @@ export const CreateGameForm: React.FC = () => {
             {isSubmitting ? 'Creating Game...' : 'Create Game! 🎪'}
           </button>
         </div>
-      </div>
-
-      <div className="form-footer">
-        <p>💡 <strong>Tips:</strong></p>
-        <ul>
-          <li>Make your truths surprising but believable</li>
-          <li>Craft a lie that sounds plausible</li>
-          <li>Use details to make truths more convincing</li>
-        </ul>
       </div>
     </div>
   );

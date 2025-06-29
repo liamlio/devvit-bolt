@@ -336,6 +336,24 @@ export const CreateGameInterface = ({
         gap="small"
         alignment={isSmallScreen ? "center top" : "center middle"}
       >
+        {/* NEW: Tips section added to CreateGameInterface */}
+        <CarnivalCard padding={isSmallScreen ? "medium" : "medium"} borderColor={CarnivalTheme.colors.accent}>
+          <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text}>
+            💡 Tips for Creating Great Games
+          </text>
+          <vstack gap="small">
+            <text size="small" color={CarnivalTheme.colors.text}>
+              • Make your truths surprising but believable
+            </text>
+            <text size="small" color={CarnivalTheme.colors.text}>
+              • Craft a lie that sounds plausible
+            </text>
+            <text size="small" color={CarnivalTheme.colors.text}>
+              • Use details to make truths more convincing
+            </text>
+          </vstack>
+        </CarnivalCard>
+
         <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
