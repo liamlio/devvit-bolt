@@ -105,7 +105,6 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* Always vertically stacked buttons */}
           <hstack gap="small" alignment="center" padding="xxsmall">
             {/* TESTING EXCEPTION: Back button only for u/liamlio */}
             {showBackButton && onBackToGuessing && (
