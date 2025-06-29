@@ -148,390 +148,383 @@ export const LeaderboardInterface = ({
   return (
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="xsmall" overflow="scroll">
-        <CarnivalCard padding="medium" gap="small">
-          {/* UPDATED: Header layout with logo */}
-          {isSmallScreen ? (
-            /* Small screen: Stack title and back button vertically */
-            <vstack gap="xxsmall" alignment="center">
-              {/* Title with logo */}
-              <vstack gap="xsmall" alignment="center">
-                <hstack gap="medium" alignment="middle">
+        {/* UPDATED: Use zstack to position logo at top-right of card */}
+        <zstack alignment="top start" width="100%">
+          <CarnivalCard padding="medium" gap="small" width="100%">
+            {/* UPDATED: Header layout with title only */}
+            {isSmallScreen ? (
+              /* Small screen: Stack title and back button vertically */
+              <vstack gap="xxsmall" alignment="center">
+                {/* Title only */}
+                <vstack gap="xsmall" alignment="center">
                   <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
                     🏆 Two Truths One Lie
                   </text>
-                  {/* Logo - smaller on mobile */}
-                  <image
-                    url="black_circle_360x360.png"
-                    imageHeight={32}
-                    imageWidth={32}
-                    height="32px"
-                    width="32px"
-                    description="Bolt.new logo"
-                  />
-                </hstack>
-                <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
-                  Welcome to the carnival of deception! Can you spot the lies?
-                </text>
-              </vstack>            
-              {/* Back button row if needed */}
-              {showBackButton && onBack && (
-                <hstack width="100%" alignment="start">
-                  <button
-                    appearance="secondary"
-                    onPress={onBack}
-                    size="small"
-                  >
-                    ← Back
-                  </button>
-                </hstack>
-              )}
-            </vstack>
-          ) : (
-            /* Large screen: Horizontal layout with centered title and logo */
-            <vstack gap="xsmall" alignment="center">
-              {/* Title and logo centered */}
-              <hstack gap="medium" alignment="middle">
+                  <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
+                    Welcome to the carnival of deception! Can you spot the lies?
+                  </text>
+                </vstack>            
+                {/* Back button row if needed */}
+                {showBackButton && onBack && (
+                  <hstack width="100%" alignment="start">
+                    <button
+                      appearance="secondary"
+                      onPress={onBack}
+                      size="small"
+                    >
+                      ← Back
+                    </button>
+                  </hstack>
+                )}
+              </vstack>
+            ) : (
+              /* Large screen: Vertical layout with centered title */
+              <vstack gap="xsmall" alignment="center">
+                {/* Title centered */}
                 <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
                   🏆 Two Truths One Lie
                 </text>
-                {/* Logo - larger on desktop */}
-                <image
-                  url="black_circle_360x360.png"
-                  imageHeight={48}
-                  imageWidth={48}
-                  height="48px"
-                  width="48px"
-                  description="Bolt.new logo"
-                />
-              </hstack>
-              <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
-                Welcome to the carnival of deception! Can you spot the lies?
-              </text>
-              
-              {/* Back button positioned below if needed */}
-              {showBackButton && onBack && (
-                <hstack width="100%" alignment="start">
-                  <button
-                    appearance="secondary"
-                    onPress={onBack}
-                    size="small"
-                  >
-                    ← Back
-                  </button>
-                </hstack>
-              )}
-            </vstack>
-          )}
-
-          {/* User Stats */}
-          {userStats && (
-            <vstack 
-              padding="small"
-              backgroundColor={CarnivalTheme.colors.background} 
-              cornerRadius="medium" 
-              border="thin" 
-              borderColor={CarnivalTheme.colors.primary}
-              gap="small"
-            >
-              <text size="small" weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
-              
-              {/* Main stats section with vertical divider */}
-              <hstack gap="small" alignment="top">
-                {/* Left side - Current stats */}
-                <vstack gap="small" grow>
-                  <hstack gap="large">
-                    <vstack>
-                      {/* UPDATED: Display current level with title using proper Devvit components */}
-                      <hstack gap="xsmall" alignment="middle">
-                        <text size="xsmall" color={CarnivalTheme.colors.text}>
-                          🎯 Lvl.{userStats.level}: 
-                        </text>
-                        <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
-                          {(() => {
-                            const gameService = new GameService(context.redis);
-                            const levelInfo = gameService.getLevelByExperience(userStats.experience);
-                            return levelInfo.name;
-                          })()}
-                        </text>
-                      </hstack>
-                      <text size="xsmall" color={CarnivalTheme.colors.text}>
-                        ⭐ {userStats.experience} XP
-                      </text>
-                    </vstack>
-                    <vstack>
-                      <text size="xsmall" color={CarnivalTheme.colors.text}>
-                        🎮 Games: {userStats.totalGames}
-                      </text>
-                      <text size="xsmall" color={CarnivalTheme.colors.text}>
-                        🎯 Accuracy: {userStats.totalGames > 0 
-                          ? Math.round((userStats.correctGuesses / userStats.totalGames) * 100) 
-                          : 0}%
-                      </text>
-                    </vstack>
+                <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
+                  Welcome to the carnival of deception! Can you spot the lies?
+                </text>
+                
+                {/* Back button positioned below if needed */}
+                {showBackButton && onBack && (
+                  <hstack width="100%" alignment="start">
+                    <button
+                      appearance="secondary"
+                      onPress={onBack}
+                      size="small"
+                    >
+                      ← Back
+                    </button>
                   </hstack>
-                  
-                  {/* Leaderboard Positions Section */}
-                  <vstack gap="xsmall">
-                    <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
-                      Leaderboard Positions
-                    </text>
-                    
-                    <hstack gap="medium">
-                      <vstack gap="xxsmall">
-                        <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                          📅 This Week
-                        </text>
+                )}
+              </vstack>
+            )}
+
+            {/* User Stats */}
+            {userStats && (
+              <vstack 
+                padding="small"
+                backgroundColor={CarnivalTheme.colors.background} 
+                cornerRadius="medium" 
+                border="thin" 
+                borderColor={CarnivalTheme.colors.primary}
+                gap="small"
+              >
+                <text size="small" weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
+                
+                {/* Main stats section with vertical divider */}
+                <hstack gap="small" alignment="top">
+                  {/* Left side - Current stats */}
+                  <vstack gap="small" grow>
+                    <hstack gap="large">
+                      <vstack>
+                        {/* UPDATED: Display current level with title using proper Devvit components */}
+                        <hstack gap="xsmall" alignment="middle">
+                          <text size="xsmall" color={CarnivalTheme.colors.text}>
+                            🎯 Lvl.{userStats.level}: 
+                          </text>
+                          <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
+                            {(() => {
+                              const gameService = new GameService(context.redis);
+                              const levelInfo = gameService.getLevelByExperience(userStats.experience);
+                              return levelInfo.name;
+                            })()}
+                          </text>
+                        </hstack>
                         <text size="xsmall" color={CarnivalTheme.colors.text}>
-                          🕵️ {formatRank(userWeeklyGuesserRank)} guesser
-                        </text>
-                        <text size="xsmall" color={CarnivalTheme.colors.text}>
-                          🎭 {formatRank(userWeeklyLiarRank)} liar
+                          ⭐ {userStats.experience} XP
                         </text>
                       </vstack>
-                      
-                      <vstack gap="xxsmall">
-                        <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                          🏆 All-Time
+                      <vstack>
+                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                          🎮 Games: {userStats.totalGames}
                         </text>
                         <text size="xsmall" color={CarnivalTheme.colors.text}>
-                          🕵️ {formatRank(userAllTimeGuesserRank)} guesser
-                        </text>
-                        <text size="xsmall" color={CarnivalTheme.colors.text}>
-                          🎭 {formatRank(userAllTimeLiarRank)} liar
+                          🎯 Accuracy: {userStats.totalGames > 0 
+                            ? Math.round((userStats.correctGuesses / userStats.totalGames) * 100) 
+                            : 0}%
                         </text>
                       </vstack>
                     </hstack>
-                  </vstack>
-                </vstack>
-
-                {/* Vertical divider - bluish bar that doesn't quite touch borders */}
-                <vstack height="100%" width="2px" alignment="center middle">
-                  <spacer height="4px" />
-                  <vstack grow width="2px" backgroundColor={CarnivalTheme.colors.primary} />
-                  <spacer height="4px" />
-                </vstack>
-
-                {/* Right side - Next level progress */}
-                <vstack gap="xsmall" grow>
-                  {(() => {
-                    const nextLevelInfo = getNextLevelInfo(userStats);
                     
-                    if (nextLevelInfo.isMaxLevel) {
-                      return (
-                        <vstack gap="xsmall" alignment="center">
-                          <text size="xsmall" weight="bold" color={CarnivalTheme.colors.accent}>
-                            🏆 Max Level Reached!
-                          </text>
-                          <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
-                            You've achieved the highest rank: Carnival Legend!
-                          </text>
-                        </vstack>
-                      );
-                    }
-
-                    return (
-                      <vstack gap="xsmall">
-                        <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
-                          🎯 Next Level
-                        </text>
-                        
-                        {/* UPDATED: Display next level with title using proper Devvit components */}
-                        <hstack gap="xsmall" alignment="middle">
-                          <text size="xsmall" color={CarnivalTheme.colors.text}>
-                            Lvl.{nextLevelInfo.nextLevel?.level}: 
-                          </text>
-                          <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
-                             {nextLevelInfo.nextLevel?.name}
-                          </text>
-                        </hstack>
-                        
-                        {/* UPDATED: Progress display for small screens */}
+                    {/* Leaderboard Positions Section */}
+                    <vstack gap="xsmall">
+                      <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
+                        Leaderboard Positions
+                      </text>
+                      
+                      <hstack gap="medium">
                         <vstack gap="xxsmall">
-                          {isSmallScreen ? (
-                            // Small screen: Show current/required XP instead of 0% progress bar
-                            <text size="xsmall" color={CarnivalTheme.colors.text}>
-                              {userStats.experience}/{nextLevelInfo.nextLevel?.experienceRequired} XP
-                            </text>
-                          ) : (
-                            // Large screen: Show progress bar
-                            <>
-                              <hstack 
-                                width="100%" 
-                                height="6px" 
-                                backgroundColor="rgba(0,0,0,0.1)" 
-                                cornerRadius="small"
-                              >
-                                <hstack 
-                                  width={`${nextLevelInfo.progressPercentage}%`} 
-                                  height="100%" 
-                                  backgroundColor={CarnivalTheme.colors.accent}
-                                  cornerRadius="small"
-                                />
-                              </hstack>
-                              <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                                {nextLevelInfo.progressPercentage}% complete
-                              </text>
-                            </>
-                          )}
-                        </vstack>
-                        
-                        {/* UPDATED: Remove "X XP to go" text for small screens */}
-                        {!isSmallScreen && (
-                          <text size="xsmall" color={CarnivalTheme.colors.text}>
-                            {nextLevelInfo.experienceNeeded} XP to go
+                          <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                            📅 This Week
                           </text>
-                        )}
+                          <text size="xsmall" color={CarnivalTheme.colors.text}>
+                            🕵️ {formatRank(userWeeklyGuesserRank)} guesser
+                          </text>
+                          <text size="xsmall" color={CarnivalTheme.colors.text}>
+                            🎭 {formatRank(userWeeklyLiarRank)} liar
+                          </text>
+                        </vstack>
                         
                         <vstack gap="xxsmall">
                           <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                            💡 Earn XP by:
+                            🏆 All-Time
                           </text>
-                          {/* UPDATED: Remove XP values for small screens */}
-                          {isSmallScreen ? (
-                            <vstack gap="xxsmall">
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Playing games
-                              </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Correct guesses
-                              </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Posts with 5+ guesses
-                              </text>
-                            </vstack>
-                          ) : (
-                            <vstack gap="xxsmall">
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Playing games (+1 XP)
-                              </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Correct guesses (+2 XP)
-                              </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Posts with 5+ guesses (+10 XP)
-                              </text>
-                            </vstack>
-                          )}
+                          <text size="xsmall" color={CarnivalTheme.colors.text}>
+                            🕵️ {formatRank(userAllTimeGuesserRank)} guesser
+                          </text>
+                          <text size="xsmall" color={CarnivalTheme.colors.text}>
+                            🎭 {formatRank(userAllTimeLiarRank)} liar
+                          </text>
                         </vstack>
-                      </vstack>
-                    );
-                  })()}
+                      </hstack>
+                    </vstack>
+                  </vstack>
+
+                  {/* Vertical divider - bluish bar that doesn't quite touch borders */}
+                  <vstack height="100%" width="2px" alignment="center middle">
+                    <spacer height="4px" />
+                    <vstack grow width="2px" backgroundColor={CarnivalTheme.colors.primary} />
+                    <spacer height="4px" />
+                  </vstack>
+
+                  {/* Right side - Next level progress */}
+                  <vstack gap="xsmall" grow>
+                    {(() => {
+                      const nextLevelInfo = getNextLevelInfo(userStats);
+                      
+                      if (nextLevelInfo.isMaxLevel) {
+                        return (
+                          <vstack gap="xsmall" alignment="center">
+                            <text size="xsmall" weight="bold" color={CarnivalTheme.colors.accent}>
+                              🏆 Max Level Reached!
+                            </text>
+                            <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
+                              You've achieved the highest rank: Carnival Legend!
+                            </text>
+                          </vstack>
+                        );
+                      }
+
+                      return (
+                        <vstack gap="xsmall">
+                          <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
+                            🎯 Next Level
+                          </text>
+                          
+                          {/* UPDATED: Display next level with title using proper Devvit components */}
+                          <hstack gap="xsmall" alignment="middle">
+                            <text size="xsmall" color={CarnivalTheme.colors.text}>
+                              Lvl.{nextLevelInfo.nextLevel?.level}: 
+                            </text>
+                            <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
+                               {nextLevelInfo.nextLevel?.name}
+                            </text>
+                          </hstack>
+                          
+                          {/* UPDATED: Progress display for small screens */}
+                          <vstack gap="xxsmall">
+                            {isSmallScreen ? (
+                              // Small screen: Show current/required XP instead of 0% progress bar
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                {userStats.experience}/{nextLevelInfo.nextLevel?.experienceRequired} XP
+                              </text>
+                            ) : (
+                              // Large screen: Show progress bar
+                              <>
+                                <hstack 
+                                  width="100%" 
+                                  height="6px" 
+                                  backgroundColor="rgba(0,0,0,0.1)" 
+                                  cornerRadius="small"
+                                >
+                                  <hstack 
+                                    width={`${nextLevelInfo.progressPercentage}%`} 
+                                    height="100%" 
+                                    backgroundColor={CarnivalTheme.colors.accent}
+                                    cornerRadius="small"
+                                  />
+                                </hstack>
+                                <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                                  {nextLevelInfo.progressPercentage}% complete
+                                </text>
+                              </>
+                            )}
+                          </vstack>
+                          
+                          {/* UPDATED: Remove "X XP to go" text for small screens */}
+                          {!isSmallScreen && (
+                            <text size="xsmall" color={CarnivalTheme.colors.text}>
+                              {nextLevelInfo.experienceNeeded} XP to go
+                            </text>
+                          )}
+                          
+                          <vstack gap="xxsmall">
+                            <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                              💡 Earn XP by:
+                            </text>
+                            {/* UPDATED: Remove XP values for small screens */}
+                            {isSmallScreen ? (
+                              <vstack gap="xxsmall">
+                                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  • Playing games
+                                </text>
+                                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  • Correct guesses
+                                </text>
+                                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  • Posts with 5+ guesses
+                                </text>
+                              </vstack>
+                            ) : (
+                              <vstack gap="xxsmall">
+                                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  • Playing games (+1 XP)
+                                </text>
+                                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  • Correct guesses (+2 XP)
+                                </text>
+                                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  • Posts with 5+ guesses (+10 XP)
+                                </text>
+                              </vstack>
+                            )}
+                          </vstack>
+                        </vstack>
+                      );
+                    })()}
+                  </vstack>
+                </hstack>
+              </vstack>
+            )}
+
+            {/* UPDATED: Top 3 Leaderboards Preview with toggle for small screens */}
+            {isSmallScreen ? (
+              /* Small screen: Toggle between guesser and liar leaderboards */
+              <vstack gap="small">
+                {/* Toggle buttons */}
+                <hstack gap="small">
+                  <button
+                    appearance={activeLeaderboard === 'guessers' ? 'primary' : 'secondary'}
+                    onPress={() => setActiveLeaderboard('guessers')}
+                    grow
+                    size="small"
+                  >
+                    🕵️ Top Guessers
+                  </button>
+                  <button
+                    appearance={activeLeaderboard === 'liars' ? 'primary' : 'secondary'}
+                    onPress={() => setActiveLeaderboard('liars')}
+                    grow
+                    size="small"
+                  >
+                    🎭 Top Liars
+                  </button>
+                </hstack>
+
+                {/* Single leaderboard display */}
+                <vstack 
+                  padding="small"
+                  backgroundColor={CarnivalTheme.colors.background} 
+                  cornerRadius="medium"
+                  border="thin"
+                  borderColor={CarnivalTheme.colors.shadow}
+                  gap="small"
+                >
+                  <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                    {activeLeaderboard === 'guessers' ? '🕵️ Top Guessers (Weekly)' : '🎭 Top Liars (Weekly)'}
+                  </text>
+                  {renderTopThree(activeLeaderboard === 'guessers' ? topGuessers : topLiars, activeLeaderboard === 'guessers' ? 'guesser' : 'liar')}
+                </vstack>
+              </vstack>
+            ) : (
+              /* Large screen: Side-by-side leaderboards */
+              <hstack gap="small">
+                <vstack 
+                  grow
+                  padding="small"
+                  backgroundColor={CarnivalTheme.colors.background} 
+                  cornerRadius="medium"
+                  border="thin"
+                  borderColor={CarnivalTheme.colors.shadow}
+                  gap="small"
+                >
+                  <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                    🕵️ Top Guessers (Weekly)
+                  </text>
+                  {renderTopThree(topGuessers, 'guesser')}
+                </vstack>
+
+                <vstack 
+                  grow
+                  padding="small"
+                  backgroundColor={CarnivalTheme.colors.background} 
+                  cornerRadius="medium"
+                  border="thin"
+                  borderColor={CarnivalTheme.colors.shadow}
+                  gap="small"
+                >
+                  <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                    🎭 Top Liars (Weekly)
+                  </text>
+                  {renderTopThree(topLiars, 'liar')}
                 </vstack>
               </hstack>
-            </vstack>
-          )}
+            )}
 
-          {/* UPDATED: Top 3 Leaderboards Preview with toggle for small screens */}
-          {isSmallScreen ? (
-            /* Small screen: Toggle between guesser and liar leaderboards */
+            {/* UPDATED: Bottom buttons wrapped in vstack with small gap */}
             <vstack gap="small">
-              {/* Toggle buttons */}
-              <hstack gap="small">
-                <button
-                  appearance={activeLeaderboard === 'guessers' ? 'primary' : 'secondary'}
-                  onPress={() => setActiveLeaderboard('guessers')}
-                  grow
-                  size="small"
-                >
-                  🕵️ Top Guessers
-                </button>
-                <button
-                  appearance={activeLeaderboard === 'liars' ? 'primary' : 'secondary'}
-                  onPress={() => setActiveLeaderboard('liars')}
-                  grow
-                  size="small"
-                >
-                  🎭 Top Liars
-                </button>
+              {/* View Full Leaderboard Button */}
+              <button
+                appearance="secondary"
+                onPress={onViewFullLeaderboard}
+                width="100%"
+                size="small"
+              >
+                View Leaderboard 🏆
+              </button>
+
+              {/* Create Game Button */}
+              <button
+                appearance="primary"
+                onPress={onCreateGame}
+                width="100%"
+                size="small"
+              >
+                Create a Game 🎪
+              </button>
+
+              {/* UPDATED: Subscribe button now red with white text */}
+              <hstack
+                backgroundColor="#FF4444"
+                cornerRadius="medium"
+                padding="small"
+                onPress={handleSubscribe}
+                width="100%"
+                alignment="center middle"
+              >
+                <text color="white" weight="bold" size="small">
+                  Subscribe
+                </text>
               </hstack>
-
-              {/* Single leaderboard display */}
-              <vstack 
-                padding="small"
-                backgroundColor={CarnivalTheme.colors.background} 
-                cornerRadius="medium"
-                border="thin"
-                borderColor={CarnivalTheme.colors.shadow}
-                gap="small"
-              >
-                <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
-                  {activeLeaderboard === 'guessers' ? '🕵️ Top Guessers (Weekly)' : '🎭 Top Liars (Weekly)'}
-                </text>
-                {renderTopThree(activeLeaderboard === 'guessers' ? topGuessers : topLiars, activeLeaderboard === 'guessers' ? 'guesser' : 'liar')}
-              </vstack>
             </vstack>
-          ) : (
-            /* Large screen: Side-by-side leaderboards */
-            <hstack gap="small">
-              <vstack 
-                grow
-                padding="small"
-                backgroundColor={CarnivalTheme.colors.background} 
-                cornerRadius="medium"
-                border="thin"
-                borderColor={CarnivalTheme.colors.shadow}
-                gap="small"
-              >
-                <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
-                  🕵️ Top Guessers (Weekly)
-                </text>
-                {renderTopThree(topGuessers, 'guesser')}
-              </vstack>
+          </CarnivalCard>
 
-              <vstack 
-                grow
-                padding="small"
-                backgroundColor={CarnivalTheme.colors.background} 
-                cornerRadius="medium"
-                border="thin"
-                borderColor={CarnivalTheme.colors.shadow}
-                gap="small"
-              >
-                <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
-                  🎭 Top Liars (Weekly)
-                </text>
-                {renderTopThree(topLiars, 'liar')}
-              </vstack>
-            </hstack>
-          )}
-
-          {/* UPDATED: Bottom buttons wrapped in vstack with small gap */}
-          <vstack gap="small">
-            {/* View Full Leaderboard Button */}
-            <button
-              appearance="secondary"
-              onPress={onViewFullLeaderboard}
-              width="100%"
-              size="small"
-            >
-              View Leaderboard 🏆
-            </button>
-
-            {/* Create Game Button */}
-            <button
-              appearance="primary"
-              onPress={onCreateGame}
-              width="100%"
-              size="small"
-            >
-              Create a Game 🎪
-            </button>
-
-            {/* UPDATED: Subscribe button now red with white text */}
-            <hstack
-              backgroundColor="#FF4444"
-              cornerRadius="medium"
-              padding="small"
-              onPress={handleSubscribe}
-              width="100%"
-              alignment="center middle"
-            >
-              <text color="white" weight="bold" size="small">
-                Subscribe
-              </text>
-            </hstack>
-          </vstack>
-        </CarnivalCard>
+          {/* UPDATED: Logo positioned at top-right corner of the card */}
+          <hstack width="100%" alignment="end" padding="medium">
+            <image
+              url="black_circle_360x360.png"
+              imageHeight={isSmallScreen ? 32 : 48}
+              imageWidth={isSmallScreen ? 32 : 48}
+              height={isSmallScreen ? "32px" : "48px"}
+              width={isSmallScreen ? "32px" : "48px"}
+              description="Bolt.new logo"
+            />
+          </hstack>
+        </zstack>
       </vstack>
     </CarnivalBackground>
   );
