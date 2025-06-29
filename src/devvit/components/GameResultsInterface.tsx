@@ -76,16 +76,32 @@ export const GameResultsInterface = ({
                       <text size={isSmallScreen ? "small" : "medium"} weight="bold" color={CarnivalTheme.colors.text} wrap>
                         {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
                       </text>
-                      <hstack gap="small" alignment="start">
-                        {isUserChoice && (
-                          <text color={CarnivalTheme.colors.primary} weight="bold" size={isSmallScreen ? "xsmall" : "small"}>
-                            (Your choice)
+                      {/* Responsive layout for vote info */}
+                      {isSmallScreen ? (
+                        // Small screens: vertical stack
+                        <vstack gap="xxsmall" alignment="start">
+                          {isUserChoice && (
+                            <text color={CarnivalTheme.colors.primary} weight="bold" size="xsmall">
+                              (Your choice)
+                            </text>
+                          )}
+                          <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                            {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
                           </text>
-                        )}
-                        <text size={isSmallScreen ? "xsmall" : "small"} color={CarnivalTheme.colors.textLight}>
-                          {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
-                        </text>
-                      </hstack>
+                        </vstack>
+                      ) : (
+                        // Large screens: horizontal stack
+                        <hstack gap="small" alignment="start">
+                          <text size="small" color={CarnivalTheme.colors.textLight}>
+                            {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                          </text>
+                          {isUserChoice && (
+                            <text color={CarnivalTheme.colors.primary} weight="bold" size="small">
+                              (Your choice)
+                            </text>
+                          )}
+                        </hstack>
+                      )}
                     </vstack>
                   </hstack>
                   
