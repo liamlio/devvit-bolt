@@ -270,6 +270,9 @@ export const LeaderboardInterface = ({
                           <text size="xsmall" color={CarnivalTheme.colors.text}>
                             • Correct guesses (+2 XP)
                           </text>
+                          <text size="xsmall" color={CarnivalTheme.colors.text}>
+                            • Posts with 5+ guesses (+10 XP)
+                          </text>
                         </vstack>
                       </vstack>
                     );
