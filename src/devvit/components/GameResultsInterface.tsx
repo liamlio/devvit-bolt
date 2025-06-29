@@ -43,7 +43,7 @@ export const GameResultsInterface = ({
     }
   });
 
-  // NEW: Check if user is subscribed to the subreddit
+  // FIXED: Check if user is subscribed to the subreddit using correct API
   const { data: subscriptionData } = useAsync(async () => {
     if (!reddit) return { isSubscribed: false, subredditName: '' };
     
@@ -53,11 +53,14 @@ export const GameResultsInterface = ({
       
       if (!user) return { isSubscribed: false, subredditName: subreddit.name };
       
-      // Check if user is subscribed to this subreddit
-      const subscription = await reddit.getSubscriptionBySubredditName(subreddit.name);
+      // Get all subreddits the user is subscribed to
+      const userSubreddits = await reddit.getUserSubreddits().all();
+      
+      // Check if the current subreddit is in the user's subscribed subreddits
+      const isSubscribed = userSubreddits.some(sub => sub.name === subreddit.name);
       
       return {
-        isSubscribed: !!subscription,
+        isSubscribed,
         subredditName: subreddit.name,
       };
     } catch (error) {
@@ -66,7 +69,7 @@ export const GameResultsInterface = ({
     }
   });
 
-  // NEW: Handle subscribe action
+  // Handle subscribe action
   const handleSubscribe = async () => {
     if (!reddit || !subscriptionData) return;
     
@@ -102,7 +105,7 @@ export const GameResultsInterface = ({
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
 
-  // UPDATED: Navigation handlers that redirect to community post
+  // Navigation handlers that redirect to community post
   const handleViewLeaderboard = () => {
     if (pinnedPostUrl) {
       ui.navigateTo(pinnedPostUrl);
@@ -123,11 +126,11 @@ export const GameResultsInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding={isSmallScreen ? "small" : "medium"} gap="small">
         <CarnivalCard padding="small">
-          {/* NEW: Header with subscribe button */}
+          {/* Header with subscribe button */}
           <vstack width="100%" height="100%" padding="xxsmall" gap="xxsmall">
             <hstack alignment="middle" gap="medium">
               <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text} grow>🎪 Results</text>
-              {/* NEW: Subscribe button in top right */}
+              {/* Subscribe button in top right */}
               {subscriptionData && !subscriptionData.isSubscribed && (
                 <button
                   appearance="primary"
@@ -207,7 +210,7 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* UPDATED: Navigation buttons that redirect to community post */}
+          {/* Navigation buttons that redirect to community post */}
           {isSmallScreen ? (
             <vstack gap="small" alignment="center" padding="xxsmall">
               {/* TESTING EXCEPTION: Back button only for u/liamlio */}
