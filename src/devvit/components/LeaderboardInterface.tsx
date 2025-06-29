@@ -267,7 +267,7 @@ export const LeaderboardInterface = ({
                             • Playing games (+1 XP)
                           </text>
                           <text size="xsmall" color={CarnivalTheme.colors.text}>
-                            • Correct guesses (+4 XP)
+                            • Correct guesses (+2 XP)
                           </text>
                         </vstack>
                       </vstack>

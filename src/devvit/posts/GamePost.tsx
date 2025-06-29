@@ -108,7 +108,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         updatedGamePost.correctGuesses += 1;
       }
 
-      const experiencePoints = isCorrect ? 4 : 1;
+      const experiencePoints = isCorrect ? 2 : 1; // CHANGED: Reduced from 4 to 2
       const guesserPoints = isCorrect ? 1 : 0;
       
       // Save to database and update flair

@@ -290,7 +290,7 @@ export const CreateGameInterface = ({
                   • Participate in any Two Truths One Lie game (+1 XP)
                 </text>
                 <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
-                  • Guess correctly for bonus XP (+4 XP total)
+                  • Guess correctly for bonus XP (+2 XP total)
                 </text>
               </vstack>
             </vstack>
