@@ -155,7 +155,7 @@ export const LeaderboardInterface = ({
             <vstack gap="xxsmall" alignment="center">
               {/* Title */}
               <vstack gap="xsmall" alignment="center">
-                <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
+                <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
                   🏆 Two Truths One Lie
                 </text>
                 <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
@@ -176,34 +176,29 @@ export const LeaderboardInterface = ({
               )}
             </vstack>
           ) : (
-            /* Large screen: Horizontal layout with centered title */
-            <hstack alignment="middle" gap="small">
-              {/* Left side: Back button or spacer */}
-              {showBackButton && onBack ? (
-                <button
-                  appearance="secondary"
-                  onPress={onBack}
-                  size="small"
-                >
-                  ← Back
-                </button>
-              ) : (
-                <spacer width="60px" />
-              )}
-              <spacer width="60px" />
-              {/* Center: Title and subtitle - FIXED: Properly centered */}
-              <vstack gap="xsmall" alignment="center" grow>
-                <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
-                  🏆 Two Truths One Lie
-                </text>
-                <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
-                  Welcome to the carnival of deception! Can you spot the lies?
-                </text>
-              </vstack>
+            /* Large screen: Horizontal layout with centered title - FIXED */
+            <vstack gap="xsmall" alignment="center">
+              {/* Title and subtitle centered */}
+              <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
+                🏆 Two Truths One Lie
+              </text>
+              <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
+                Welcome to the carnival of deception! Can you spot the lies?
+              </text>
               
-              {/* Right side: Spacer to balance layout */}
-              <spacer width="60px" />
-            </hstack>
+              {/* Back button positioned below if needed */}
+              {showBackButton && onBack && (
+                <hstack width="100%" alignment="start">
+                  <button
+                    appearance="secondary"
+                    onPress={onBack}
+                    size="small"
+                  >
+                    ← Back
+                  </button>
+                </hstack>
+              )}
+            </vstack>
           )}
 
           {/* User Stats */}
