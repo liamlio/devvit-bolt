@@ -336,24 +336,6 @@ export const CreateGameInterface = ({
         gap="small"
         alignment={isSmallScreen ? "center top" : "center middle"}
       >
-        {/* NEW: Tips section added to CreateGameInterface */}
-        <CarnivalCard padding={isSmallScreen ? "medium" : "medium"} borderColor={CarnivalTheme.colors.accent}>
-          <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text}>
-            💡 Tips for Creating Great Games
-          </text>
-          <vstack gap="small">
-            <text size="small" color={CarnivalTheme.colors.text}>
-              • Make your truths surprising but believable
-            </text>
-            <text size="small" color={CarnivalTheme.colors.text}>
-              • Craft a lie that sounds plausible
-            </text>
-            <text size="small" color={CarnivalTheme.colors.text}>
-              • Use details to make truths more convincing
-            </text>
-          </vstack>
-        </CarnivalCard>
-
         <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
@@ -400,6 +382,30 @@ export const CreateGameInterface = ({
               </button>
             </hstack>
           )}
+        </CarnivalCard>
+
+        {/* MOVED: Tips section now appears below the main create game card */}
+        <CarnivalCard padding={isSmallScreen ? "medium" : "medium"} borderColor={CarnivalTheme.colors.accent}>
+          <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text}>
+            💡 Tips for Creating Viral Games
+          </text>
+          <vstack gap="small">
+            <text size="small" color={CarnivalTheme.colors.text}>
+              • <text weight="bold" color={CarnivalTheme.colors.primary}>Create truths with HUGE shock factors</text> - the more unbelievable but true, the better!
+            </text>
+            <text size="small" color={CarnivalTheme.colors.text}>
+              • Make your lie sound completely plausible and boring
+            </text>
+            <text size="small" color={CarnivalTheme.colors.text}>
+              • <text weight="bold" color={CarnivalTheme.colors.primary}>Use wild, jaw-dropping details</text> in your truth descriptions to maximize engagement
+            </text>
+            <text size="small" color={CarnivalTheme.colors.text}>
+              • Think: "What would make people say 'NO WAY that's true!'"
+            </text>
+            <text size="small" color={CarnivalTheme.colors.text}>
+              • <text weight="bold" color={CarnivalTheme.colors.accent}>Bonus:</text> Posts with 5+ guesses earn you +10 XP!
+            </text>
+          </vstack>
         </CarnivalCard>
       </vstack>
     </CarnivalBackground>
