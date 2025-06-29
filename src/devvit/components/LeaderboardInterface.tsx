@@ -155,12 +155,12 @@ export const LeaderboardInterface = ({
             <vstack gap="xxsmall" alignment="center">
               {/* Title */}
               <vstack gap="xsmall">
-              <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
-                🏆 Two Truths One Lie
-              </text>
-              <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
-                Welcome to the carnival of deception! Can you spot the lies?
-              </text>
+                <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
+                  🏆 Two Truths One Lie
+                </text>
+                <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
+                  Welcome to the carnival of deception! Can you spot the lies?
+                </text>
               </vstack>            
               {/* Back button row if needed */}
               {showBackButton && onBack && (
@@ -193,12 +193,12 @@ export const LeaderboardInterface = ({
               
               {/* Center: Title */}
               <vstack gap="xsmall">
-              <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
-                🏆 Two Truths One Lie
-              </text>
-              <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
-                Welcome to the carnival of deception! Can you spot the lies?
-              </text>
+                <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
+                  🏆 Two Truths One Lie
+                </text>
+                <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
+                  Welcome to the carnival of deception! Can you spot the lies?
+                </text>
               </vstack>
               {/* Right side: Spacer to balance layout */}
               <spacer width="60px" />
