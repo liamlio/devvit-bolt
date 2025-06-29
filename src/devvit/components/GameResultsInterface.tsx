@@ -105,7 +105,7 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* Responsive button layout - horizontal on small screens, vertical on large */}
+          {/* Responsive button layout - horizontal on all screens, shorten button names on smaller screens */}
           {isSmallScreen ? (
             <hstack gap="small" alignment="center" padding="xxsmall">
               {/* TESTING EXCEPTION: Back button only for u/liamlio */}
