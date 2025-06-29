@@ -46,7 +46,7 @@ export const LeaderboardInterface = ({
             Welcome to the carnival of deception! Can you spot the lies?
           </text>
 
-          {/* User Stats */}
+          {/* User Stats - More Compact Layout */}
           {userStats && (
             <vstack 
               padding="small"
@@ -57,6 +57,8 @@ export const LeaderboardInterface = ({
               gap="small"
             >
               <text size="small" weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
+              
+              {/* First Row: Level, XP, Games, Accuracy */}
               <hstack gap="large">
                 <vstack>
                   <text size="xsmall" color={CarnivalTheme.colors.text}>
@@ -78,28 +80,16 @@ export const LeaderboardInterface = ({
                 </vstack>
               </hstack>
               
-              {/* Leaderboard Positions */}
-              <vstack gap="xxsmall">
-                <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>Leaderboard Positions</text>
-                <hstack gap="large">
-                  <vstack>
-                    <text size="xsmall" color={CarnivalTheme.colors.text}>
-                      Weekly Guesser: #{userWeeklyGuesserRank || 'Unranked'}
-                    </text>
-                    <text size="xsmall" color={CarnivalTheme.colors.text}>
-                      All-Time Guesser: #{userAllTimeGuesserRank || 'Unranked'}
-                    </text>
-                  </vstack>
-                  <vstack>
-                    <text size="xsmall" color={CarnivalTheme.colors.text}>
-                      Weekly Liar: #{userWeeklyLiarRank || 'Unranked'}
-                    </text>
-                    <text size="xsmall" color={CarnivalTheme.colors.text}>
-                      All-Time Liar: #{userAllTimeLiarRank || 'Unranked'}
-                    </text>
-                  </vstack>
-                </hstack>
-              </vstack>
+              {/* Second Row: Leaderboard Positions - All in one horizontal line */}
+              <hstack gap="medium" alignment="middle">
+                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                  Weekly: #{userWeeklyGuesserRank || 'N/A'} guesser, #{userWeeklyLiarRank || 'N/A'} liar
+                </text>
+                <text size="xsmall" color={CarnivalTheme.colors.textLight}>•</text>
+                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                  All-Time: #{userAllTimeGuesserRank || 'N/A'} guesser, #{userAllTimeLiarRank || 'N/A'} liar
+                </text>
+              </hstack>
             </vstack>
           )}
 
