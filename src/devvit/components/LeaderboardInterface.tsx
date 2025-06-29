@@ -219,10 +219,10 @@ export const LeaderboardInterface = ({
                 <vstack gap="small" grow>
                   <hstack gap="large">
                     <vstack>
-                      {/* UPDATED: Display level with title using proper Devvit components */}
+                      {/* UPDATED: Display current level with title using proper Devvit components */}
                       <hstack gap="xsmall" alignment="middle">
                         <text size="xsmall" color={CarnivalTheme.colors.text}>
-                          🎯 Level {userStats.level}:
+                          🎯 Lvl. {userStats.level}:
                         </text>
                         <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
                           {(() => {
@@ -312,9 +312,16 @@ export const LeaderboardInterface = ({
                         <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
                           🎯 Next Level
                         </text>
-                        <text size="xsmall" color={CarnivalTheme.colors.text}>
-                          {nextLevelInfo.nextLevel?.name}
-                        </text>
+                        
+                        {/* UPDATED: Display next level with title using proper Devvit components */}
+                        <hstack gap="xsmall" alignment="middle">
+                          <text size="xsmall" color={CarnivalTheme.colors.text}>
+                            Lvl. {nextLevelInfo.nextLevel?.level}:
+                          </text>
+                          <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
+                            {nextLevelInfo.nextLevel?.name}
+                          </text>
+                        </hstack>
                         
                         {/* UPDATED: Progress display for small screens */}
                         <vstack gap="xxsmall">
