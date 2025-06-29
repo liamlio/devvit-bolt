@@ -23,7 +23,7 @@ export const GamePlayInterface = ({
   
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
-  const isSmallScreen = width < 380;
+  const isSmallScreen = width < 450;
 
   return (
     <CarnivalBackground>
