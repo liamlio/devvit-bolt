@@ -176,7 +176,7 @@ export const LeaderboardInterface = ({
               )}
             </vstack>
           ) : (
-            /* Large screen: Horizontal layout */
+            /* Large screen: Horizontal layout with centered title */
             <hstack alignment="middle" gap="small">
               {/* Left side: Back button or spacer */}
               {showBackButton && onBack ? (
@@ -191,15 +191,16 @@ export const LeaderboardInterface = ({
                 <spacer width="60px" />
               )}
               
-              {/* Center: Title */}
-              <vstack gap="xsmall" alignment="center">
-                <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
+              {/* Center: Title and subtitle - FIXED: Properly centered */}
+              <vstack gap="xsmall" alignment="center" grow>
+                <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
                   🏆 Two Truths One Lie
                 </text>
                 <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
                   Welcome to the carnival of deception! Can you spot the lies?
                 </text>
               </vstack>
+              
               {/* Right side: Spacer to balance layout */}
               <spacer width="60px" />
             </hstack>
