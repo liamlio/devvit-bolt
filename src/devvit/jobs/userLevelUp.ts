@@ -109,7 +109,8 @@ Your user flair in r/${subredditName} has been automatically updated to reflect 
 **💡 How to Keep Earning XP:**
 - **Play any game:** +1 XP
 - **Guess correctly:** +2 XP total
-- **Create engaging posts:** Help others earn XP and climb the liar leaderboard!
+- **Create engaging posts:** +10 XP bonus when your post gets 5+ guesses!
+- **Help others earn XP:** Climb the liar leaderboard when players guess incorrectly!
 
 ${getNextLevelInfo(newLevel)}
 

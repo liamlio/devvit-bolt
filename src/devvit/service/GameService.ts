@@ -17,6 +17,43 @@ export class GameService {
 
   async updateGamePost(gamePost: GamePost): Promise<void> {
     await this.createGamePost(gamePost);
+    
+    // Check if this post just reached 5 guesses and award bonus XP
+    if (gamePost.totalGuesses === 5) {
+      await this.awardPostEngagementBonus(gamePost.postId, gamePost.authorId, gamePost.authorUsername);
+    }
+  }
+
+  // NEW: Award bonus XP for posts that reach 5 guesses
+  private async awardPostEngagementBonus(postId: string, authorId: string, authorUsername: string): Promise<void> {
+    try {
+      // Check if we've already awarded the bonus for this post
+      const bonusKey = `post_engagement_bonus:${postId}`;
+      const alreadyAwarded = await this.redis.get(bonusKey);
+      
+      if (alreadyAwarded) {
+        console.log(`🎯 Engagement bonus already awarded for post ${postId}`);
+        return;
+      }
+
+      // Award 10 XP for creating an engaging post
+      const bonusXP = 10;
+      console.log(`🎉 Awarding ${bonusXP} XP engagement bonus to u/${authorUsername} for post ${postId} reaching 5 guesses!`);
+      
+      const userScore = await this.getUserScore(authorId);
+      userScore.username = authorUsername;
+      userScore.experience += bonusXP;
+      
+      await this.updateUserScore(userScore);
+      
+      // Mark this post as having received the bonus
+      await this.redis.set(bonusKey, 'true');
+      
+      console.log(`✅ Successfully awarded engagement bonus to u/${authorUsername}. New XP: ${userScore.experience}`);
+      
+    } catch (error) {
+      console.error(`❌ Error awarding engagement bonus for post ${postId}:`, error);
+    }
   }
 
   // User Guess Management
