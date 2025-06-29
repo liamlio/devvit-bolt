@@ -222,11 +222,11 @@ export const CreateGameInterface = ({
         <vstack 
           width="100%" 
           height="100%" 
-          padding={isSmallScreen ? "medium" : "large"} 
-          gap="small"
+          padding={isSmallScreen ? "xsmall" : "large"} 
+          gap="xsmall"
           alignment="center middle"
         >
-          <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
+          <CarnivalCard padding={isSmallScreen ? "small" : "medium"}>
             <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪</text>
             <text alignment="center" color={CarnivalTheme.colors.text}>
               Checking your level...
@@ -247,18 +247,18 @@ export const CreateGameInterface = ({
         <vstack 
           width="100%" 
           height="100%" 
-          padding={isSmallScreen ? "medium" : "large"} 
-          gap="small"
+          padding={isSmallScreen ? "xsmall" : "large"} 
+          gap="xsmall"
           alignment={isSmallScreen ? "center top" : "center middle"}
         >
-          <CarnivalCard padding={isSmallScreen ? "medium" : "large"} borderColor={CarnivalTheme.colors.warning}>
+          <CarnivalCard padding={isSmallScreen ? "small" : "large"} borderColor={CarnivalTheme.colors.warning}>
             <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🤡</text>
             <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text}>
               Level Up Required!
             </text>
             
             <vstack 
-              padding="medium"
+              padding={isSmallScreen ? "small" : "medium"}
               backgroundColor="rgba(255, 165, 0, 0.1)" 
               cornerRadius="medium"
               border="thin"
@@ -278,7 +278,7 @@ export const CreateGameInterface = ({
                 🎯 How to Level Up:
               </text>
               <vstack 
-                padding="medium"
+                padding={isSmallScreen ? "small" : "medium"}
                 backgroundColor={CarnivalTheme.colors.background} 
                 cornerRadius="medium"
                 gap="small"
@@ -301,7 +301,7 @@ export const CreateGameInterface = ({
             
             {/* Responsive button layout */}
             {isSmallScreen ? (
-              <vstack gap="medium" alignment="center">
+              <vstack gap="small" alignment="center">
                 <button
                   appearance="secondary"
                   onPress={onBack}
@@ -332,11 +332,11 @@ export const CreateGameInterface = ({
       <vstack 
         width="100%" 
         height="100%" 
-        padding={isSmallScreen ? "medium" : "large"} 
-        gap="small"
+        padding={isSmallScreen ? "xsmall" : "large"} 
+        gap="xsmall"
         alignment={isSmallScreen ? "center top" : "center middle"}
       >
-        <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
+        <CarnivalCard padding={isSmallScreen ? "small" : "medium"}>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
             Ready to create your Two Truths One Lie game?
@@ -357,7 +357,7 @@ export const CreateGameInterface = ({
           
           {/* Responsive button layout */}
           {isSmallScreen ? (
-            <vstack gap="medium" alignment="center">
+            <vstack gap="small" alignment="center">
               <button
                 appearance="primary"
                 onPress={handleOpenWebview}
@@ -392,11 +392,11 @@ export const CreateGameInterface = ({
         </CarnivalCard>
 
         {/* MOVED: Tips section now appears below the main create game card */}
-        <CarnivalCard padding={isSmallScreen ? "small" : "medium"} borderColor={CarnivalTheme.colors.accent} >
+        <CarnivalCard padding={isSmallScreen ? "xsmall" : "medium"} borderColor={CarnivalTheme.colors.accent}>
           <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text}>
             💡 Tips for Creating Viral Games
           </text>
-          <vstack gap="small">
+          <vstack gap="xsmall">
             <text size="small" color={CarnivalTheme.colors.text}>
               • Create truths with HUGE shock factors - the more unbelievable but true, the better!
             </text>
