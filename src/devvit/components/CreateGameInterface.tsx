@@ -126,36 +126,27 @@ export const CreateGameInterface = ({
       },
     });
 
-    // FIXED: Properly randomize the lie position
-    // Create array of statements and shuffle them
-    const statementsWithType = [
-      { statement: truth1, type: 'truth1' },
-      { statement: truth2, type: 'truth2' },
-      { statement: lie, type: 'lie' }
-    ];
+    // FIXED: Properly randomize the positions without changing which statement is the lie
+    // Create array with statements in their original positions
+    const statements = [truth1, truth2, lie];
     
     // Shuffle the array to randomize positions
-    for (let i = statementsWithType.length - 1; i > 0; i--) {
+    for (let i = statements.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [statementsWithType[i], statementsWithType[j]] = [statementsWithType[j], statementsWithType[i]];
+      [statements[i], statements[j]] = [statements[j], statements[i]];
     }
     
-    // Find where the lie ended up after shuffling
-    const lieIndex = statementsWithType.findIndex(item => item.type === 'lie');
-    
-    // Extract the shuffled statements in their new order
-    const shuffledTruth1 = statementsWithType.find(item => item.type === 'truth1')!.statement;
-    const shuffledTruth2 = statementsWithType.find(item => item.type === 'truth2')!.statement;
-    const shuffledLie = statementsWithType.find(item => item.type === 'lie')!.statement;
+    // Find where the original lie ended up after shuffling
+    const lieIndex = statements.findIndex(statement => statement === lie);
     
     const gamePost: GamePostType = {
       postId: post.id,
       authorId: userId,
       authorUsername: user.username,
-      truth1: shuffledTruth1,
-      truth2: shuffledTruth2,
-      lie: shuffledLie,
-      lieIndex, // This now correctly reflects the actual position of the lie
+      truth1: statements[0], // First position after shuffle
+      truth2: statements[1], // Second position after shuffle  
+      lie: statements[2],    // Third position after shuffle
+      lieIndex, // This now correctly reflects where the original lie is positioned
       createdAt: Date.now(),
       totalGuesses: 0,
       correctGuesses: 0,
