@@ -222,7 +222,7 @@ export const LeaderboardInterface = ({
                       {/* UPDATED: Display current level with title using proper Devvit components */}
                       <hstack gap="xsmall" alignment="middle">
                         <text size="xsmall" color={CarnivalTheme.colors.text}>
-                          🎯 Lvl. {userStats.level}:
+                          🎯 Lvl. {userStats.level}: 
                         </text>
                         <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
                           {(() => {
