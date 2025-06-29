@@ -19,7 +19,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
   const gameService = new GameService(redis);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [error, setError] = useState<string>('');
-  const [gameState, setGameState] = useState<'play' | 'result' | 'description' | 'create' | 'leaderboard' | 'fullLeaderboard'>('play');
+  const [gameState, setGameState] = useState<'play' | 'result' | 'description' | 'create' | 'leaderboard' | 'fullLeaderboard' | 'hub'>('play');
   const [viewingDescription, setViewingDescription] = useState<{ statement: Statement; title: string } | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeLeaderboardTab, setActiveLeaderboardTab] = useState<'guessers' | 'liars'>('guessers');
@@ -65,7 +65,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
 
   // Load leaderboard data when needed
   const { data: leaderboardData, loading: leaderboardLoading } = useAsync(async () => {
-    if (gameState !== 'leaderboard' && gameState !== 'fullLeaderboard') return null;
+    if (gameState !== 'leaderboard' && gameState !== 'fullLeaderboard' && gameState !== 'hub') return null;
     
     try {
       const [
@@ -240,30 +240,17 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     setGameState('result');
   };
 
-  // NEW: Navigation handlers for the three different buttons
+  // UPDATED: Navigation handlers for the three different buttons
   const handleViewLeaderboard = () => {
     setGameState('leaderboard');
   };
 
-  const handleReturnToHub = async () => {
-    try {
-      const pinnedPostId = await gameService.getPinnedPost();
-      if (pinnedPostId) {
-        const post = await reddit?.getPostById(pinnedPostId);
-        if (post) {
-          ui.navigateTo(post.url);
-          return;
-        }
-      }
-      
-      // Fallback: show toast if pinned post not found
-      ui.showToast('Community hub not found. Please check for the pinned post.');
-    } catch (error) {
-      console.error('Error navigating to hub:', error);
-      ui.showToast('Error navigating to hub. Please try again.');
-    }
+  // FIXED: Show hub interface instead of navigating to URL
+  const handleReturnToHub = () => {
+    setGameState('hub');
   };
 
+  // FIXED: Show create interface instead of navigating to URL
   const handleCreatePost = () => {
     setGameState('create');
   };
@@ -280,7 +267,12 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     setGameState('leaderboard');
   };
 
+  // FIXED: Back from create and hub should return to results
   const handleBackFromCreate = () => {
+    setGameState('result');
+  };
+
+  const handleBackFromHub = () => {
     setGameState('result');
   };
 
@@ -324,6 +316,31 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     // TESTING EXCEPTION: Check if this is the test user
     const isTestUser = currentUser?.username === 'liamlio';
 
+    // NEW: Hub interface (community hub shown within the game post)
+    if (gameState === 'hub') {
+      if (leaderboardLoading || !leaderboardData) {
+        return <LoadingState />;
+      }
+
+      return (
+        <LeaderboardInterface
+          context={context}
+          guesserLeaderboard={leaderboardData.weeklyGuesserLeaderboard}
+          liarLeaderboard={leaderboardData.weeklyLiarLeaderboard}
+          userStats={leaderboardData.userStats}
+          userWeeklyGuesserRank={leaderboardData.userWeeklyGuesserRank}
+          userWeeklyLiarRank={leaderboardData.userWeeklyLiarRank}
+          userAllTimeGuesserRank={leaderboardData.userAllTimeGuesserRank}
+          userAllTimeLiarRank={leaderboardData.userAllTimeLiarRank}
+          onCreateGame={handleCreatePost}
+          onViewFullLeaderboard={handleViewFullLeaderboard}
+          // NEW: Add back button functionality
+          onBack={handleBackFromHub}
+          showBackButton={true}
+        />
+      );
+    }
+
     // Create game interface
     if (gameState === 'create') {
       return (
@@ -353,6 +370,9 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
           userAllTimeLiarRank={leaderboardData.userAllTimeLiarRank}
           onCreateGame={handleCreatePost}
           onViewFullLeaderboard={handleViewFullLeaderboard}
+          // NEW: Add back button functionality
+          onBack={handleBackFromLeaderboard}
+          showBackButton={true}
         />
       );
     }

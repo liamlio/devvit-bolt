@@ -17,6 +17,9 @@ interface LeaderboardInterfaceProps {
   userAllTimeLiarRank?: number;
   onCreateGame: () => void;
   onViewFullLeaderboard: () => void;
+  // NEW: Optional back button functionality
+  onBack?: () => void;
+  showBackButton?: boolean;
 }
 
 export const LeaderboardInterface = ({ 
@@ -29,7 +32,9 @@ export const LeaderboardInterface = ({
   userAllTimeGuesserRank,
   userAllTimeLiarRank,
   onCreateGame,
-  onViewFullLeaderboard
+  onViewFullLeaderboard,
+  onBack,
+  showBackButton = false
 }: LeaderboardInterfaceProps): JSX.Element => {
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
@@ -130,7 +135,23 @@ export const LeaderboardInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
         <CarnivalCard padding="medium">
-          <text size="large" alignment="center" color={CarnivalTheme.colors.text}>🏆 Two Truths One Lie</text>
+          {/* NEW: Header with optional back button */}
+          {showBackButton && onBack ? (
+            <hstack alignment="middle" gap="medium">
+              <button
+                appearance="secondary"
+                onPress={onBack}
+                size="small"
+              >
+                ← Back
+              </button>
+              <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>🏆 Two Truths One Lie</text>
+              <spacer width="60px" /> {/* Balance the back button */}
+            </hstack>
+          ) : (
+            <text size="large" alignment="center" color={CarnivalTheme.colors.text}>🏆 Two Truths One Lie</text>
+          )}
+          
           <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
             Welcome to the carnival of deception! Can you spot the lies?
           </text>
