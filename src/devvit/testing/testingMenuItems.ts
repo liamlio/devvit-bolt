@@ -24,7 +24,7 @@ export const resetLiamlioLevel = Devvit.addMenuItem({
       
       // Reset to level 0 (0 experience)
       userScore.experience = 0;
-      userScore.level = 0; // Will be recalculated to level 0 (Clown)
+      userScore.level = 0; // Will be recalculated to level 0 (Huge Clown)
       
       await gameService.updateUserScore(userScore);
       
@@ -34,7 +34,7 @@ export const resetLiamlioLevel = Devvit.addMenuItem({
         await gameService.updateUserFlair(targetUsername, gameSettings.subredditName, reddit);
       }
       
-      ui.showToast({ text: `Reset u/${targetUsername} to Level 0: Clown (0 XP)! 🤡` });
+      ui.showToast({ text: `Reset u/${targetUsername} to Level 0: Huge Clown (0 XP)! 🤡` });
     } catch (error) {
       console.error('Error resetting user level:', error);
       ui.showToast({
@@ -67,16 +67,17 @@ export const levelUpLiamlio = Devvit.addMenuItem({
       
       const currentLevel = gameService.getLevelByExperience(userScore.experience);
       
-      // Get all levels to find the next one
+      // Get all levels to find the next one (now 9 levels: 0-8)
       const levels = [
-        { level: 0, name: 'Clown', experienceRequired: 0 },
-        { level: 1, name: 'Rookie Detective', experienceRequired: 1 },
-        { level: 2, name: 'Truth Seeker', experienceRequired: 10 },
-        { level: 3, name: 'Lie Detector', experienceRequired: 20 },
-        { level: 4, name: 'Master Sleuth', experienceRequired: 35 },
-        { level: 5, name: 'Truth Master', experienceRequired: 55 },
-        { level: 6, name: 'Carnival Legend', experienceRequired: 80 },
-        { level: 7, name: 'Ultimate Detective', experienceRequired: 110 },
+        { level: 0, name: 'Huge Clown', experienceRequired: 0 },
+        { level: 1, name: 'Clown', experienceRequired: 1 },
+        { level: 2, name: 'Rookie Detective', experienceRequired: 10 },
+        { level: 3, name: 'Truth Seeker', experienceRequired: 20 },
+        { level: 4, name: 'Lie Detector', experienceRequired: 35 },
+        { level: 5, name: 'Master Sleuth', experienceRequired: 55 },
+        { level: 6, name: 'Truth Master', experienceRequired: 80 },
+        { level: 7, name: 'Carnival Legend', experienceRequired: 110 },
+        { level: 8, name: 'Ultimate Detective', experienceRequired: 150 },
       ];
       
       const nextLevelIndex = levels.findIndex(l => l.level === currentLevel.level + 1);
