@@ -173,6 +173,7 @@ export const LeaderboardInterface = ({
             </vstack>
           ) : (
             /* Large screen: Horizontal layout */
+          <vstack gap="xxsmall">
             <hstack alignment="middle" gap="small">
               {/* Left side: Back button or spacer */}
               {showBackButton && onBack ? (
@@ -196,9 +197,6 @@ export const LeaderboardInterface = ({
               <spacer width="60px" />
             </hstack>
           )}
-          
-          {/* FIXED: Properly wrap title and subtitle in their own vstack */}
-          <vstack gap="xxsmall">
             <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
               Welcome to the carnival of deception! Can you spot the lies?
             </text>
