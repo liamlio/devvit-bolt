@@ -126,16 +126,36 @@ export const CreateGameInterface = ({
       },
     });
 
-    const lieIndex = Math.floor(Math.random() * 3);
+    // FIXED: Properly randomize the lie position
+    // Create array of statements and shuffle them
+    const statementsWithType = [
+      { statement: truth1, type: 'truth1' },
+      { statement: truth2, type: 'truth2' },
+      { statement: lie, type: 'lie' }
+    ];
+    
+    // Shuffle the array to randomize positions
+    for (let i = statementsWithType.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [statementsWithType[i], statementsWithType[j]] = [statementsWithType[j], statementsWithType[i]];
+    }
+    
+    // Find where the lie ended up after shuffling
+    const lieIndex = statementsWithType.findIndex(item => item.type === 'lie');
+    
+    // Extract the shuffled statements in their new order
+    const shuffledTruth1 = statementsWithType.find(item => item.type === 'truth1')!.statement;
+    const shuffledTruth2 = statementsWithType.find(item => item.type === 'truth2')!.statement;
+    const shuffledLie = statementsWithType.find(item => item.type === 'lie')!.statement;
     
     const gamePost: GamePostType = {
       postId: post.id,
       authorId: userId,
       authorUsername: user.username,
-      truth1,
-      truth2,
-      lie,
-      lieIndex,
+      truth1: shuffledTruth1,
+      truth2: shuffledTruth2,
+      lie: shuffledLie,
+      lieIndex, // This now correctly reflects the actual position of the lie
       createdAt: Date.now(),
       totalGuesses: 0,
       correctGuesses: 0,

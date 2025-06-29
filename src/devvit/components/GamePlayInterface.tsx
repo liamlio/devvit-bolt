@@ -27,8 +27,8 @@ export const GamePlayInterface = ({
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding={isSmallScreen ? "medium" : "xlarge"} gap="medium" overflow="scroll">
-        <CarnivalCard padding="small">
+      <vstack width="100%" height="100%" padding={isSmallScreen ? "medium" : "large"} gap="medium" overflow="scroll">
+        <CarnivalCard padding={isSmallScreen ? "small" : "medium"}>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Two Truths One Lie</text>
           <text alignment="center" color={CarnivalTheme.colors.textLight}>
             Can you spot the lie? Choose the statement you think is false!
