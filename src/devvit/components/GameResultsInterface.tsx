@@ -25,7 +25,7 @@ export const GameResultsInterface = ({
   showBackButton = false,
   onBackToGuessing
 }: GameResultsInterfaceProps): JSX.Element => {
-  const { redis, ui, reddit } = context;
+  const { redis, ui } = context;
   const gameService = new GameService(redis);
 
   // Get the pinned post URL for navigation
@@ -42,54 +42,6 @@ export const GameResultsInterface = ({
       return null;
     }
   });
-
-  // FIXED: Check if user is subscribed to the subreddit using correct API
-  const { data: subscriptionData } = useAsync(async () => {
-    if (!reddit) return { isSubscribed: false, subredditName: '' };
-    
-    try {
-      const subreddit = await reddit.getCurrentSubreddit();
-      const user = await reddit.getCurrentUser();
-      
-      if (!user) return { isSubscribed: false, subredditName: subreddit.name };
-      
-      // Use the correct method to check subscription status
-      const subscription = await reddit.getSubscriptionBySubredditName(subreddit.name);
-      const isSubscribed = subscription !== null;
-      
-      return {
-        isSubscribed,
-        subredditName: subreddit.name,
-      };
-    } catch (error) {
-      console.error('Error checking subscription status:', error);
-      return { isSubscribed: false, subredditName: '' };
-    }
-  });
-
-  // Handle subscribe action with runtime check
-  const handleSubscribe = async () => {
-    if (!reddit || !subscriptionData) return;
-    
-    try {
-      const subreddit = await reddit.getCurrentSubreddit();
-      
-      // Check if subscribe method is available
-      if (typeof reddit.subscribe === 'function') {
-        await reddit.subscribe(subreddit.name);
-        ui.showToast(`🎪 Welcome to r/${subreddit.name}! You're now subscribed!`);
-        
-        // Refresh subscription data
-        window.location.reload();
-      } else {
-        console.warn('reddit.subscribe method not available in current environment');
-        ui.showToast(`Please subscribe to r/${subreddit.name} manually to stay updated with new games!`);
-      }
-    } catch (error) {
-      console.error('Error subscribing to subreddit:', error);
-      ui.showToast('Error subscribing to community. Please try subscribing manually.');
-    }
-  };
 
   // FIXED: Create the statements array in the same order as displayed in GamePlayInterface
   const statements: Statement[] = [null, null, null];
@@ -131,23 +83,8 @@ export const GameResultsInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding={isSmallScreen ? "small" : "medium"} gap="small">
         <CarnivalCard padding="small">
-          {/* Header with subscribe button */}
           <vstack width="100%" height="100%" padding="xxsmall" gap="xxsmall">
-            <hstack alignment="middle" gap="medium">
-              <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text} grow>🎪 Results</text>
-              {/* Subscribe button in top right */}
-              {subscriptionData && !subscriptionData.isSubscribed && (
-                <button
-                  appearance="primary"
-                  onPress={handleSubscribe}
-                  size="small"
-                  backgroundColor={CarnivalTheme.colors.accent}
-                >
-                  ➕ Subscribe
-                </button>
-              )}
-            </hstack>
-            
+            <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
             <text size={isSmallScreen ? "small" : "medium"} alignment="center" color={CarnivalTheme.colors.text}>
               {userGuess?.isCorrect 
                 ? '🎉 Congratulations! You spotted the lie!' 

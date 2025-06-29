@@ -74,11 +74,18 @@ export const LeaderboardInterface = ({
     
     try {
       const subreddit = await reddit.getCurrentSubreddit();
-      await reddit.subscribe(subreddit.name);
-      ui.showToast(`🎪 Welcome to r/${subreddit.name}! You're now subscribed!`);
       
-      // Refresh subscription data
-      window.location.reload();
+      // Check if subscribe method is available
+      if (typeof reddit.subscribe === 'function') {
+        await reddit.subscribe(subreddit.name);
+        ui.showToast(`🎪 Welcome to r/${subreddit.name}! You're now subscribed!`);
+        
+        // Refresh subscription data
+        window.location.reload();
+      } else {
+        console.warn('reddit.subscribe method not available in current environment');
+        ui.showToast(`Please subscribe to r/${subreddit.name} manually to stay updated with new games!`);
+      }
     } catch (error) {
       console.error('Error subscribing to subreddit:', error);
       ui.showToast('Error subscribing to community. Please try again.');
@@ -177,7 +184,7 @@ export const LeaderboardInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
         <CarnivalCard padding="medium">
-          {/* NEW: Header with optional back button and subscribe button */}
+          {/* UPDATED: Header with proper centering and subscribe button */}
           {showBackButton && onBack ? (
             <hstack alignment="middle" gap="medium">
               <button
@@ -188,34 +195,38 @@ export const LeaderboardInterface = ({
                 ← Back
               </button>
               <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>🏆 Two Truths One Lie</text>
-              {/* NEW: Subscribe button in top right */}
+              {/* Subscribe button in top right - red with white text */}
               {subscriptionData && !subscriptionData.isSubscribed && (
                 <button
                   appearance="primary"
                   onPress={handleSubscribe}
                   size="small"
-                  backgroundColor={CarnivalTheme.colors.accent}
+                  backgroundColor="#FF4444"
                 >
-                  ➕ Subscribe
+                  Subscribe
                 </button>
               )}
               {subscriptionData && subscriptionData.isSubscribed && (
-                <spacer width="60px" />
+                <spacer width="80px" />
               )}
             </hstack>
           ) : (
             <hstack alignment="middle" gap="medium">
+              <spacer width="80px" />
               <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>🏆 Two Truths One Lie</text>
-              {/* NEW: Subscribe button in top right */}
+              {/* Subscribe button in top right - red with white text */}
               {subscriptionData && !subscriptionData.isSubscribed && (
                 <button
                   appearance="primary"
                   onPress={handleSubscribe}
                   size="small"
-                  backgroundColor={CarnivalTheme.colors.accent}
+                  backgroundColor="#FF4444"
                 >
-                  ➕ Subscribe
+                  Subscribe
                 </button>
+              )}
+              {subscriptionData && subscriptionData.isSubscribed && (
+                <spacer width="80px" />
               )}
             </hstack>
           )}
