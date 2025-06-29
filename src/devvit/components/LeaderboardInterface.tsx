@@ -136,7 +136,7 @@ export const LeaderboardInterface = ({
             width="100%"
             size="small"
           >
-            Create Your Game 🎪
+            Create a Game 🎪
           </button>
         </CarnivalCard>
       </vstack>
