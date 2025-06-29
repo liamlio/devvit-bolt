@@ -4,15 +4,6 @@ import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
 import { GameService } from '../service/GameService.js';
 import type { GamePost, Statement, UserGuess } from '../../shared/types/game.js';
-import { abbreviateNumber, capitalize, obfuscateString } from '../utils.js';
-
-function includesCaseInsensitive(array: string[], target: string): boolean {
-  return array.some((item) => item.toLowerCase() === target.toLowerCase());
-}
-
-function dictionaryContainsWord(dictionaries: Dictionary[], word: string): boolean {
-  return dictionaries.some((entry) => includesCaseInsensitive(entry.words, word));
-}
 
 interface GameResultsInterfaceProps {
   context: Context;
@@ -22,9 +13,6 @@ interface GameResultsInterfaceProps {
   onViewLeaderboard: () => void;
   onReturnToHub: () => void;
   onCreatePost: () => void;
-  // TESTING EXCEPTION: Optional back button for u/liamlio testing
-  showBackButton?: boolean;
-  onBackToGuessing?: () => void;
 }
 
 export const GameResultsInterface = ({ 
@@ -34,9 +22,7 @@ export const GameResultsInterface = ({
   onViewDescription,
   onViewLeaderboard,
   onReturnToHub,
-  onCreatePost,
-  showBackButton = false,
-  onBackToGuessing
+  onCreatePost
 }: GameResultsInterfaceProps): JSX.Element => {
   // FIXED: Create the statements array in the same order as displayed in GamePlayInterface
   const statements: Statement[] = [null, null, null];
@@ -56,22 +42,6 @@ export const GameResultsInterface = ({
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
-
-  // Get pinned post URL for hub navigation
-  const { data: pinnedPostUrl } = useAsync(async () => {
-    try {
-      const gameService = new GameService(context.redis);
-      const pinnedPostId = await gameService.getPinnedPost();
-      if (pinnedPostId && context.reddit) {
-        const post = await context.reddit.getPostById(pinnedPostId);
-        return post?.url;
-      }
-      return null;
-    } catch (error) {
-      console.error('Error getting pinned post URL:', error);
-      return null;
-    }
-  });
 
   return (
     <CarnivalBackground>
@@ -146,20 +116,8 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* REVERTED: Button layout with URL-based navigation */}
+          {/* CLEANED UP: Removed all test-specific functionality */}
           <vstack gap="small" alignment="center" padding="xxsmall">
-            {/* TESTING EXCEPTION: Back button only for u/liamlio */}
-            {showBackButton && onBackToGuessing && (
-              <button
-                appearance="destructive"
-                onPress={onBackToGuessing}
-                width="100%"
-                size="small"
-              >
-                🔄 Test Again (liamlio only)
-              </button>
-            )}
-            
             {/* Create Post button */}
             <button
               appearance="primary"
@@ -170,17 +128,11 @@ export const GameResultsInterface = ({
               ➕ Create Post
             </button>
             
-            {/* REVERTED: Return to Hub and View Leaderboard using URL navigation */}
+            {/* Return to Hub and View Leaderboard side by side */}
             <hstack gap="small" width="100%">
               <button
                 appearance="secondary"
-                onPress={() => {
-                  if (pinnedPostUrl) {
-                    context.ui.navigateTo(pinnedPostUrl);
-                  } else {
-                    context.ui.showToast('Community hub not found');
-                  }
-                }}
+                onPress={onReturnToHub}
                 grow
                 size="small"
               >
@@ -188,13 +140,7 @@ export const GameResultsInterface = ({
               </button>
               <button
                 appearance="secondary"
-                onPress={() => {
-                  if (pinnedPostUrl) {
-                    context.ui.navigateTo(pinnedPostUrl);
-                  } else {
-                    context.ui.showToast('Community hub not found');
-                  }
-                }}
+                onPress={onViewLeaderboard}
                 grow
                 size="small"
               >
