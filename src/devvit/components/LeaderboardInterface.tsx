@@ -161,8 +161,7 @@ export const LeaderboardInterface = ({
               <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
                 Welcome to the carnival of deception! Can you spot the lies?
               </text>
-              </vstack>
-              
+              </vstack>            
               {/* Back button row if needed */}
               {showBackButton && onBack && (
                 <hstack width="100%" alignment="start">
