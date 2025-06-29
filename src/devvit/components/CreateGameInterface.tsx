@@ -336,7 +336,7 @@ export const CreateGameInterface = ({
         gap="small"
         alignment={isSmallScreen ? "center top" : "center middle"}
       >
-        <CarnivalCard padding={isSmallScreen ? "medium" : "medium"} width="fill">
+        <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
             Ready to create your Two Truths One Lie game?
@@ -392,7 +392,7 @@ export const CreateGameInterface = ({
         </CarnivalCard>
 
         {/* MOVED: Tips section now appears below the main create game card */}
-        <CarnivalCard padding={isSmallScreen ? "medium" : "medium"} borderColor={CarnivalTheme.colors.accent}>
+        <CarnivalCard padding={isSmallScreen ? "small" : "medium"} borderColor={CarnivalTheme.colors.accent} >
           <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text}>
             💡 Tips for Creating Viral Games
           </text>
