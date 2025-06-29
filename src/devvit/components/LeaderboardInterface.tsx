@@ -319,7 +319,7 @@ export const LeaderboardInterface = ({
                             Lvl. {nextLevelInfo.nextLevel?.level}: 
                           </text>
                           <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
-                            {nextLevelInfo.nextLevel?.name}
+                             {nextLevelInfo.nextLevel?.name}
                           </text>
                         </hstack>
                         
