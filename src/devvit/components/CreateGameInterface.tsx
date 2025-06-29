@@ -391,19 +391,19 @@ export const CreateGameInterface = ({
           </text>
           <vstack gap="small">
             <text size="small" color={CarnivalTheme.colors.text}>
-              • <text weight="bold" color={CarnivalTheme.colors.primary}>Create truths with HUGE shock factors</text> - the more unbelievable but true, the better!
+              • Create truths with HUGE shock factors - the more unbelievable but true, the better!
             </text>
             <text size="small" color={CarnivalTheme.colors.text}>
               • Make your lie sound completely plausible and boring
             </text>
             <text size="small" color={CarnivalTheme.colors.text}>
-              • <text weight="bold" color={CarnivalTheme.colors.primary}>Use wild, jaw-dropping details</text> in your truth descriptions to maximize engagement
+              • Use wild, jaw-dropping details in your truth descriptions to maximize engagement
             </text>
             <text size="small" color={CarnivalTheme.colors.text}>
               • Think: "What would make people say 'NO WAY that's true!'"
             </text>
-            <text size="small" color={CarnivalTheme.colors.text}>
-              • <text weight="bold" color={CarnivalTheme.colors.accent}>Bonus:</text> Posts with 5+ guesses earn you +10 XP!
+            <text size="small" color={CarnivalTheme.colors.accent}>
+              • Bonus: Posts with 5+ guesses earn you +10 XP!
             </text>
           </vstack>
         </CarnivalCard>
