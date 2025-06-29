@@ -477,16 +477,19 @@ export const LeaderboardInterface = ({
             Create a Game 🎪
           </button>
 
-          {/* MOVED: Subscribe button now appears below Create a Game button */}
-          <button
-            appearance="primary"
+          {/* UPDATED: Subscribe button now red with white text */}
+          <hstack
+            backgroundColor="#FF4444"
+            cornerRadius="medium"
+            padding="small"
             onPress={handleSubscribe}
             width="100%"
-            size="small"
-            backgroundColor="#FF4444"
+            alignment="center middle"
           >
-            Subscribe
-          </button>
+            <text color="white" weight="bold" size="small">
+              Subscribe
+            </text>
+          </hstack>
         </CarnivalCard>
       </vstack>
     </CarnivalBackground>
