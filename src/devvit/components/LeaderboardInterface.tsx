@@ -109,13 +109,13 @@ export const LeaderboardInterface = ({
     const levels = [
       { level: 0, name: 'Huge Clown', experienceRequired: 0 },
       { level: 1, name: 'Clown', experienceRequired: 1 },
-      { level: 2, name: 'Rookie Detective', experienceRequired: 10 },
-      { level: 3, name: 'Truth Seeker', experienceRequired: 20 },
-      { level: 4, name: 'Lie Detector', experienceRequired: 35 },
-      { level: 5, name: 'Master Sleuth', experienceRequired: 55 },
-      { level: 6, name: 'Truth Master', experienceRequired: 80 },
-      { level: 7, name: 'Carnival Legend', experienceRequired: 110 },
-      { level: 8, name: 'Ultimate Detective', experienceRequired: 150 },
+      { level: 2, name: 'Rookie Detective', experienceRequired: 20 },
+      { level: 3, name: 'Truth Seeker', experienceRequired: 40 },
+      { level: 4, name: 'Lie Detector', experienceRequired: 70 },
+      { level: 5, name: 'Master Sleuth', experienceRequired: 110 },
+      { level: 6, name: 'Truth Master', experienceRequired: 160 },
+      { level: 7, name: 'Ultimate Detective', experienceRequired: 220 },
+      { level: 8, name: 'Carnival Legend', experienceRequired: 300 },
     ];
 
     const nextLevelIndex = levels.findIndex(l => l.level === currentLevel.level + 1);
@@ -149,15 +149,26 @@ export const LeaderboardInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="xsmall" overflow="scroll">
         <CarnivalCard padding="medium" gap="small">
-          {/* UPDATED: Header layout without subscribe button */}
+          {/* UPDATED: Header layout with logo */}
           {isSmallScreen ? (
             /* Small screen: Stack title and back button vertically */
             <vstack gap="xxsmall" alignment="center">
-              {/* Title */}
+              {/* Title with logo */}
               <vstack gap="xsmall" alignment="center">
-                <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
-                  🏆 Two Truths One Lie
-                </text>
+                <hstack gap="medium" alignment="middle">
+                  <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
+                    🏆 Two Truths One Lie
+                  </text>
+                  {/* Logo - smaller on mobile */}
+                  <image
+                    url="black_circle_360x360.png"
+                    imageHeight={32}
+                    imageWidth={32}
+                    height="32px"
+                    width="32px"
+                    description="Bolt.new logo"
+                  />
+                </hstack>
                 <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
                   Welcome to the carnival of deception! Can you spot the lies?
                 </text>
@@ -176,12 +187,23 @@ export const LeaderboardInterface = ({
               )}
             </vstack>
           ) : (
-            /* Large screen: Horizontal layout with centered title - FIXED */
+            /* Large screen: Horizontal layout with centered title and logo */
             <vstack gap="xsmall" alignment="center">
-              {/* Title and subtitle centered */}
-              <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
-                🏆 Two Truths One Lie
-              </text>
+              {/* Title and logo centered */}
+              <hstack gap="medium" alignment="middle">
+                <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
+                  🏆 Two Truths One Lie
+                </text>
+                {/* Logo - larger on desktop */}
+                <image
+                  url="black_circle_360x360.png"
+                  imageHeight={48}
+                  imageWidth={48}
+                  height="48px"
+                  width="48px"
+                  description="Bolt.new logo"
+                />
+              </hstack>
               <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
                 Welcome to the carnival of deception! Can you spot the lies?
               </text>
@@ -301,7 +323,7 @@ export const LeaderboardInterface = ({
                             🏆 Max Level Reached!
                           </text>
                           <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
-                            You've achieved the highest rank: Ultimate Detective!
+                            You've achieved the highest rank: Carnival Legend!
                           </text>
                         </vstack>
                       );
