@@ -57,6 +57,11 @@ export const LeaderboardInterface = ({
     }
   };
 
+  // NEW: Handle logo click to navigate to Bolt.new
+  const handleLogoClick = () => {
+    ui.navigateTo('https://bolt.new/');
+  };
+
   // Show only top 3 for preview
   const topGuessers = guesserLeaderboard.slice(0, 3);
   const topLiars = liarLeaderboard.slice(0, 3);
@@ -513,15 +518,16 @@ export const LeaderboardInterface = ({
             </vstack>
           </CarnivalCard>
 
-          {/* UPDATED: Logo positioned at top-right corner of the card */}
+          {/* UPDATED: Clickable logo positioned at top-right corner of the card */}
           <hstack width="100%" alignment="end" padding="medium">
             <image
-              url="black_circle_360x360.png"
+              url="white_circle_360x360.png"
               imageHeight={isSmallScreen ? 32 : 48}
               imageWidth={isSmallScreen ? 32 : 48}
               height={isSmallScreen ? "32px" : "48px"}
               width={isSmallScreen ? "32px" : "48px"}
-              description="Bolt.new logo"
+              description="Bolt.new logo - Click to visit bolt.new"
+              onPress={handleLogoClick}
             />
           </hstack>
         </zstack>
