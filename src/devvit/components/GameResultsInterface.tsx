@@ -71,39 +71,42 @@ export const GameResultsInterface = ({
                   borderColor={isLie ? CarnivalTheme.colors.danger : CarnivalTheme.colors.success}
                   gap="small"
                 >
-                  <hstack alignment="middle">
-                    <vstack grow gap="xxsmall">
-                      <text size={isSmallScreen ? "small" : "medium"} weight="bold" color={CarnivalTheme.colors.text} wrap>
+                  {/* Responsive layout for statement and vote info */}
+                  {isSmallScreen ? (
+                    // Small screens: statement above, vote info horizontally below
+                    <vstack gap="small">
+                      <text size="small" weight="bold" color={CarnivalTheme.colors.text} wrap>
                         {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
                       </text>
-                      {/* Responsive layout for vote info */}
-                      {isSmallScreen ? (
-                        // Small screens: vertical stack
-                        <vstack gap="xxsmall" alignment="start">
-                          {isUserChoice && (
-                            <text color={CarnivalTheme.colors.primary} weight="bold" size="xsmall">
-                              (Your choice)
-                            </text>
-                          )}
-                          <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                            {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                      <hstack gap="small" alignment="start">
+                        <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                          {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                        </text>
+                        {isUserChoice && (
+                          <text color={CarnivalTheme.colors.primary} weight="bold" size="xsmall">
+                            (Your choice)
                           </text>
-                        </vstack>
-                      ) : (
-                        // Large screens: horizontal stack
-                        <hstack gap="small" alignment="start">
-                          <text size="small" color={CarnivalTheme.colors.textLight}>
-                            {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
-                          </text>
-                          {isUserChoice && (
-                            <text color={CarnivalTheme.colors.primary} weight="bold" size="small">
-                              (Your choice)
-                            </text>
-                          )}
-                        </hstack>
-                      )}
+                        )}
+                      </hstack>
                     </vstack>
-                  </hstack>
+                  ) : (
+                    // Large screens: statement on left, vote info vertically stacked on right
+                    <hstack alignment="middle">
+                      <text grow size="medium" weight="bold" color={CarnivalTheme.colors.text} wrap>
+                        {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
+                      </text>
+                      <vstack gap="xxsmall" alignment="end">
+                        {isUserChoice && (
+                          <text color={CarnivalTheme.colors.primary} weight="bold" size="small">
+                            (Your choice)
+                          </text>
+                        )}
+                        <text size="small" color={CarnivalTheme.colors.textLight}>
+                          {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                        </text>
+                      </vstack>
+                    </hstack>
+                  )}
                   
                   {/* Show expand button for truths with descriptions */}
                   {!isLie && statement.description && (
