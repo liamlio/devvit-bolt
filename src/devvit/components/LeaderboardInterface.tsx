@@ -157,6 +157,9 @@ export const LeaderboardInterface = ({
               <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
                 🏆 Two Truths One Lie
               </text>
+              <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
+                Welcome to the carnival of deception! Can you spot the lies?
+              </text>
               
               {/* Back button row if needed */}
               {showBackButton && onBack && (
@@ -173,7 +176,7 @@ export const LeaderboardInterface = ({
             </vstack>
           ) : (
             /* Large screen: Horizontal layout */
-          <vstack gap="xxsmall">
+      <vstac
             <hstack alignment="middle" gap="small">
               {/* Left side: Back button or spacer */}
               {showBackButton && onBack ? (
@@ -192,15 +195,13 @@ export const LeaderboardInterface = ({
               <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
                 🏆 Two Truths One Lie
               </text>
-              
+              <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
+                Welcome to the carnival of deception! Can you spot the lies?
+              </text>
               {/* Right side: Spacer to balance layout */}
               <spacer width="60px" />
             </hstack>
           )}
-            <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
-              Welcome to the carnival of deception! Can you spot the lies?
-            </text>
-          </vstack>
 
           {/* User Stats */}
           {userStats && (
