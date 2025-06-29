@@ -1,4 +1,4 @@
-import { Devvit, Context, useAsync } from '@devvit/public-api';
+import { Devvit, Context, useAsync, useState } from '@devvit/public-api';
 import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
@@ -33,6 +33,9 @@ export const FullLeaderboardInterface = ({
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
 
+  // NEW: State for timeframe toggle on small screens
+  const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'alltime'>('weekly');
+
   // Get user's leaderboard positions
   const { data: userPositions } = useAsync(async () => {
     if (!userId) return null;
@@ -52,8 +55,29 @@ export const FullLeaderboardInterface = ({
     };
   }, [userId, activeTab]);
 
-  const currentWeeklyLeaderboard = activeTab === 'guessers' ? weeklyGuesserLeaderboard : weeklyLiarLeaderboard;
-  const currentAllTimeLeaderboard = activeTab === 'guessers' ? allTimeGuesserLeaderboard : allTimeLiarLeaderboard;
+  // Get current leaderboards based on active tab and timeframe
+  const getCurrentLeaderboards = () => {
+    if (isSmallScreen) {
+      // Small screen: Show one leaderboard based on both tab and timeframe
+      if (activeTab === 'guessers') {
+        return {
+          current: activeTimeframe === 'weekly' ? weeklyGuesserLeaderboard : allTimeGuesserLeaderboard,
+          timeframe: activeTimeframe,
+        };
+      } else {
+        return {
+          current: activeTimeframe === 'weekly' ? weeklyLiarLeaderboard : allTimeLiarLeaderboard,
+          timeframe: activeTimeframe,
+        };
+      }
+    } else {
+      // Large screen: Show both timeframes side by side
+      return {
+        weekly: activeTab === 'guessers' ? weeklyGuesserLeaderboard : weeklyLiarLeaderboard,
+        alltime: activeTab === 'guessers' ? allTimeGuesserLeaderboard : allTimeLiarLeaderboard,
+      };
+    }
+  };
 
   const renderLeaderboard = (entries: LeaderboardEntry[], type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime') => {
     // Show only top 10
@@ -123,6 +147,8 @@ export const FullLeaderboardInterface = ({
     );
   };
 
+  const leaderboards = getCurrentLeaderboards();
+
   return (
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
@@ -162,40 +188,81 @@ export const FullLeaderboardInterface = ({
             </button>
           </hstack>
 
-          {/* Side-by-Side Leaderboards */}
-          <hstack gap="small" grow>
-            {/* Weekly Leaderboard */}
-            <vstack 
-              grow
-              padding="small"
-              backgroundColor={CarnivalTheme.colors.background} 
-              cornerRadius="medium"
-              border="thin"
-              borderColor={CarnivalTheme.colors.primary}
-              gap="small"
-            >
-              <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+          {/* NEW: Timeframe toggle for small screens */}
+          {isSmallScreen && (
+            <hstack gap="small">
+              <button
+                appearance={activeTimeframe === 'weekly' ? 'primary' : 'secondary'}
+                onPress={() => setActiveTimeframe('weekly')}
+                grow
+                size="small"
+              >
                 📅 This Week
-              </text>
-              {renderLeaderboard(currentWeeklyLeaderboard, activeTab, 'weekly')}
-            </vstack>
+              </button>
+              <button
+                appearance={activeTimeframe === 'alltime' ? 'primary' : 'secondary'}
+                onPress={() => setActiveTimeframe('alltime')}
+                grow
+                size="small"
+              >
+                🏆 All-Time
+              </button>
+            </hstack>
+          )}
 
-            {/* All-Time Leaderboard */}
+          {/* Leaderboard Display */}
+          {isSmallScreen ? (
+            /* Small screen: Single leaderboard */
             <vstack 
               grow
               padding="small"
               backgroundColor={CarnivalTheme.colors.background} 
               cornerRadius="medium"
               border="thin"
-              borderColor={CarnivalTheme.colors.accent}
+              borderColor={activeTimeframe === 'weekly' ? CarnivalTheme.colors.primary : CarnivalTheme.colors.accent}
               gap="small"
             >
               <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
-                🏆 All-Time
+                {activeTimeframe === 'weekly' ? '📅 This Week' : '🏆 All-Time'}
               </text>
-              {renderLeaderboard(currentAllTimeLeaderboard, activeTab, 'alltime')}
+              {renderLeaderboard(leaderboards.current, activeTab, activeTimeframe)}
             </vstack>
-          </hstack>
+          ) : (
+            /* Large screen: Side-by-Side Leaderboards */
+            <hstack gap="small" grow>
+              {/* Weekly Leaderboard */}
+              <vstack 
+                grow
+                padding="small"
+                backgroundColor={CarnivalTheme.colors.background} 
+                cornerRadius="medium"
+                border="thin"
+                borderColor={CarnivalTheme.colors.primary}
+                gap="small"
+              >
+                <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                  📅 This Week
+                </text>
+                {renderLeaderboard(leaderboards.weekly, activeTab, 'weekly')}
+              </vstack>
+
+              {/* All-Time Leaderboard */}
+              <vstack 
+                grow
+                padding="small"
+                backgroundColor={CarnivalTheme.colors.background} 
+                cornerRadius="medium"
+                border="thin"
+                borderColor={CarnivalTheme.colors.accent}
+                gap="small"
+              >
+                <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                  🏆 All-Time
+                </text>
+                {renderLeaderboard(leaderboards.alltime, activeTab, 'alltime')}
+              </vstack>
+            </hstack>
+          )}
 
           <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
             💡 Weekly leaderboards reset every Monday

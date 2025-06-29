@@ -236,43 +236,79 @@ export const LeaderboardInterface = ({
                           {nextLevelInfo.nextLevel?.name}
                         </text>
                         
-                        {/* Progress bar */}
+                        {/* UPDATED: Progress display for small screens */}
                         <vstack gap="xxsmall">
-                          <hstack 
-                            width="100%" 
-                            height="6px" 
-                            backgroundColor="rgba(0,0,0,0.1)" 
-                            cornerRadius="small"
-                          >
-                            <hstack 
-                              width={`${nextLevelInfo.progressPercentage}%`} 
-                              height="100%" 
-                              backgroundColor={CarnivalTheme.colors.accent}
-                              cornerRadius="small"
-                            />
-                          </hstack>
-                          <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                            {nextLevelInfo.progressPercentage}% complete
-                          </text>
+                          {isSmallScreen ? (
+                            // Small screen: Show current/required XP instead of 0% progress bar
+                            <text size="xsmall" color={CarnivalTheme.colors.text}>
+                              {userStats.experience}/{nextLevelInfo.nextLevel?.experienceRequired} XP
+                            </text>
+                          ) : (
+                            // Large screen: Show progress bar
+                            <>
+                              <hstack 
+                                width="100%" 
+                                height="6px" 
+                                backgroundColor="rgba(0,0,0,0.1)" 
+                                cornerRadius="small"
+                              >
+                                <hstack 
+                                  width={`${nextLevelInfo.progressPercentage}%`} 
+                                  height="100%" 
+                                  backgroundColor={CarnivalTheme.colors.accent}
+                                  cornerRadius="small"
+                                />
+                              </hstack>
+                              <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                                {nextLevelInfo.progressPercentage}% complete
+                              </text>
+                            </>
+                          )}
                         </vstack>
                         
                         <text size="xsmall" color={CarnivalTheme.colors.text}>
-                          🎯 Need {nextLevelInfo.experienceNeeded} more XP
+                          {nextLevelInfo.experienceNeeded} XP to go
                         </text>
                         
                         <vstack gap="xxsmall">
                           <text size="xsmall" color={CarnivalTheme.colors.textLight}>
                             💡 Earn XP by:
                           </text>
-                          <text size="xsmall" color={CarnivalTheme.colors.text}>
-                            • Playing games (+1 XP)
-                          </text>
-                          <text size="xsmall" color={CarnivalTheme.colors.text}>
-                            • Correct guesses (+2 XP)
-                          </text>
-                          <text size="xsmall" color={CarnivalTheme.colors.text}>
-                            • Posts with 5+ guesses (+10 XP)
-                          </text>
+                          {/* UPDATED: XP methods with values on new lines for small screens */}
+                          {isSmallScreen ? (
+                            <vstack gap="xxsmall">
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                • Playing games
+                              </text>
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  (+1 XP)
+                              </text>
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                • Correct guesses
+                              </text>
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  (+2 XP)
+                              </text>
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                • Posts with 5+ guesses
+                              </text>
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  (+10 XP)
+                              </text>
+                            </vstack>
+                          ) : (
+                            <vstack gap="xxsmall">
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                • Playing games (+1 XP)
+                              </text>
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                • Correct guesses (+2 XP)
+                              </text>
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                • Posts with 5+ guesses (+10 XP)
+                              </text>
+                            </vstack>
+                          )}
                         </vstack>
                       </vstack>
                     );
