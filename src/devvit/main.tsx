@@ -354,7 +354,7 @@ Devvit.addMenuItem({
   },
 });
 
-// NEW: Test menu item to force update all weekly leaderboard users' flairs
+// NEW: Test menu item to force update all weekly leaderboard users' flairs with debugging
 Devvit.addMenuItem({
   label: '[TTOL Testing] Force Update Weekly Flairs',
   location: 'subreddit',
@@ -371,12 +371,19 @@ Devvit.addMenuItem({
         return;
       }
 
+      console.log('🔧 Starting force flair update with enhanced debugging...');
+
       // Get all users from current weekly leaderboards
       const weekNumber = gameService.getWeekNumber();
+      console.log(`📅 Current week number: ${weekNumber}`);
+      
       const [weeklyGuessers, weeklyLiars] = await Promise.all([
-        redis.zRange(`leaderboard:guesser:weekly:${weekNumber}`, 0, -1),
-        redis.zRange(`leaderboard:liar:weekly:${weekNumber}`, 0, -1),
+        redis.zRange(`leaderboard:guesser:weekly:${weekNumber}`, 0, -1, { withScores: true, reverse: true }),
+        redis.zRange(`leaderboard:liar:weekly:${weekNumber}`, 0, -1, { withScores: true, reverse: true }),
       ]);
+
+      console.log(`📊 Weekly guesser leaderboard (${weeklyGuessers.length} entries):`, weeklyGuessers);
+      console.log(`📊 Weekly liar leaderboard (${weeklyLiars.length} entries):`, weeklyLiars);
 
       // Collect all unique user IDs from both leaderboards
       const allUserIds = new Set<string>();
@@ -388,7 +395,7 @@ Devvit.addMenuItem({
         return;
       }
 
-      console.log(`Force updating flairs for ${allUserIds.size} users on weekly leaderboards`);
+      console.log(`🎯 Force updating flairs for ${allUserIds.size} unique users on weekly leaderboards`);
 
       // Update flair for each user
       let updatedCount = 0;
@@ -396,11 +403,15 @@ Devvit.addMenuItem({
       
       for (const userId of allUserIds) {
         try {
+          console.log(`\n🔍 Processing user: ${userId}`);
           const userScore = await gameService.getUserScore(userId);
+          console.log(`📊 User score data:`, userScore);
+          
           if (userScore.username) {
+            console.log(`🎨 Updating flair for u/${userScore.username}...`);
             await gameService.updateUserFlair(userScore.username, gameSettings.subredditName, reddit);
             updatedCount++;
-            console.log(`✅ Updated flair for u/${userScore.username}`);
+            console.log(`✅ Successfully updated flair for u/${userScore.username}`);
           } else {
             console.log(`⚠️ No username found for user ${userId}`);
             errorCount++;
@@ -415,10 +426,10 @@ Devvit.addMenuItem({
       const errorMessage = errorCount > 0 ? ` (${errorCount} errors - check logs)` : '';
       
       ui.showToast({ text: successMessage + errorMessage });
-      console.log(`Force flair update complete: ${updatedCount} success, ${errorCount} errors`);
+      console.log(`🏁 Force flair update complete: ${updatedCount} success, ${errorCount} errors`);
 
     } catch (error) {
-      console.error('Error during force flair update:', error);
+      console.error('❌ Error during force flair update:', error);
       ui.showToast({
         text: error instanceof Error ? `Error: ${error.message}` : 'Error updating flairs!',
       });

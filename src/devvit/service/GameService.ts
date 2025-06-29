@@ -241,19 +241,39 @@ export class GameService {
     return await this.redis.get('pinned_post');
   }
 
-  // User Flair Management - UPDATED for scalable flair system
+  // UPDATED: User Flair Management with better debugging and user lookup
   async updateUserFlair(username: string, subredditName: string, reddit: any): Promise<void> {
     try {
-      // Get user's current level and stats
-      const userScore = await this.getUserScore(`user_${username}`); // Assuming userId format
+      console.log(`🎨 Starting flair update for u/${username}`);
+      
+      // FIXED: Find user by username instead of assuming userId format
+      const userScore = await this.findUserByUsername(username);
+      
+      if (!userScore) {
+        console.log(`⚠️ No user score found for u/${username}`);
+        return;
+      }
+      
+      console.log(`📊 User score for u/${username}:`, {
+        level: userScore.level,
+        experience: userScore.experience,
+        guesserPoints: userScore.guesserPoints,
+        liarPoints: userScore.liarPoints,
+        weeklyGuesserPoints: userScore.weeklyGuesserPoints,
+        weeklyLiarPoints: userScore.weeklyLiarPoints,
+      });
+      
       const levelInfo = this.getLevelByExperience(userScore.experience);
       
-      // Get user's weekly guesser rank
-      const weeklyGuesserRank = await this.getUserLeaderboardRank(`user_${username}`, 'guesser', 'weekly');
+      // Get user's weekly guesser rank with debugging
+      const weeklyGuesserRank = await this.getUserLeaderboardRank(userScore.userId, 'guesser', 'weekly');
+      console.log(`🏆 Weekly guesser rank for u/${username}: ${weeklyGuesserRank}`);
       
       // Format the complex flair text: "{level title} | {current EXP} | Weekly guesser rank"
       const rankText = weeklyGuesserRank ? `#${weeklyGuesserRank}` : 'Unranked';
       const flairText = `${levelInfo.name} | ${userScore.experience} XP | ${rankText}`;
+      
+      console.log(`🎯 Setting flair for u/${username}: "${flairText}"`);
       
       // Set user flair with complex information and carnival-themed color
       await reddit.setUserFlair({
@@ -264,9 +284,40 @@ export class GameService {
         textColor: 'dark', // Use dark text for better readability
       });
       
-      console.log(`Updated complex flair for ${username}: "${flairText}" (Level ${levelInfo.level})`);
+      console.log(`✅ Successfully updated flair for u/${username}: "${flairText}" (Level ${levelInfo.level})`);
     } catch (error) {
-      console.error(`Error updating flair for ${username}:`, error);
+      console.error(`❌ Error updating flair for u/${username}:`, error);
+    }
+  }
+
+  // NEW: Helper method to find user by username across all user scores
+  private async findUserByUsername(username: string): Promise<UserScore | null> {
+    try {
+      // First, try to find the user in leaderboards to get their userId
+      const weekNumber = this.getWeekNumber();
+      const leaderboardKeys = [
+        'leaderboard:guesser:alltime',
+        'leaderboard:liar:alltime',
+        `leaderboard:guesser:weekly:${weekNumber}`,
+        `leaderboard:liar:weekly:${weekNumber}`,
+      ];
+
+      for (const key of leaderboardKeys) {
+        const entries = await this.redis.zRange(key, 0, -1);
+        for (const entry of entries) {
+          const userScore = await this.getUserScore(entry.member);
+          if (userScore.username === username) {
+            console.log(`🔍 Found user u/${username} with userId: ${userScore.userId}`);
+            return userScore;
+          }
+        }
+      }
+
+      console.log(`🔍 User u/${username} not found in leaderboards, checking if they have any score data...`);
+      return null;
+    } catch (error) {
+      console.error(`Error finding user by username ${username}:`, error);
+      return null;
     }
   }
 
