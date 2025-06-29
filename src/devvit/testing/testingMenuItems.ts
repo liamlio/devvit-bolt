@@ -300,8 +300,18 @@ Devvit.addMenuItem({
       const gameService = new GameService(redis);
       const weekNumber = gameService.getWeekNumber();
       
-      console.log('🧹 Starting test user cleanup...');
+      console.log('🧹 Starting comprehensive test user cleanup...');
       console.log(`📅 Current week number: ${weekNumber}`);
+      
+      // Define test usernames from our test data (without _test_ttol suffix)
+      const testUsernamesFromData = [
+        // From testGuessers
+        'DetectiveMaster', 'TruthSeeker42', 'LieSpotter', 'SherlockFan', 'MysteryLover',
+        'ClueHunter', 'PuzzleSolver', 'FactChecker', 'TruthHound', 'DeductionKing',
+        // From testLiars  
+        'MasterDeceiver', 'SilverTongue', 'TricksterPro', 'FibMaster', 'BluffKing',
+        'StorySpinner', 'TaleWeaver', 'CraftyCarnival', 'SlyFox', 'CharmingLiar'
+      ];
       
       // Get all leaderboard entries to find test users
       const leaderboardKeys = [
@@ -317,17 +327,45 @@ Devvit.addMenuItem({
         leaderboardKeys.map(key => redis.zRange(key, 0, -1))
       );
       
-      // Collect all test user IDs (those containing "_test_ttol" OR "Users_ttol")
+      // Collect all test user IDs using multiple criteria
       const testUserIds = new Set<string>();
       
       // Check all leaderboard entries for test users
-      allEntries.flat().forEach(entry => {
-        if (entry.member.includes('_test_ttol') || entry.member.includes('Users_ttol')) {
-          testUserIds.add(entry.member);
+      for (const entries of allEntries) {
+        for (const entry of entries) {
+          const userId = entry.member;
+          
+          // Get user score to check username
+          try {
+            const userScore = await gameService.getUserScore(userId);
+            const username = userScore.username;
+            
+            // Check multiple patterns:
+            // 1. UserID contains "_test_ttol" or "Users_ttol"
+            // 2. Username contains "_test_ttol" 
+            // 3. Username matches test data usernames (without suffix)
+            const isTestUser = 
+              userId.includes('_test_ttol') || 
+              userId.includes('Users_ttol') ||
+              (username && username.includes('_test_ttol')) ||
+              (username && testUsernamesFromData.includes(username));
+            
+            if (isTestUser) {
+              testUserIds.add(userId);
+              console.log(`🎯 Found test user: ${userId} (username: ${username})`);
+            }
+          } catch (error) {
+            // If we can't get user score, check userId patterns only
+            if (userId.includes('_test_ttol') || userId.includes('Users_ttol')) {
+              testUserIds.add(userId);
+              console.log(`🎯 Found test user by ID pattern: ${userId}`);
+            }
+          }
         }
-      });
+      }
       
-      console.log('🎯 Found test user IDs to remove:', Array.from(testUserIds));
+      console.log(`🎯 Total test users found: ${testUserIds.size}`);
+      console.log('📋 Test user IDs to remove:', Array.from(testUserIds));
       
       if (testUserIds.size === 0) {
         ui.showToast({ text: 'No test users found to remove! 🧹' });
