@@ -37,6 +37,14 @@ export const LeaderboardInterface = ({
   const topGuessers = guesserLeaderboard.slice(0, 3);
   const topLiars = liarLeaderboard.slice(0, 3);
 
+  const formatRank = (rank: number | undefined | null): string => {
+    if (!rank) return 'N/A';
+    if (rank === 1) return '🥇 1st';
+    if (rank === 2) return '🥈 2nd';
+    if (rank === 3) return '🥉 3rd';
+    return `#${rank}`;
+  };
+
   const renderTopThree = (entries: LeaderboardEntry[], type: 'guesser' | 'liar') => {
     if (entries.length === 0) {
       return (
@@ -92,33 +100,56 @@ export const LeaderboardInterface = ({
               <hstack gap="large">
                 <vstack>
                   <text size="xsmall" color={CarnivalTheme.colors.text}>
-                    Level {userStats.level}
+                    🎯 Level {userStats.level}
                   </text>
                   <text size="xsmall" color={CarnivalTheme.colors.text}>
-                    {userStats.experience} XP
+                    ⭐ {userStats.experience} XP
                   </text>
                 </vstack>
                 <vstack>
                   <text size="xsmall" color={CarnivalTheme.colors.text}>
-                    Games: {userStats.totalGames}
+                    🎮 Games: {userStats.totalGames}
                   </text>
                   <text size="xsmall" color={CarnivalTheme.colors.text}>
-                    Accuracy: {userStats.totalGames > 0 
+                    🎯 Accuracy: {userStats.totalGames > 0 
                       ? Math.round((userStats.correctGuesses / userStats.totalGames) * 100) 
                       : 0}%
                   </text>
                 </vstack>
               </hstack>
               
-              <hstack gap="medium" alignment="middle">
-                <text size="xsmall" color={CarnivalTheme.colors.text}>
-                  Weekly: #{userWeeklyGuesserRank || 'N/A'} guesser, #{userWeeklyLiarRank || 'N/A'} liar
+              {/* Leaderboard Positions Section */}
+              <vstack gap="xsmall">
+                <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
+                  Leaderboard Positions
                 </text>
-                <text size="xsmall" color={CarnivalTheme.colors.textLight}>•</text>
-                <text size="xsmall" color={CarnivalTheme.colors.text}>
-                  All-Time: #{userAllTimeGuesserRank || 'N/A'} guesser, #{userAllTimeLiarRank || 'N/A'} liar
-                </text>
-              </hstack>
+                
+                <hstack gap="medium">
+                  <vstack gap="xxsmall">
+                    <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                      📅 This Week
+                    </text>
+                    <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      🕵️ {formatRank(userWeeklyGuesserRank)} guesser
+                    </text>
+                    <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      🎭 {formatRank(userWeeklyLiarRank)} liar
+                    </text>
+                  </vstack>
+                  
+                  <vstack gap="xxsmall">
+                    <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                      🏆 All-Time
+                    </text>
+                    <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      🕵️ {formatRank(userAllTimeGuesserRank)} guesser
+                    </text>
+                    <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      🎭 {formatRank(userAllTimeLiarRank)} liar
+                    </text>
+                  </vstack>
+                </hstack>
+              </vstack>
             </vstack>
           )}
 
