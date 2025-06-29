@@ -176,7 +176,6 @@ export const LeaderboardInterface = ({
             </vstack>
           ) : (
             /* Large screen: Horizontal layout */
-      <vstac
             <hstack alignment="middle" gap="small">
               {/* Left side: Back button or spacer */}
               {showBackButton && onBack ? (
