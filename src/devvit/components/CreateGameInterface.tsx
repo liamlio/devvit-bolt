@@ -348,6 +348,13 @@ export const CreateGameInterface = ({
             </text>
           )}
           
+          {/* NEW: Mobile loading notice for small screens */}
+          {isSmallScreen && (
+            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+              Notice: Create post form will take a few seconds to load on mobile
+            </text>
+          )}
+          
           {/* Responsive button layout */}
           {isSmallScreen ? (
             <vstack gap="medium" alignment="center">
