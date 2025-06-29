@@ -130,8 +130,21 @@ export class GameService {
       ? `leaderboard:${type}:weekly:${weekNumber}`
       : `leaderboard:${type}:alltime`;
 
-    const rank = await this.redis.zRevRank(key, userId);
-    return rank !== null ? rank + 1 : null; // Convert 0-based to 1-based ranking
+    try {
+      // Get all members with scores in descending order
+      const allMembers = await this.redis.zRange(key, 0, -1, { withScores: true });
+      
+      // Sort by score descending (highest first)
+      allMembers.sort((a: any, b: any) => b.score - a.score);
+      
+      // Find the user's position
+      const userIndex = allMembers.findIndex((member: any) => member.member === userId);
+      
+      return userIndex !== -1 ? userIndex + 1 : null; // Convert 0-based to 1-based ranking
+    } catch (error) {
+      console.error('Error getting user leaderboard rank:', error);
+      return null;
+    }
   }
 
   // Game Settings
