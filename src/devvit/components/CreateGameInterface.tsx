@@ -274,12 +274,21 @@ export const CreateGameInterface = ({
                 <text alignment="center" color={CarnivalTheme.colors.text} wrap>
                   Play 1 game to earn 1 XP and reach Level 1!
                 </text>
-                <text size="small" alignment="center" color={CarnivalTheme.colors.textLight} wrap>
-                  • Participate in any Two Truths One Lie game (+1 XP)
-                </text>
-                <text size="small" alignment="center" color={CarnivalTheme.colors.textLight} wrap>
-                  • Guess correctly for bonus XP (+2 XP total)
-                </text>
+                
+                {/* FIXED: Proper bullet point alignment */}
+                <hstack alignment="top start" gap="xsmall">
+                  <text size="small" color={CarnivalTheme.colors.textLight}>•</text>
+                  <text size="small" color={CarnivalTheme.colors.textLight} wrap grow>
+                    Participate in any Two Truths One Lie game (+1 XP)
+                  </text>
+                </hstack>
+                
+                <hstack alignment="top start" gap="xsmall">
+                  <text size="small" color={CarnivalTheme.colors.textLight}>•</text>
+                  <text size="small" color={CarnivalTheme.colors.textLight} wrap grow>
+                    Guess correctly for bonus XP (+2 XP total)
+                  </text>
+                </hstack>
               </vstack>
             </vstack>
 
@@ -379,21 +388,41 @@ export const CreateGameInterface = ({
             💡 Tips for Creating Viral Games
           </text>
           <vstack gap="small">
-            <text size="small" color={CarnivalTheme.colors.text} wrap>
-              • Create truths with HUGE shock factors - the more unbelievable but true, the better!
-            </text>
-            <text size="small" color={CarnivalTheme.colors.text} wrap>
-              • Make your lie sound completely plausible and boring
-            </text>
-            <text size="small" color={CarnivalTheme.colors.text} wrap>
-              • Use wild, jaw-dropping details in your truth descriptions to maximize engagement
-            </text>
-            <text size="small" color={CarnivalTheme.colors.text} wrap>
-              • Think: "What would make people say 'NO WAY that's true!'"
-            </text>
-            <text size="small" color={CarnivalTheme.colors.accent} wrap>
-              • Bonus: Posts with 5+ guesses earn you +10 XP!
-            </text>
+            {/* FIXED: Proper bullet point alignment for all tips */}
+            <hstack alignment="top start" gap="xsmall">
+              <text size="small" color={CarnivalTheme.colors.text}>•</text>
+              <text size="small" color={CarnivalTheme.colors.text} wrap grow>
+                Create truths with HUGE shock factors - the more unbelievable but true, the better!
+              </text>
+            </hstack>
+            
+            <hstack alignment="top start" gap="xsmall">
+              <text size="small" color={CarnivalTheme.colors.text}>•</text>
+              <text size="small" color={CarnivalTheme.colors.text} wrap grow>
+                Make your lie sound completely plausible and boring
+              </text>
+            </hstack>
+            
+            <hstack alignment="top start" gap="xsmall">
+              <text size="small" color={CarnivalTheme.colors.text}>•</text>
+              <text size="small" color={CarnivalTheme.colors.text} wrap grow>
+                Use wild, jaw-dropping details in your truth descriptions to maximize engagement
+              </text>
+            </hstack>
+            
+            <hstack alignment="top start" gap="xsmall">
+              <text size="small" color={CarnivalTheme.colors.text}>•</text>
+              <text size="small" color={CarnivalTheme.colors.text} wrap grow>
+                Think: "What would make people say 'NO WAY that's true!'"
+              </text>
+            </hstack>
+            
+            <hstack alignment="top start" gap="xsmall">
+              <text size="small" color={CarnivalTheme.colors.accent}>•</text>
+              <text size="small" color={CarnivalTheme.colors.accent} wrap grow>
+                Bonus: Posts with 5+ guesses earn you +10 XP!
+              </text>
+            </hstack>
           </vstack>
         </CarnivalCard>
       </vstack>
