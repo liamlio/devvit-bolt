@@ -71,7 +71,7 @@ export const LeaderboardInterface = ({
             </vstack>
           )}
 
-          {/* Tab Navigation - Stack vertically on small screens */}
+          {/* Tab Navigation - Stack vertically on small screens, grow 50/50 on large screens */}
           {isSmallScreen ? (
             <vstack gap="small">
               <button
@@ -94,12 +94,14 @@ export const LeaderboardInterface = ({
               <button
                 appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
                 onPress={() => onTabChange('guessers')}
+                grow
               >
                 🕵️ Best Guessers
               </button>
               <button
                 appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
                 onPress={() => onTabChange('liars')}
+                grow
               >
                 🎭 Best Liars
               </button>
