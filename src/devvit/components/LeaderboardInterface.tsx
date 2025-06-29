@@ -154,12 +154,14 @@ export const LeaderboardInterface = ({
             /* Small screen: Stack title and back button vertically */
             <vstack gap="xxsmall" alignment="center">
               {/* Title */}
-              <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
+              <vstack gap="xsmall">
+              <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
                 🏆 Two Truths One Lie
               </text>
               <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
                 Welcome to the carnival of deception! Can you spot the lies?
               </text>
+              </vstack>
               
               {/* Back button row if needed */}
               {showBackButton && onBack && (
