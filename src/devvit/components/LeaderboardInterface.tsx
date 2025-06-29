@@ -1,10 +1,9 @@
-import { Devvit, Context, useAsync } from '@devvit/public-api';
+import { Devvit, Context, useAsync, useState } from '@devvit/public-api';
 import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
 import { GameService } from '../service/GameService.js';
 import type { LeaderboardEntry, UserScore } from '../../shared/types/game.js';
-import { useState } from '@devvit/public-api';
 
 interface LeaderboardInterfaceProps {
   context: Context;
@@ -457,39 +456,42 @@ export const LeaderboardInterface = ({
             </hstack>
           )}
 
-          {/* View Full Leaderboard Button */}
-          <button
-            appearance="secondary"
-            onPress={onViewFullLeaderboard}
-            width="100%"
-            size="small"
-          >
-            View Leaderboard 🏆
-          </button>
+          {/* UPDATED: Bottom buttons wrapped in vstack with smaller gap */}
+          <vstack gap="xsmall">
+            {/* View Full Leaderboard Button */}
+            <button
+              appearance="secondary"
+              onPress={onViewFullLeaderboard}
+              width="100%"
+              size="small"
+            >
+              View Leaderboard 🏆
+            </button>
 
-          {/* Create Game Button */}
-          <button
-            appearance="primary"
-            onPress={onCreateGame}
-            width="100%"
-            size="small"
-          >
-            Create a Game 🎪
-          </button>
+            {/* Create Game Button */}
+            <button
+              appearance="primary"
+              onPress={onCreateGame}
+              width="100%"
+              size="small"
+            >
+              Create a Game 🎪
+            </button>
 
-          {/* UPDATED: Subscribe button now red with white text */}
-          <hstack
-            backgroundColor="#FF4444"
-            cornerRadius="medium"
-            padding="small"
-            onPress={handleSubscribe}
-            width="100%"
-            alignment="center middle"
-          >
-            <text color="white" weight="bold" size="small">
-              Subscribe
-            </text>
-          </hstack>
+            {/* UPDATED: Subscribe button now red with white text */}
+            <hstack
+              backgroundColor="#FF4444"
+              cornerRadius="medium"
+              padding="small"
+              onPress={handleSubscribe}
+              width="100%"
+              alignment="center middle"
+            >
+              <text color="white" weight="bold" size="small">
+                Subscribe
+              </text>
+            </hstack>
+          </vstack>
         </CarnivalCard>
       </vstack>
     </CarnivalBackground>
