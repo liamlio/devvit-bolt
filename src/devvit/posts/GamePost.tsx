@@ -111,17 +111,17 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       const experiencePoints = isCorrect ? 4 : 1;
       const guesserPoints = isCorrect ? 1 : 0;
       
-      // Save to database
-      await Promise.all([
+      // Save to database and update flair
+      const [experienceResult, guesserResult] = await Promise.all([
         gameService.saveUserGuess(newUserGuess),
         gameService.updateGamePost(updatedGamePost),
-        gameService.awardExperience(userId, user.username, experiencePoints),
-        gameService.awardGuesserPoints(userId, user.username, guesserPoints),
+        gameService.awardExperience(userId, user.username, experiencePoints, reddit),
+        gameService.awardGuesserPoints(userId, user.username, guesserPoints, reddit),
       ]);
 
       // Don't award liar points if the author is guessing on their own post (testing exception)
       if (!isCorrect && gamePost.authorId !== userId) {
-        await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1);
+        await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1, reddit);
       }
 
       const userScore = await gameService.getUserScore(userId);

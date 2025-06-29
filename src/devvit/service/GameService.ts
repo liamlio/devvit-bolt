@@ -215,6 +215,43 @@ export class GameService {
     return await this.redis.get('pinned_post');
   }
 
+  // User Flair Management
+  async updateUserFlair(username: string, subredditName: string, reddit: any): Promise<void> {
+    try {
+      // Get user's current level
+      const userScore = await this.getUserScore(`user_${username}`); // Assuming userId format
+      const levelInfo = this.getLevelByExperience(userScore.experience);
+      
+      // Set user flair with level name
+      await reddit.setUserFlair({
+        subredditName,
+        username,
+        text: levelInfo.name,
+        backgroundColor: this.getLevelFlairColor(levelInfo.level),
+        textColor: 'dark', // Use dark text for better readability
+      });
+      
+      console.log(`Updated flair for ${username}: ${levelInfo.name}`);
+    } catch (error) {
+      console.error(`Error updating flair for ${username}:`, error);
+    }
+  }
+
+  private getLevelFlairColor(level: number): string {
+    // Return different colors for different level ranges
+    const colors = [
+      '#94A3B8', // Level 1 - Slate
+      '#60A5FA', // Level 2 - Blue  
+      '#34D399', // Level 3 - Emerald
+      '#FBBF24', // Level 4 - Amber
+      '#F97316', // Level 5 - Orange
+      '#EF4444', // Level 6 - Red
+      '#A855F7', // Level 7 - Purple
+    ];
+    
+    return colors[Math.min(level - 1, colors.length - 1)] || colors[0];
+  }
+
   // Utility Methods
   private getWeekNumber(): number {
     // Use a consistent week calculation based on Unix epoch
@@ -244,23 +281,33 @@ export class GameService {
     return levels[0];
   }
 
-  async awardExperience(userId: string, username: string, points: number): Promise<{ leveledUp: boolean; newLevel?: number }> {
+  async awardExperience(userId: string, username: string, points: number, reddit?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
     console.log(`Awarding ${points} experience to ${username} (${userId})`);
     
     const userScore = await this.getUserScore(userId);
+    const oldLevel = userScore.level;
     userScore.username = username;
     userScore.experience += points;
     
     const result = await this.updateUserScore(userScore);
     console.log(`Experience awarded. New total: ${userScore.experience}`);
     
+    // Update flair if level changed and we have reddit API access
+    if (result.leveledUp && reddit) {
+      const gameSettings = await this.getGameSettings();
+      if (gameSettings.subredditName) {
+        await this.updateUserFlair(username, gameSettings.subredditName, reddit);
+      }
+    }
+    
     return result;
   }
 
-  async awardGuesserPoints(userId: string, username: string, points: number): Promise<{ leveledUp: boolean; newLevel?: number }> {
+  async awardGuesserPoints(userId: string, username: string, points: number, reddit?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
     console.log(`Awarding ${points} guesser points to ${username} (${userId})`);
     
     const userScore = await this.getUserScore(userId);
+    const oldLevel = userScore.level;
     userScore.username = username;
     userScore.guesserPoints += points;
     userScore.weeklyGuesserPoints += points;
@@ -270,19 +317,36 @@ export class GameService {
     const result = await this.updateUserScore(userScore);
     console.log(`Guesser points awarded. New totals - All-time: ${userScore.guesserPoints}, Weekly: ${userScore.weeklyGuesserPoints}`);
     
+    // Update flair if level changed and we have reddit API access
+    if (result.leveledUp && reddit) {
+      const gameSettings = await this.getGameSettings();
+      if (gameSettings.subredditName) {
+        await this.updateUserFlair(username, gameSettings.subredditName, reddit);
+      }
+    }
+    
     return result;
   }
 
-  async awardLiarPoints(userId: string, username: string, points: number): Promise<{ leveledUp: boolean; newLevel?: number }> {
+  async awardLiarPoints(userId: string, username: string, points: number, reddit?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
     console.log(`Awarding ${points} liar points to ${username} (${userId})`);
     
     const userScore = await this.getUserScore(userId);
+    const oldLevel = userScore.level;
     userScore.username = username;
     userScore.liarPoints += points;
     userScore.weeklyLiarPoints += points;
     
     const result = await this.updateUserScore(userScore);
     console.log(`Liar points awarded. New totals - All-time: ${userScore.liarPoints}, Weekly: ${userScore.weeklyLiarPoints}`);
+    
+    // Update flair if level changed and we have reddit API access
+    if (result.leveledUp && reddit) {
+      const gameSettings = await this.getGameSettings();
+      if (gameSettings.subredditName) {
+        await this.updateUserFlair(username, gameSettings.subredditName, reddit);
+      }
+    }
     
     return result;
   }

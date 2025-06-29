@@ -167,6 +167,12 @@ export const CreateGameInterface = ({
     await gameService.createGamePost(gamePost);
     await gameService.setPostType(post.id, 'game');
 
+    // Update user flair when they create their first post
+    const gameSettings = await gameService.getGameSettings();
+    if (gameSettings.subredditName) {
+      await gameService.updateUserFlair(user.username, gameSettings.subredditName, reddit);
+    }
+
     console.log('Game post created successfully, closing webview and redirecting');
     
     // Close webview and redirect to new post

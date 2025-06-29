@@ -122,10 +122,11 @@ Devvit.addMenuItem({
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (_event, context) => {
-    const { redis, ui } = context;
+    const { redis, ui, reddit } = context;
     
     try {
       const gameService = new GameService(redis);
+      const subreddit = await reddit.getCurrentSubreddit();
       
       // Test users for guesser leaderboard (sorted by score descending)
       const testGuessers = [
@@ -177,6 +178,13 @@ Devvit.addMenuItem({
         };
         
         await gameService.updateUserScore(userScore);
+        
+        // Set user flair for test users
+        try {
+          await gameService.updateUserFlair(guesser.username, subreddit.name, reddit);
+        } catch (error) {
+          console.log(`Could not set flair for test user ${guesser.username}:`, error);
+        }
       }
 
       for (let i = 0; i < testLiars.length; i++) {
@@ -198,9 +206,16 @@ Devvit.addMenuItem({
         };
         
         await gameService.updateUserScore(userScore);
+        
+        // Set user flair for test users
+        try {
+          await gameService.updateUserFlair(liar.username, subreddit.name, reddit);
+        } catch (error) {
+          console.log(`Could not set flair for test user ${liar.username}:`, error);
+        }
       }
       
-      ui.showToast({ text: 'Added 20 test users to leaderboards! 🎪' });
+      ui.showToast({ text: 'Added 20 test users to leaderboards with flairs! 🎪' });
     } catch (error) {
       console.error('Error adding test data:', error);
       ui.showToast({
