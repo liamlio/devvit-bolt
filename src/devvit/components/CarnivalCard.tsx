@@ -18,7 +18,7 @@ export const CarnivalCard = ({
     padding={padding}
     border="thick"
     borderColor={borderColor}
-    gap="medium"
+    gap="small"
   >
     {children}
   </vstack>
