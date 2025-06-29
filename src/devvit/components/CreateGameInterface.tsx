@@ -247,8 +247,8 @@ export const CreateGameInterface = ({
         <vstack 
           width="100%" 
           height="100%" 
-          padding={isSmallScreen ? "xsmall" : "large"} 
-          gap="xsmall"
+          padding={isSmallScreen ? "small" : "large"} 
+          gap="small"
           alignment={isSmallScreen ? "center top" : "center middle"}
         >
           <CarnivalCard padding={isSmallScreen ? "small" : "large"} borderColor={CarnivalTheme.colors.warning}>
