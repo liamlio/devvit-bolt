@@ -1,86 +1,114 @@
-## Two Truths One Lie - Devvit Game
+# Two Truths One Lie - Reddit Game
 
-A fun deception game built entirely on Reddit's Devvit platform where players create statements and try to spot the lies!
+A fun deception game built for Reddit communities where players create statements and try to spot the lies!
 
-## Getting Started
+## What is Two Truths One Lie?
 
-This is a pure Devvit application - no React client or Express server needed!
-
-### Setup Steps
-
-1. **Login to Reddit**
-   ```bash
-   npm run login
-   ```
-
-2. **Initialize your app**
-   ```bash
-   npm run devvit:init
-   ```
-
-3. **Update your test subreddit**
-   - Create a test subreddit on Reddit
-   - Update the `dev:devvit` script in `package.json` to use your subreddit name
-
-4. **Start development**
-   ```bash
-   npm run dev
-   ```
-
-### Installing the Game
-
-1. Go to your test subreddit
-2. Use the menu action "[TTOL] Install Game" to create the community hub
-3. Use "[TTOL] New Two Truths One Lie Post" to create game posts
-
-## How to Play
-
-### For Players
-- View game posts and try to identify which statement is the lie
-- Earn experience points for playing and bonus points for correct guesses
-- Level up to unlock new titles and abilities
-
-### For Creators
+Two Truths One Lie is an interactive game where players:
 - Create two true statements and one convincing lie
-- Earn points when players guess incorrectly on your posts
-- Add optional details to make your truths more believable
+- Challenge others to identify which statement is false
+- Earn points and level up based on their performance
+- Compete on weekly and all-time leaderboards
 
-## Features
+## For Moderators: Installing the Game
 
-- **Level System**: Progress through detective ranks as you play
-- **Leaderboards**: Compete to be the best guesser or most convincing liar
-- **Carnival Theme**: Beautiful striped background with festive design
-- **Real-time Stats**: Track your accuracy and experience points
-- **Community Hub**: Central leaderboard and game creation
+### Initial Setup
+1. Install the game in your subreddit using the menu action: **"[TTOL] Install Game"**
+2. This creates a pinned community hub post with leaderboards and game statistics
+3. The game is now ready for your community to use!
 
-## Architecture
+### Creating Game Posts
+- Use **"[TTOL] New Two Truths One Lie Post"** to create individual game posts
+- These posts allow users to configure their own Two Truths One Lie games
+- Users must reach Level 1 before they can create their own posts (encourages participation first)
 
-This app is built entirely with Devvit components:
-- **Custom Post Type**: Interactive game interface
-- **Redis Storage**: User scores, game data, and leaderboards
-- **Menu Actions**: Easy post creation for moderators
-- **Native UI**: All components use Devvit's built-in UI system
+### Game Features
 
-No external dependencies or complex build processes - just pure Devvit!
+#### **Level System**
+Players progress through 9 levels by earning experience points:
+- **Level 0**: Huge Clown (starting level)
+- **Level 1**: Clown (1 XP required)
+- **Level 2**: Rookie Detective (20 XP required)
+- **Level 3**: Truth Seeker (40 XP required)
+- **Level 4**: Lie Detector (70 XP required)
+- **Level 5**: Master Sleuth (110 XP required)
+- **Level 6**: Truth Master (160 XP required)
+- **Level 7**: Ultimate Detective (220 XP required)
+- **Level 8**: Carnival Legend (300 XP required)
 
-## Development
+#### **How Players Earn Points**
 
-The entire application is contained in `src/devvit/main.tsx` with shared types in `src/shared/types/game.ts`. This makes it easy to understand and modify the game logic.
+**Experience Points (XP):**
+- Playing any game: +1 XP
+- Guessing correctly: +2 XP total
+- Creating engaging posts (5+ guesses): +10 XP bonus
 
-### Key Components
+**Leaderboard Points:**
+- **Guesser Points**: Earned for correct guesses
+- **Liar Points**: Earned when others guess incorrectly on your posts
 
-- **GameService**: Handles all Redis operations and game logic
-- **CarnivalTheme**: Consistent styling throughout the app
-- **Custom Post Type**: Main game interface with multiple states
-- **Menu Actions**: Easy installation and post creation
+#### **Leaderboards**
+- **Weekly Leaderboards**: Reset every Monday, track recent performance
+- **All-Time Leaderboards**: Track lifetime achievements
+- Separate rankings for "Best Guessers" and "Best Liars"
 
-### Game States
+#### **User Flairs**
+- Automatically updated to show player level, XP, and weekly guesser rank
+- Example: "Truth Master | 160 XP | #3"
+- Updates hourly for active players
 
-- **Loading**: Initial data fetch
-- **New Game**: Post configuration
-- **Game Play**: Statement selection
-- **Results**: Show answers and statistics
-- **Leaderboard**: Community rankings
-- **Pinned Post**: Community hub
+### Community Engagement Features
 
-Ready to create some convincing lies? 🎪
+#### **Automatic Notifications**
+- Players receive congratulatory private messages when they level up
+- Messages include their new rank, leaderboard positions, and progression tips
+
+#### **Post Creation Requirements**
+- New players start at Level 0 and must play at least one game to create posts
+- This ensures they understand the game before contributing content
+
+#### **Engagement Rewards**
+- Post creators earn bonus XP when their posts receive 5 or more guesses
+- Encourages creating interesting, engaging content
+
+## How Players Use the Game
+
+### **Playing Games**
+1. Find a Two Truths One Lie post in your community
+2. Read the three statements carefully
+3. Click on the statement you think is the lie
+4. Submit your guess to see if you're correct
+5. View results showing which statement was actually the lie
+
+### **Creating Games**
+1. Reach Level 1 by playing at least one game
+2. Use the "Create Post" button in the community hub
+3. Fill out the form with two true statements and one lie
+4. Add optional descriptions to make truths more believable
+5. Post your game for others to enjoy
+
+### **Tracking Progress**
+- View your stats in the community hub
+- Check your position on weekly and all-time leaderboards
+- Monitor your progress toward the next level
+- See your accuracy percentage and total games played
+
+## Moderation Tools
+
+The game includes several menu actions for moderators:
+
+- **Install Game**: Set up the initial community hub
+- **New Post**: Create individual game posts
+- **Update Flairs**: Manually refresh user flairs if needed
+- **Testing Tools**: Various options for testing and managing the game
+
+## Community Benefits
+
+- **Increased Engagement**: Interactive posts that encourage participation
+- **User Retention**: Level system and leaderboards keep players coming back
+- **Content Creation**: Users generate their own entertaining content
+- **Community Building**: Shared experience of trying to outsmart each other
+
+The game is designed to be self-sustaining once installed, with automatic flair updates, leaderboard management, and user progression tracking.
+
+Ready to bring some deception and fun to your community? Install Two Truths One Lie today! 🎪
