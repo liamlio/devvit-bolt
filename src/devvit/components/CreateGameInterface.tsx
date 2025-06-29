@@ -336,7 +336,7 @@ export const CreateGameInterface = ({
         gap="small"
         alignment={isSmallScreen ? "center top" : "center middle"}
       >
-        <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
+        <CarnivalCard padding={isSmallScreen ? "medium" : "medium"} width="fill">
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
             Ready to create your Two Truths One Lie game?
