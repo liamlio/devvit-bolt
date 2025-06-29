@@ -4,6 +4,7 @@ import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
 import { GameService } from '../service/GameService.js';
 import type { GamePost, Statement, UserGuess } from '../../shared/types/game.js';
+import { abbreviateNumber, capitalize, obfuscateString } from '../utils.js';
 
 function includesCaseInsensitive(array: string[], target: string): boolean {
   return array.some((item) => item.toLowerCase() === target.toLowerCase());
@@ -55,6 +56,22 @@ export const GameResultsInterface = ({
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
+
+  // Get pinned post URL for hub navigation
+  const { data: pinnedPostUrl } = useAsync(async () => {
+    try {
+      const gameService = new GameService(context.redis);
+      const pinnedPostId = await gameService.getPinnedPost();
+      if (pinnedPostId && context.reddit) {
+        const post = await context.reddit.getPostById(pinnedPostId);
+        return post?.url;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting pinned post URL:', error);
+      return null;
+    }
+  });
 
   return (
     <CarnivalBackground>
@@ -129,7 +146,7 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* FIXED: Button layout with proper callback usage */}
+          {/* REVERTED: Button layout with URL-based navigation */}
           <vstack gap="small" alignment="center" padding="xxsmall">
             {/* TESTING EXCEPTION: Back button only for u/liamlio */}
             {showBackButton && onBackToGuessing && (
@@ -143,7 +160,7 @@ export const GameResultsInterface = ({
               </button>
             )}
             
-            {/* UPDATED: Bigger Create Post button at the top */}
+            {/* Create Post button */}
             <button
               appearance="primary"
               onPress={onCreatePost}
@@ -153,11 +170,17 @@ export const GameResultsInterface = ({
               ➕ Create Post
             </button>
             
-            {/* FIXED: Return to Hub and View Leaderboard using proper callbacks */}
+            {/* REVERTED: Return to Hub and View Leaderboard using URL navigation */}
             <hstack gap="small" width="100%">
               <button
                 appearance="secondary"
-                onPress={onReturnToHub}
+                onPress={() => {
+                  if (pinnedPostUrl) {
+                    context.ui.navigateTo(pinnedPostUrl);
+                  } else {
+                    context.ui.showToast('Community hub not found');
+                  }
+                }}
                 grow
                 size="small"
               >
@@ -165,7 +188,13 @@ export const GameResultsInterface = ({
               </button>
               <button
                 appearance="secondary"
-                onPress={onViewLeaderboard}
+                onPress={() => {
+                  if (pinnedPostUrl) {
+                    context.ui.navigateTo(pinnedPostUrl);
+                  } else {
+                    context.ui.showToast('Community hub not found');
+                  }
+                }}
                 grow
                 size="small"
               >
