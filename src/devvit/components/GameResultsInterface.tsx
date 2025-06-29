@@ -128,7 +128,7 @@ export const GameResultsInterface = ({
               </button>
             </hstack>
           ) : (
-            <vstack gap="small" alignment="center" padding="xxsmall">
+            <hstack gap="small" alignment="center" padding="xxsmall">
               {/* TESTING EXCEPTION: Back button only for u/liamlio */}
               {showBackButton && onBackToGuessing && (
                 <button
@@ -147,7 +147,7 @@ export const GameResultsInterface = ({
               >
                 View Leaderboard 🏆
               </button>
-            </vstack>
+            </hstack>
           )}
           
           <text size={isSmallScreen ? "xsmall" : "small"} alignment="center" color={CarnivalTheme.colors.text}>
