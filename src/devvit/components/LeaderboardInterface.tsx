@@ -150,36 +150,70 @@ export const LeaderboardInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
         <CarnivalCard padding="medium">
-          {/* FIXED: Header with proper centering and subscribe button */}
-          <hstack alignment="middle" gap="medium">
-            {/* Left side: Back button or spacer */}
-            {showBackButton && onBack ? (
+          {/* UPDATED: Responsive header layout */}
+          {isSmallScreen ? (
+            /* Small screen: Stack title and subscribe button vertically */
+            <vstack gap="small" alignment="center">
+              {/* Back button row if needed */}
+              {showBackButton && onBack && (
+                <hstack width="100%" alignment="start">
+                  <button
+                    appearance="secondary"
+                    onPress={onBack}
+                    size="small"
+                  >
+                    ← Back
+                  </button>
+                </hstack>
+              )}
+              
+              {/* Title */}
+              <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
+                🏆 Two Truths One Lie
+              </text>
+              
+              {/* Subscribe button underneath title */}
               <button
-                appearance="secondary"
-                onPress={onBack}
+                appearance="primary"
+                onPress={handleSubscribe}
                 size="small"
+                backgroundColor="#FF4444"
               >
-                ← Back
+                Subscribe
               </button>
-            ) : (
-              <spacer width="60px" />
-            )}
-            
-            {/* Center: Title */}
-            <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
-              🏆 Two Truths One Lie
-            </text>
-            
-            {/* Right side: Subscribe button */}
-            <button
-              appearance="primary"
-              onPress={handleSubscribe}
-              size="small"
-              backgroundColor="#FF4444"
-            >
-              Subscribe
-            </button>
-          </hstack>
+            </vstack>
+          ) : (
+            /* Large screen: Keep original horizontal layout */
+            <hstack alignment="middle" gap="medium">
+              {/* Left side: Back button or spacer */}
+              {showBackButton && onBack ? (
+                <button
+                  appearance="secondary"
+                  onPress={onBack}
+                  size="small"
+                >
+                  ← Back
+                </button>
+              ) : (
+                <spacer width="60px" />
+              )}
+              
+              {/* Center: Title */}
+              <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
+                🏆 Two Truths One Lie
+              </text>
+              
+              {/* Right side: Subscribe button */}
+              <button
+                appearance="primary"
+                onPress={handleSubscribe}
+                size="small"
+                backgroundColor="#FF4444"
+              >
+                Subscribe
+              </button>
+            </hstack>
+          )}
           
           <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
             Welcome to the carnival of deception! Can you spot the lies?
