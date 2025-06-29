@@ -29,11 +29,12 @@ export const DescriptionViewInterface = ({
             <button
               appearance="secondary"
               onPress={onBack}
+              size={isSmallScreen ? "small" : "medium"}
             >
               ← Back
             </button>
             {!isSmallScreen && <spacer grow />}
-            <text size="large" weight="bold" color={CarnivalTheme.colors.text}>
+            <text size={isSmallScreen ? "medium" : "large"} weight="bold" color={CarnivalTheme.colors.text}>
               {title}
             </text>
             {!isSmallScreen && <spacer grow />}
@@ -48,12 +49,12 @@ export const DescriptionViewInterface = ({
             borderColor={CarnivalTheme.colors.success}
             gap="medium"
           >
-            <text color={CarnivalTheme.colors.text} wrap size="medium">
+            <text color={CarnivalTheme.colors.text} wrap size={isSmallScreen ? "small" : "medium"}>
               {statement.description}
             </text>
           </vstack>
 
-          <text size="small" color={CarnivalTheme.colors.textLight} alignment="center">
+          <text size={isSmallScreen ? "xsmall" : "small"} color={CarnivalTheme.colors.textLight} alignment="center">
             💡 These details help explain why this statement is true!
           </text>
         </CarnivalCard>
