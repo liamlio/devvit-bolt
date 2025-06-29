@@ -84,42 +84,21 @@ export const GameResultsInterface = ({
                   borderColor={isLie ? CarnivalTheme.colors.danger : CarnivalTheme.colors.success}
                   gap="small"
                 >
-                  {/* Responsive layout for statement and vote info */}
-                  {isSmallScreen ? (
-                    // Small screens: statement above, vote info horizontally below
-                    <vstack gap="small">
-                      <text size="small" weight="bold" color={CarnivalTheme.colors.text} wrap>
-                        {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
-                      </text>
-                      <hstack gap="small" alignment="start">
-                        <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                          {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                  <hstack alignment="middle">
+                    <text grow size={isSmallScreen ? "small" : "medium"} weight="bold" color={CarnivalTheme.colors.text} wrap>
+                      {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
+                    </text>
+                    <vstack gap="xxsmall" alignment="end">
+                      {isUserChoice && (
+                        <text color={CarnivalTheme.colors.primary} weight="bold" size={isSmallScreen ? "xsmall" : "small"}>
+                          (Your choice)
                         </text>
-                        {isUserChoice && (
-                          <text color={CarnivalTheme.colors.primary} weight="bold" size="xsmall">
-                            (Your choice)
-                          </text>
-                        )}
-                      </hstack>
+                      )}
+                      <text size={isSmallScreen ? "xsmall" : "small"} color={CarnivalTheme.colors.textLight}>
+                        {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                      </text>
                     </vstack>
-                  ) : (
-                    // Large screens: statement on left, vote info vertically stacked on right
-                    <hstack alignment="middle">
-                      <text grow size="medium" weight="bold" color={CarnivalTheme.colors.text} wrap>
-                        {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
-                      </text>
-                      <vstack gap="xxsmall" alignment="end">
-                        {isUserChoice && (
-                          <text color={CarnivalTheme.colors.primary} weight="bold" size="small">
-                            (Your choice)
-                          </text>
-                        )}
-                        <text size="small" color={CarnivalTheme.colors.textLight}>
-                          {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
-                        </text>
-                      </vstack>
-                    </hstack>
-                  )}
+                  </hstack>
                   
                   {/* Show expand button for truths with descriptions */}
                   {!isLie && statement.description && (
@@ -137,50 +116,27 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* Responsive button layout - horizontal on all screens, shorten button names on smaller screens */}
-          {isSmallScreen ? (
-            <hstack gap="small" alignment="center" padding="xxsmall">
-              {/* TESTING EXCEPTION: Back button only for u/liamlio */}
-              {showBackButton && onBackToGuessing && (
-                <button
-                  appearance="destructive"
-                  onPress={onBackToGuessing}
-                  size="small"
-                >
-                  🔄 Test Again
-                </button>
-              )}
-              
+          {/* Responsive button layout */}
+          <vstack gap="medium" alignment="center" padding="xxsmall">
+            {/* TESTING EXCEPTION: Back button only for u/liamlio */}
+            {showBackButton && onBackToGuessing && (
               <button
-                appearance="secondary"
-                onPress={onViewLeaderboard}
-                size="small"
+                appearance="destructive"
+                onPress={onBackToGuessing}
+                width={isSmallScreen ? "100%" : undefined}
               >
-                View Leaderboard 🏆
+                🔄 Test Again (liamlio only)
               </button>
-            </hstack>
-          ) : (
-            <hstack gap="small" alignment="center" padding="xxsmall">
-              {/* TESTING EXCEPTION: Back button only for u/liamlio */}
-              {showBackButton && onBackToGuessing && (
-                <button
-                  appearance="destructive"
-                  onPress={onBackToGuessing}
-                  width="200px"
-                >
-                  🔄 Test Again (liamlio only)
-                </button>
-              )}
-              
-              <button
-                appearance="secondary"
-                onPress={onViewLeaderboard}
-                width="200px"
-              >
-                View Leaderboard 🏆
-              </button>
-            </hstack>
-          )}
+            )}
+            
+            <button
+              appearance="secondary"
+              onPress={onViewLeaderboard}
+              width={isSmallScreen ? "100%" : undefined}
+            >
+              View Leaderboard 🏆
+            </button>
+          </vstack>
           
           <text size={isSmallScreen ? "xsmall" : "small"} alignment="center" color={CarnivalTheme.colors.text}>
             💬 How surprising were the truths? Comment below!

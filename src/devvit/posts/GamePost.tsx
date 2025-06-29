@@ -19,7 +19,10 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
   const [error, setError] = useState<string>('');
   const [gameState, setGameState] = useState<'play' | 'result' | 'description' | 'create'>('play');
   const [viewingDescription, setViewingDescription] = useState<{ statement: Statement; title: string } | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // Add refresh trigger
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  // Store the user's guess locally for immediate UI updates
+  const [localUserGuess, setLocalUserGuess] = useState<UserGuess | null>(null);
 
   // Load game data
   const { data: gameData, loading } = useAsync(async () => {
@@ -55,7 +58,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       console.error('Error loading game data:', err);
       throw err;
     }
-  }, [refreshTrigger]); // Add refreshTrigger as dependency
+  }, [refreshTrigger]);
 
   const handleSubmitGuess = async () => {
     if (selectedIndex === null || !userId || !reddit || !gameData || gameData.type !== 'game') return;
@@ -94,18 +97,24 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         timestamp: Date.now(),
       };
 
-      gamePost.totalGuesses += 1;
-      gamePost.guessBreakdown[selectedIndex] += 1;
+      // Store the guess locally for immediate UI updates
+      setLocalUserGuess(newUserGuess);
+
+      // Update game post data locally for immediate UI updates
+      const updatedGamePost = { ...gamePost };
+      updatedGamePost.totalGuesses += 1;
+      updatedGamePost.guessBreakdown[selectedIndex] += 1;
       if (isCorrect) {
-        gamePost.correctGuesses += 1;
+        updatedGamePost.correctGuesses += 1;
       }
 
       const experiencePoints = isCorrect ? 4 : 1;
       const guesserPoints = isCorrect ? 1 : 0;
       
+      // Save to database
       await Promise.all([
         gameService.saveUserGuess(newUserGuess),
-        gameService.updateGamePost(gamePost),
+        gameService.updateGamePost(updatedGamePost),
         gameService.awardExperience(userId, user.username, experiencePoints),
         gameService.awardGuesserPoints(userId, user.username, guesserPoints),
       ]);
@@ -129,7 +138,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
 
       // Change UI to post-guess state and trigger data refresh
       setGameState('result');
-      setRefreshTrigger(prev => prev + 1); // Trigger useAsync to re-run
+      setRefreshTrigger(prev => prev + 1);
       
     } catch (err) {
       console.error('Error submitting guess:', err);
@@ -154,7 +163,8 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       // Remove the user's guess to allow them to guess again
       await gameService.removeUserGuess(postId, userId);
       
-      // Reset selected index and game state
+      // Reset local state
+      setLocalUserGuess(null);
       setSelectedIndex(null);
       setGameState('play');
       
@@ -191,7 +201,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         error={error || 'Something went wrong. Please try again.'} 
         onRetry={() => {
           setError('');
-          setRefreshTrigger(prev => prev + 1); // Use refresh trigger instead of error manipulation
+          setRefreshTrigger(prev => prev + 1);
         }} 
       />
     );
@@ -212,6 +222,10 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
   if (gameData.type === 'game') {
     const { gamePost, hasGuessed, userGuess, currentUser } = gameData;
 
+    // Use local user guess if available (for immediate UI updates), otherwise use database guess
+    const effectiveUserGuess = localUserGuess || userGuess;
+    const effectiveHasGuessed = hasGuessed || localUserGuess !== null;
+
     // TESTING EXCEPTION: Check if this is the test user
     const isTestUser = currentUser?.username === 'liamlio';
 
@@ -228,12 +242,12 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     }
 
     // Show results immediately after guessing, or if already guessed
-    if (hasGuessed || gameState === 'result') {
+    if (effectiveHasGuessed || gameState === 'result') {
       return (
         <GameResultsInterface
           context={context}
           gamePost={gamePost}
-          userGuess={userGuess}
+          userGuess={effectiveUserGuess}
           onViewLeaderboard={() => {
             // This would need to be handled by the parent component
             ui.showToast('Leaderboard feature coming soon!');
