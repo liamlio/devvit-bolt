@@ -10,8 +10,6 @@ interface GameResultsInterfaceProps {
   gamePost: GamePost;
   userGuess?: UserGuess;
   onViewDescription: (statement: Statement, title: string) => void;
-  onViewLeaderboard: () => void;
-  onReturnToHub: () => void;
   onCreatePost: () => void;
   // TESTING EXCEPTION: Optional back button for u/liamlio testing
   showBackButton?: boolean;
@@ -23,12 +21,28 @@ export const GameResultsInterface = ({
   gamePost, 
   userGuess, 
   onViewDescription,
-  onViewLeaderboard,
-  onReturnToHub,
   onCreatePost,
   showBackButton = false,
   onBackToGuessing
 }: GameResultsInterfaceProps): JSX.Element => {
+  const { redis, ui } = context;
+  const gameService = new GameService(redis);
+
+  // Get the pinned post URL for navigation
+  const { data: pinnedPostUrl } = useAsync(async () => {
+    try {
+      const pinnedPostId = await gameService.getPinnedPost();
+      if (pinnedPostId) {
+        const post = await context.reddit?.getPostById(pinnedPostId);
+        return post?.url || null;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting pinned post URL:', error);
+      return null;
+    }
+  });
+
   // FIXED: Create the statements array in the same order as displayed in GamePlayInterface
   const statements: Statement[] = [null, null, null];
   
@@ -47,6 +61,23 @@ export const GameResultsInterface = ({
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
+
+  // UPDATED: Navigation handlers that redirect to community post
+  const handleViewLeaderboard = () => {
+    if (pinnedPostUrl) {
+      ui.navigateTo(pinnedPostUrl);
+    } else {
+      ui.showToast('Community hub not found. Please contact a moderator.');
+    }
+  };
+
+  const handleReturnToHub = () => {
+    if (pinnedPostUrl) {
+      ui.navigateTo(pinnedPostUrl);
+    } else {
+      ui.showToast('Community hub not found. Please contact a moderator.');
+    }
+  };
 
   return (
     <CarnivalBackground>
@@ -121,7 +152,7 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* FIXED: Navigation buttons with proper handlers */}
+          {/* UPDATED: Navigation buttons that redirect to community post */}
           {isSmallScreen ? (
             <vstack gap="small" alignment="center" padding="xxsmall">
               {/* TESTING EXCEPTION: Back button only for u/liamlio */}
@@ -140,7 +171,7 @@ export const GameResultsInterface = ({
               <hstack gap="small" width="100%">
                 <button
                   appearance="secondary"
-                  onPress={onReturnToHub}
+                  onPress={handleReturnToHub}
                   grow
                   size="small"
                 >
@@ -158,7 +189,7 @@ export const GameResultsInterface = ({
               
               <button
                 appearance="secondary"
-                onPress={onViewLeaderboard}
+                onPress={handleViewLeaderboard}
                 width="100%"
                 size="small"
               >
@@ -182,7 +213,7 @@ export const GameResultsInterface = ({
               <hstack gap="medium" alignment="center">
                 <button
                   appearance="secondary"
-                  onPress={onReturnToHub}
+                  onPress={handleReturnToHub}
                   size="small"
                 >
                   🏠 Return to Hub
@@ -196,7 +227,7 @@ export const GameResultsInterface = ({
                 </button>
                 <button
                   appearance="secondary"
-                  onPress={onViewLeaderboard}
+                  onPress={handleViewLeaderboard}
                   size="small"
                 >
                   🏆 View Leaderboard
