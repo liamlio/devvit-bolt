@@ -457,8 +457,8 @@ export const LeaderboardInterface = ({
             </hstack>
           )}
 
-          {/* UPDATED: Bottom buttons wrapped in vstack with smaller gap */}
-          <vstack gap="xsmall">
+          {/* UPDATED: Bottom buttons wrapped in vstack with small gap */}
+          <vstack gap="small">
             {/* View Full Leaderboard Button */}
             <button
               appearance="secondary"
