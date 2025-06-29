@@ -1,7 +1,8 @@
-import { Devvit, Context } from '@devvit/public-api';
+import { Devvit, Context, useAsync } from '@devvit/public-api';
 import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
+import { GameService } from '../service/GameService.js';
 import type { LeaderboardEntry } from '../../shared/types/game.js';
 
 interface FullLeaderboardInterfaceProps {
@@ -25,17 +26,42 @@ export const FullLeaderboardInterface = ({
   onTabChange, 
   onBack 
 }: FullLeaderboardInterfaceProps): JSX.Element => {
+  const { userId, redis } = context;
+  const gameService = new GameService(redis);
+  
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
+
+  // Get user's leaderboard positions
+  const { data: userPositions } = useAsync(async () => {
+    if (!userId) return null;
+    
+    const [weeklyGuesserRank, weeklyLiarRank, allTimeGuesserRank, allTimeLiarRank] = await Promise.all([
+      gameService.getUserLeaderboardRank(userId, 'guesser', 'weekly'),
+      gameService.getUserLeaderboardRank(userId, 'liar', 'weekly'),
+      gameService.getUserLeaderboardRank(userId, 'guesser', 'alltime'),
+      gameService.getUserLeaderboardRank(userId, 'liar', 'alltime'),
+    ]);
+
+    return {
+      weeklyGuesserRank,
+      weeklyLiarRank,
+      allTimeGuesserRank,
+      allTimeLiarRank,
+    };
+  }, [userId, activeTab]);
 
   const currentWeeklyLeaderboard = activeTab === 'guessers' ? weeklyGuesserLeaderboard : weeklyLiarLeaderboard;
   const currentAllTimeLeaderboard = activeTab === 'guessers' ? allTimeGuesserLeaderboard : allTimeLiarLeaderboard;
 
   const renderLeaderboard = (entries: LeaderboardEntry[], type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime') => {
-    if (entries.length === 0) {
+    // Show only top 10
+    const topEntries = entries.slice(0, 10);
+    
+    if (topEntries.length === 0) {
       return (
-        <vstack alignment="center middle" padding="medium">
+        <vstack alignment="center middle" padding="medium" grow>
           <text size="medium" color={CarnivalTheme.colors.text}>🎪</text>
           <text size="xsmall" color={CarnivalTheme.colors.textLight}>
             No entries yet!
@@ -45,23 +71,54 @@ export const FullLeaderboardInterface = ({
     }
 
     return (
-      <vstack gap="xxsmall" maxHeight="400px" overflow="scroll">
-        {entries.map((entry, index) => {
-          const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
-          const scoreText = type === 'guesser' 
-            ? `${entry.score} correct`
-            : `${entry.score} fooled`;
-          
-          return (
-            <text 
-              key={`${timeframe}-${entry.userId}`}
-              size="xsmall" 
-              color={CarnivalTheme.colors.text}
-            >
-              {rank} u/{entry.username} - {scoreText}
+      <vstack gap="xxsmall" grow>
+        {/* Top 10 Players */}
+        <vstack gap="xxsmall" maxHeight="300px" overflow="scroll">
+          {topEntries.map((entry, index) => {
+            const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+            const scoreText = type === 'guesser' 
+              ? `${entry.score} correct`
+              : `${entry.score} fooled`;
+            
+            return (
+              <text 
+                key={`${timeframe}-${entry.userId}`}
+                size="xsmall" 
+                color={CarnivalTheme.colors.text}
+              >
+                {rank} u/{entry.username} - {scoreText}
+              </text>
+            );
+          })}
+        </vstack>
+
+        <spacer grow />
+
+        {/* User's Position */}
+        {userPositions && userId && (
+          <vstack 
+            padding="xsmall"
+            backgroundColor="rgba(59, 130, 246, 0.1)"
+            cornerRadius="small"
+            border="thin"
+            borderColor={CarnivalTheme.colors.primary}
+          >
+            <text size="xsmall" weight="bold" color={CarnivalTheme.colors.primary} alignment="center">
+              Your Position
             </text>
-          );
-        })}
+            <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
+              {(() => {
+                let rank: number | null = null;
+                if (timeframe === 'weekly') {
+                  rank = type === 'guesser' ? userPositions.weeklyGuesserRank : userPositions.weeklyLiarRank;
+                } else {
+                  rank = type === 'guesser' ? userPositions.allTimeGuesserRank : userPositions.allTimeLiarRank;
+                }
+                return rank ? `#${rank}` : 'Not ranked yet';
+              })()}
+            </text>
+          </vstack>
+        )}
       </vstack>
     );
   };
