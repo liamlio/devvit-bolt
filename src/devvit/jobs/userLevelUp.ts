@@ -50,29 +50,30 @@ export const userLevelUp = Devvit.addSchedulerJob({
           case 4: return "Impressive! You've become a Lie Detector - falsehoods can't hide from you anymore! 🎯";
           case 5: return "Masterful work! As a Master Sleuth, you're among the elite truth-finders in the carnival! 🔎";
           case 6: return "Legendary status achieved! You are now a Truth Master - few can match your deductive skills! 👑";
-          case 7: return "You've become a Carnival Legend! Your reputation for spotting lies precedes you! 🎪";
-          case 8: return "Ultimate achievement unlocked! You are now the Ultimate Detective - the highest honor in our carnival! 🏆";
+          case 7: return "Ultimate achievement unlocked! You are now the Ultimate Detective - the highest honor in our carnival! 🏆"; // SWAPPED
+          case 8: return "You've become a Carnival Legend! Your reputation for spotting lies precedes you throughout the land! 🎪"; // SWAPPED
           default: return "Congratulations on your level up! Keep playing to unlock more achievements! 🎉";
         }
       };
 
       // Get next level info for progression guidance
       const getNextLevelInfo = (currentLevel: number): string => {
+        // UPDATED: New XP requirements with swapped titles
         const levels = [
           { level: 0, name: 'Huge Clown', experienceRequired: 0 },
           { level: 1, name: 'Clown', experienceRequired: 1 },
-          { level: 2, name: 'Rookie Detective', experienceRequired: 10 },
-          { level: 3, name: 'Truth Seeker', experienceRequired: 20 },
-          { level: 4, name: 'Lie Detector', experienceRequired: 35 },
-          { level: 5, name: 'Master Sleuth', experienceRequired: 55 },
-          { level: 6, name: 'Truth Master', experienceRequired: 80 },
-          { level: 7, name: 'Carnival Legend', experienceRequired: 110 },
-          { level: 8, name: 'Ultimate Detective', experienceRequired: 150 },
+          { level: 2, name: 'Rookie Detective', experienceRequired: 20 },
+          { level: 3, name: 'Truth Seeker', experienceRequired: 40 },
+          { level: 4, name: 'Lie Detector', experienceRequired: 70 },
+          { level: 5, name: 'Master Sleuth', experienceRequired: 110 },
+          { level: 6, name: 'Truth Master', experienceRequired: 160 },
+          { level: 7, name: 'Ultimate Detective', experienceRequired: 220 }, // SWAPPED
+          { level: 8, name: 'Carnival Legend', experienceRequired: 300 }, // SWAPPED
         ];
 
         const nextLevelIndex = levels.findIndex(l => l.level === currentLevel + 1);
         if (nextLevelIndex === -1) {
-          return "\n🏆 **You've reached the maximum level!** You are truly the Ultimate Detective of our carnival!";
+          return "\n🏆 **You've reached the maximum level!** You are truly the Carnival Legend of our community!"; // UPDATED
         }
 
         const nextLevel = levels[nextLevelIndex];

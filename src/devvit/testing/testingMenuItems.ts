@@ -71,17 +71,17 @@ export const levelUpLiamlio = Devvit.addMenuItem({
       const currentLevel = gameService.getLevelByExperience(userScore.experience);
       console.log(`📈 Current level: ${currentLevel.level} (${currentLevel.name})`);
       
-      // Get all levels to find the next one (now 9 levels: 0-8)
+      // UPDATED: New XP requirements with swapped titles
       const levels = [
         { level: 0, name: 'Huge Clown', experienceRequired: 0 },
         { level: 1, name: 'Clown', experienceRequired: 1 },
-        { level: 2, name: 'Rookie Detective', experienceRequired: 10 },
-        { level: 3, name: 'Truth Seeker', experienceRequired: 20 },
-        { level: 4, name: 'Lie Detector', experienceRequired: 35 },
-        { level: 5, name: 'Master Sleuth', experienceRequired: 55 },
-        { level: 6, name: 'Truth Master', experienceRequired: 80 },
-        { level: 7, name: 'Carnival Legend', experienceRequired: 110 },
-        { level: 8, name: 'Ultimate Detective', experienceRequired: 150 },
+        { level: 2, name: 'Rookie Detective', experienceRequired: 20 },
+        { level: 3, name: 'Truth Seeker', experienceRequired: 40 },
+        { level: 4, name: 'Lie Detector', experienceRequired: 70 },
+        { level: 5, name: 'Master Sleuth', experienceRequired: 110 },
+        { level: 6, name: 'Truth Master', experienceRequired: 160 },
+        { level: 7, name: 'Ultimate Detective', experienceRequired: 220 }, // SWAPPED
+        { level: 8, name: 'Carnival Legend', experienceRequired: 300 }, // SWAPPED
       ];
       
       const nextLevelIndex = levels.findIndex(l => l.level === currentLevel.level + 1);

@@ -408,8 +408,8 @@ export class GameService {
       '#FFD700', // Level 4 - Gold (Lie Detector)
       '#FF6347', // Level 5 - Tomato Red (Master Sleuth)
       '#DA70D6', // Level 6 - Orchid Purple (Truth Master)
-      '#FF4500', // Level 7 - Orange Red (Carnival Legend)
-      '#8A2BE2', // Level 8 - Blue Violet (Ultimate Detective)
+      '#FF4500', // Level 7 - Orange Red (Ultimate Detective) - SWAPPED
+      '#8A2BE2', // Level 8 - Blue Violet (Carnival Legend) - SWAPPED
     ];
     
     return carnivalColors[Math.min(level, carnivalColors.length - 1)] || carnivalColors[0];
@@ -427,16 +427,17 @@ export class GameService {
   }
 
   getLevelByExperience(experience: number): { level: number; name: string } {
+    // UPDATED: Swapped level 7 and 8 titles, doubled XP requirements (except level 1)
     const levels = [
       { level: 0, name: 'Huge Clown', experienceRequired: 0 }, // Level 0 - Start here
-      { level: 1, name: 'Clown', experienceRequired: 1 }, // Level 1 - Shifted from old level 0
-      { level: 2, name: 'Rookie Detective', experienceRequired: 10 }, // Level 2 - Shifted from old level 1
-      { level: 3, name: 'Truth Seeker', experienceRequired: 20 }, // Level 3 - Shifted from old level 2
-      { level: 4, name: 'Lie Detector', experienceRequired: 35 }, // Level 4 - Shifted from old level 3
-      { level: 5, name: 'Master Sleuth', experienceRequired: 55 }, // Level 5 - Shifted from old level 4
-      { level: 6, name: 'Truth Master', experienceRequired: 80 }, // Level 6 - Shifted from old level 5
-      { level: 7, name: 'Carnival Legend', experienceRequired: 110 }, // Level 7 - Shifted from old level 6
-      { level: 8, name: 'Ultimate Detective', experienceRequired: 150 }, // Level 8 - Shifted from old level 7
+      { level: 1, name: 'Clown', experienceRequired: 1 }, // Level 1 - UNCHANGED (still 1 XP)
+      { level: 2, name: 'Rookie Detective', experienceRequired: 20 }, // Level 2 - DOUBLED (was 10)
+      { level: 3, name: 'Truth Seeker', experienceRequired: 40 }, // Level 3 - DOUBLED (was 20)
+      { level: 4, name: 'Lie Detector', experienceRequired: 70 }, // Level 4 - DOUBLED (was 35)
+      { level: 5, name: 'Master Sleuth', experienceRequired: 110 }, // Level 5 - DOUBLED (was 55)
+      { level: 6, name: 'Truth Master', experienceRequired: 160 }, // Level 6 - DOUBLED (was 80)
+      { level: 7, name: 'Ultimate Detective', experienceRequired: 220 }, // Level 7 - SWAPPED & DOUBLED (was Carnival Legend, was 110)
+      { level: 8, name: 'Carnival Legend', experienceRequired: 300 }, // Level 8 - SWAPPED & DOUBLED (was Ultimate Detective, was 150)
     ];
 
     for (let i = levels.length - 1; i >= 0; i--) {
