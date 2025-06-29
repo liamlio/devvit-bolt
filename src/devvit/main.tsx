@@ -2,6 +2,9 @@ import { Devvit } from '@devvit/public-api';
 import { Router } from './posts/Router.js';
 import { GameService } from './service/GameService.js';
 
+// Import testing menu items
+import './testing/testingMenuItems.js';
+
 // Configure Devvit with userActions enabled
 Devvit.configure({
   redditAPI: true,
@@ -130,30 +133,30 @@ Devvit.addMenuItem({
       
       // Test users for guesser leaderboard (sorted by score descending)
       const testGuessers = [
-        { username: 'DetectiveMaster', guesserPoints: 95, liarPoints: 12 },
-        { username: 'TruthSeeker42', guesserPoints: 87, liarPoints: 8 },
-        { username: 'LieSpotter', guesserPoints: 79, liarPoints: 15 },
-        { username: 'SherlockFan', guesserPoints: 72, liarPoints: 6 },
-        { username: 'MysteryLover', guesserPoints: 68, liarPoints: 11 },
-        { username: 'ClueHunter', guesserPoints: 61, liarPoints: 9 },
-        { username: 'PuzzleSolver', guesserPoints: 55, liarPoints: 7 },
-        { username: 'FactChecker', guesserPoints: 48, liarPoints: 13 },
-        { username: 'TruthHound', guesserPoints: 42, liarPoints: 5 },
-        { username: 'DeductionKing', guesserPoints: 38, liarPoints: 10 },
+        { username: 'DetectiveMaster_test_ttol', guesserPoints: 95, liarPoints: 12 },
+        { username: 'TruthSeeker42_test_ttol', guesserPoints: 87, liarPoints: 8 },
+        { username: 'LieSpotter_test_ttol', guesserPoints: 79, liarPoints: 15 },
+        { username: 'SherlockFan_test_ttol', guesserPoints: 72, liarPoints: 6 },
+        { username: 'MysteryLover_test_ttol', guesserPoints: 68, liarPoints: 11 },
+        { username: 'ClueHunter_test_ttol', guesserPoints: 61, liarPoints: 9 },
+        { username: 'PuzzleSolver_test_ttol', guesserPoints: 55, liarPoints: 7 },
+        { username: 'FactChecker_test_ttol', guesserPoints: 48, liarPoints: 13 },
+        { username: 'TruthHound_test_ttol', guesserPoints: 42, liarPoints: 5 },
+        { username: 'DeductionKing_test_ttol', guesserPoints: 38, liarPoints: 10 },
       ];
 
       // Test users for liar leaderboard (sorted by score descending)
       const testLiars = [
-        { username: 'MasterDeceiver', guesserPoints: 25, liarPoints: 89 },
-        { username: 'SilverTongue', guesserPoints: 31, liarPoints: 82 },
-        { username: 'TricksterPro', guesserPoints: 18, liarPoints: 76 },
-        { username: 'FibMaster', guesserPoints: 22, liarPoints: 71 },
-        { username: 'BluffKing', guesserPoints: 29, liarPoints: 67 },
-        { username: 'StorySpinner', guesserPoints: 15, liarPoints: 63 },
-        { username: 'TaleWeaver', guesserPoints: 33, liarPoints: 58 },
-        { username: 'CraftyCarnival', guesserPoints: 27, liarPoints: 54 },
-        { username: 'SlyFox', guesserPoints: 19, liarPoints: 49 },
-        { username: 'CharmingLiar', guesserPoints: 24, liarPoints: 45 },
+        { username: 'MasterDeceiver_test_ttol', guesserPoints: 25, liarPoints: 89 },
+        { username: 'SilverTongue_test_ttol', guesserPoints: 31, liarPoints: 82 },
+        { username: 'TricksterPro_test_ttol', guesserPoints: 18, liarPoints: 76 },
+        { username: 'FibMaster_test_ttol', guesserPoints: 22, liarPoints: 71 },
+        { username: 'BluffKing_test_ttol', guesserPoints: 29, liarPoints: 67 },
+        { username: 'StorySpinner_test_ttol', guesserPoints: 15, liarPoints: 63 },
+        { username: 'TaleWeaver_test_ttol', guesserPoints: 33, liarPoints: 58 },
+        { username: 'CraftyCarnival_test_ttol', guesserPoints: 27, liarPoints: 54 },
+        { username: 'SlyFox_test_ttol', guesserPoints: 19, liarPoints: 49 },
+        { username: 'CharmingLiar_test_ttol', guesserPoints: 24, liarPoints: 45 },
       ];
 
       // Create fake user IDs and populate data
@@ -161,7 +164,7 @@ Devvit.addMenuItem({
       
       for (let i = 0; i < testGuessers.length; i++) {
         const guesser = testGuessers[i];
-        const fakeUserId = `test_user_guesser_${i + 1}`;
+        const fakeUserId = `test_user_guesser_${i + 1}_test_ttol`;
         
         // Create user score
         const userScore = {
@@ -189,7 +192,7 @@ Devvit.addMenuItem({
 
       for (let i = 0; i < testLiars.length; i++) {
         const liar = testLiars[i];
-        const fakeUserId = `test_user_liar_${i + 1}`;
+        const fakeUserId = `test_user_liar_${i + 1}_test_ttol`;
         
         // Create user score
         const userScore = {
@@ -234,25 +237,57 @@ Devvit.addMenuItem({
     const { redis, ui } = context;
     
     try {
+      const gameService = new GameService(redis);
       const weekNumber = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
       
-      // Clear all leaderboard keys
-      await Promise.all([
-        redis.del('leaderboard:guesser:alltime'),
-        redis.del('leaderboard:liar:alltime'),
-        redis.del(`leaderboard:guesser:weekly:${weekNumber}`),
-        redis.del(`leaderboard:liar:weekly:${weekNumber}`),
+      // Get all leaderboard entries to find test users
+      const [
+        allTimeGuesserEntries,
+        allTimeLiarEntries,
+        weeklyGuesserEntries,
+        weeklyLiarEntries
+      ] = await Promise.all([
+        redis.zRange('leaderboard:guesser:alltime', 0, -1),
+        redis.zRange('leaderboard:liar:alltime', 0, -1),
+        redis.zRange(`leaderboard:guesser:weekly:${weekNumber}`, 0, -1),
+        redis.zRange(`leaderboard:liar:weekly:${weekNumber}`, 0, -1),
       ]);
       
-      // Clear test user scores
-      for (let i = 1; i <= 10; i++) {
-        await Promise.all([
-          redis.del(`user_score:test_user_guesser_${i}`),
-          redis.del(`user_score:test_user_liar_${i}`),
-        ]);
+      // Collect all test user IDs (those containing "_test_ttol")
+      const testUserIds = new Set<string>();
+      
+      // Check all leaderboard entries for test users
+      [...allTimeGuesserEntries, ...allTimeLiarEntries, ...weeklyGuesserEntries, ...weeklyLiarEntries]
+        .forEach(entry => {
+          if (entry.member.includes('_test_ttol')) {
+            testUserIds.add(entry.member);
+          }
+        });
+      
+      console.log('Found test user IDs to remove:', Array.from(testUserIds));
+      
+      // Remove test users from all leaderboards
+      const removalPromises = [];
+      
+      if (testUserIds.size > 0) {
+        const testUserArray = Array.from(testUserIds);
+        
+        removalPromises.push(
+          redis.zRem('leaderboard:guesser:alltime', testUserArray),
+          redis.zRem('leaderboard:liar:alltime', testUserArray),
+          redis.zRem(`leaderboard:guesser:weekly:${weekNumber}`, testUserArray),
+          redis.zRem(`leaderboard:liar:weekly:${weekNumber}`, testUserArray)
+        );
+        
+        // Remove test user scores
+        testUserArray.forEach(userId => {
+          removalPromises.push(redis.del(`user_score:${userId}`));
+        });
       }
       
-      ui.showToast({ text: 'Cleared all test leaderboard data! 🧹' });
+      await Promise.all(removalPromises);
+      
+      ui.showToast({ text: `Cleared ${testUserIds.size} test users from leaderboards! 🧹` });
     } catch (error) {
       console.error('Error clearing test data:', error);
       ui.showToast({
