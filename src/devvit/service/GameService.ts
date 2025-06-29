@@ -66,6 +66,14 @@ export class GameService {
     const newLevel = this.getLevelByExperience(userScore.experience);
     userScore.level = newLevel.level;
     
+    console.log(`📊 Updating user score for u/${userScore.username}:`, {
+      oldLevel,
+      newLevel: newLevel.level,
+      experience: userScore.experience,
+      hasScheduler: !!scheduler,
+      hasReddit: !!reddit,
+    });
+    
     const key = `user_score:${userScore.userId}`;
     await this.redis.set(key, JSON.stringify(userScore));
 
@@ -79,23 +87,39 @@ export class GameService {
       try {
         const gameSettings = await this.getGameSettings();
         if (gameSettings.subredditName) {
-          await scheduler.runJob({
+          console.log(`📧 Scheduling level-up notification for u/${userScore.username}: Level ${oldLevel} → ${newLevel.level}`);
+          
+          const jobData = {
+            userId: userScore.userId,
+            username: userScore.username,
+            oldLevel,
+            newLevel: newLevel.level,
+            experience: userScore.experience,
+            subredditName: gameSettings.subredditName,
+          };
+          
+          console.log(`📬 Job data:`, jobData);
+          
+          const jobResult = await scheduler.runJob({
             name: 'USER_LEVEL_UP',
-            data: {
-              userId: userScore.userId,
-              username: userScore.username,
-              oldLevel,
-              newLevel: newLevel.level,
-              experience: userScore.experience,
-              subredditName: gameSettings.subredditName,
-            },
+            data: jobData,
             runAt: new Date(Date.now() + 5000), // Send message after 5 seconds
           });
           
-          console.log(`Scheduled level-up notification for u/${userScore.username}: Level ${oldLevel} → ${newLevel.level}`);
+          console.log(`✅ Successfully scheduled level-up job:`, jobResult);
+        } else {
+          console.log(`⚠️ No subreddit name configured, skipping level-up notification`);
         }
       } catch (error) {
-        console.error(`Failed to schedule level-up notification for u/${userScore.username}:`, error);
+        console.error(`❌ Failed to schedule level-up notification for u/${userScore.username}:`, error);
+      }
+    } else {
+      if (leveledUp) {
+        console.log(`⚠️ Level up detected but missing context:`, {
+          leveledUp,
+          hasScheduler: !!scheduler,
+          hasReddit: !!reddit,
+        });
       }
     }
 
