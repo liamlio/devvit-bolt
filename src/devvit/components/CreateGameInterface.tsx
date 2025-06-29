@@ -392,7 +392,7 @@ export const CreateGameInterface = ({
         </CarnivalCard>
 
         {/* MOVED: Tips section now appears below the main create game card */}
-        <CarnivalCard padding={isSmallScreen ? "xsmall" : "medium"} borderColor={CarnivalTheme.colors.accent}>
+        <CarnivalCard padding={isSmallScreen ? "small" : "medium"} borderColor={CarnivalTheme.colors.accent}>
           <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text}>
             💡 Tips for Creating Viral Games
           </text>
