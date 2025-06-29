@@ -219,9 +219,19 @@ export const LeaderboardInterface = ({
                 <vstack gap="small" grow>
                   <hstack gap="large">
                     <vstack>
-                      <text size="xsmall" color={CarnivalTheme.colors.text}>
-                        🎯 Level {userStats.level}
-                      </text>
+                      {/* UPDATED: Display level with title using proper Devvit components */}
+                      <hstack gap="xsmall" alignment="middle">
+                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                          🎯 Level {userStats.level}:
+                        </text>
+                        <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
+                          {(() => {
+                            const gameService = new GameService(context.redis);
+                            const levelInfo = gameService.getLevelByExperience(userStats.experience);
+                            return levelInfo.name;
+                          })()}
+                        </text>
+                      </hstack>
                       <text size="xsmall" color={CarnivalTheme.colors.text}>
                         ⭐ {userStats.experience} XP
                       </text>
