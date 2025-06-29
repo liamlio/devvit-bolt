@@ -165,17 +165,20 @@ export class GameService {
     console.log(`Getting user rank for ${userId} in ${key}`);
 
     try {
-      // Get the user's rank using Redis ZREVRANK (reverse rank for descending order)
-      const rank = await this.redis.zRevRank(key, userId);
+      // Get the user's ascending rank (0-based)
+      const ascendingRank = await this.redis.zRank(key, userId);
       
-      if (rank === null || rank === undefined) {
+      if (ascendingRank === null || ascendingRank === undefined) {
         console.log(`User ${userId} not found in leaderboard ${key}`);
         return null;
       }
       
-      // zRevRank returns 0-based index, convert to 1-based ranking
-      const userRank = rank + 1;
-      console.log(`User ${userId} rank in ${key}: ${userRank}`);
+      // Get total number of members in the sorted set
+      const totalMembers = await this.redis.zCard(key);
+      
+      // Calculate descending rank: total members - ascending rank (0-based) = descending rank (1-based)
+      const userRank = totalMembers - ascendingRank;
+      console.log(`User ${userId} rank in ${key}: ${userRank} (ascending rank: ${ascendingRank}, total: ${totalMembers})`);
       
       return userRank;
     } catch (error) {
