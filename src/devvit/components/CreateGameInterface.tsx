@@ -1,4 +1,4 @@
-import { Devvit, useWebView, Context } from '@devvit/public-api';
+import { Devvit, useWebView, Context, useAsync } from '@devvit/public-api';
 import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
@@ -19,10 +19,31 @@ export const CreateGameInterface = ({
   onCreateGame
 }: CreateGameInterfaceProps): JSX.Element => {
   const { postId, userId, redis, reddit, ui } = context;
+  const gameService = new GameService(redis);
   
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
+
+  // Check user's level to determine if they can create posts
+  const { data: userLevelData, loading: levelLoading } = useAsync(async () => {
+    if (!userId) return { canCreatePost: false, userLevel: 0, username: null };
+    
+    try {
+      const userScore = await gameService.getUserScore(userId);
+      const currentUser = reddit ? await reddit.getCurrentUser() : null;
+      
+      return {
+        canCreatePost: userScore.level >= 1,
+        userLevel: userScore.level,
+        username: currentUser?.username || userScore.username || null,
+        experienceNeeded: Math.max(0, 1 - userScore.experience),
+      };
+    } catch (error) {
+      console.error('Error checking user level:', error);
+      return { canCreatePost: false, userLevel: 0, username: null };
+    }
+  }, [userId]);
 
   const { mount, unmount, postMessage } = useWebView({
     url: 'index.html',
@@ -97,9 +118,10 @@ export const CreateGameInterface = ({
       return;
     }
 
+    // Double-check user level before creating post
     const userScore = await gameService.getUserScore(userId);
-    if (userScore.level < 1 && userScore.experience < 1) {
-      onShowToast('You must reach level 1 by playing at least one game before creating your own post');
+    if (userScore.level < 1) {
+      onShowToast('You must reach level 1 before creating posts. Play a game to earn XP!');
       webView.unmount();
       return;
     }
@@ -193,6 +215,118 @@ export const CreateGameInterface = ({
     }
   };
 
+  // Show loading state while checking user level
+  if (levelLoading) {
+    return (
+      <CarnivalBackground>
+        <vstack 
+          width="100%" 
+          height="100%" 
+          padding={isSmallScreen ? "medium" : "large"} 
+          gap="small"
+          alignment="center middle"
+        >
+          <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
+            <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪</text>
+            <text alignment="center" color={CarnivalTheme.colors.text}>
+              Checking your level...
+            </text>
+          </CarnivalCard>
+        </vstack>
+      </CarnivalBackground>
+    );
+  }
+
+  // Show level requirement message for level 0 users
+  if (userLevelData && !userLevelData.canCreatePost) {
+    const levelInfo = gameService.getLevelByExperience(0); // Get level 0 info
+    const nextLevelInfo = gameService.getLevelByExperience(1); // Get level 1 info
+    
+    return (
+      <CarnivalBackground>
+        <vstack 
+          width="100%" 
+          height="100%" 
+          padding={isSmallScreen ? "medium" : "large"} 
+          gap="small"
+          alignment={isSmallScreen ? "center top" : "center middle"}
+        >
+          <CarnivalCard padding={isSmallScreen ? "medium" : "large"} borderColor={CarnivalTheme.colors.warning}>
+            <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🤡</text>
+            <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text}>
+              Level Up Required!
+            </text>
+            
+            <vstack 
+              padding="medium"
+              backgroundColor="rgba(255, 165, 0, 0.1)" 
+              cornerRadius="medium"
+              border="thin"
+              borderColor={CarnivalTheme.colors.warning}
+              gap="small"
+            >
+              <text alignment="center" color={CarnivalTheme.colors.text}>
+                You're currently <strong>Level {userLevelData.userLevel}: {levelInfo.name}</strong>
+              </text>
+              <text alignment="center" color={CarnivalTheme.colors.text}>
+                You need to reach <strong>Level 1: {nextLevelInfo.name}</strong> before you can create posts.
+              </text>
+            </vstack>
+
+            <vstack gap="small">
+              <text size="medium" weight="bold" alignment="center" color={CarnivalTheme.colors.text}>
+                🎯 How to Level Up:
+              </text>
+              <vstack 
+                padding="medium"
+                backgroundColor={CarnivalTheme.colors.background} 
+                cornerRadius="medium"
+                gap="small"
+              >
+                <text alignment="center" color={CarnivalTheme.colors.text}>
+                  <strong>Play 1 game</strong> to earn 1 XP and reach Level 1!
+                </text>
+                <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+                  • Participate in any Two Truths One Lie game (+1 XP)
+                </text>
+                <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+                  • Guess correctly for bonus XP (+4 XP total)
+                </text>
+              </vstack>
+            </vstack>
+
+            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+              💡 Find existing games in the community to start playing!
+            </text>
+            
+            {/* Responsive button layout */}
+            {isSmallScreen ? (
+              <vstack gap="medium" alignment="center">
+                <button
+                  appearance="secondary"
+                  onPress={onBack}
+                  width="100%"
+                >
+                  Back to Hub
+                </button>
+              </vstack>
+            ) : (
+              <hstack gap="medium" alignment="center">
+                <button
+                  appearance="secondary"
+                  onPress={onBack}
+                >
+                  Back to Hub
+                </button>
+              </hstack>
+            )}
+          </CarnivalCard>
+        </vstack>
+      </CarnivalBackground>
+    );
+  }
+
+  // Show create game interface for level 1+ users
   return (
     <CarnivalBackground>
       <vstack 
@@ -207,6 +341,12 @@ export const CreateGameInterface = ({
           <text alignment="center" color={CarnivalTheme.colors.text}>
             Ready to create your Two Truths One Lie game?
           </text>
+          
+          {userLevelData?.username && (
+            <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+              Creating as: u/{userLevelData.username} • Level {userLevelData.userLevel}
+            </text>
+          )}
           
           {/* Responsive button layout */}
           {isSmallScreen ? (
