@@ -212,16 +212,16 @@ export const CreateGameInterface = ({
           ) : (
             <hstack gap="medium" alignment="center">
               <button
-                appearance="secondary"
-                onPress={onBack}
-              >
-                Back
-              </button>
-              <button
                 appearance="primary"
                 onPress={handleOpenWebview}
               >
                 Create Post 🎪
+              </button>
+              <button
+                appearance="secondary"
+                onPress={onBack}
+              >
+                Back
               </button>
             </hstack>
           )}
