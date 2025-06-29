@@ -2,6 +2,7 @@ import { Devvit, Context } from '@devvit/public-api';
 import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
+import { GameService } from '../service/GameService.js';
 import type { LeaderboardEntry, UserScore } from '../../shared/types/game.js';
 
 interface LeaderboardInterfaceProps {
@@ -76,6 +77,49 @@ export const LeaderboardInterface = ({
     );
   };
 
+  // Calculate next level progress
+  const getNextLevelInfo = (userStats: UserScore) => {
+    const gameService = new GameService(context.redis);
+    const currentLevel = gameService.getLevelByExperience(userStats.experience);
+    
+    // Get all levels to find the next one
+    const levels = [
+      { level: 1, name: 'Rookie Detective', experienceRequired: 1 },
+      { level: 2, name: 'Truth Seeker', experienceRequired: 10 },
+      { level: 3, name: 'Lie Detector', experienceRequired: 20 },
+      { level: 4, name: 'Master Sleuth', experienceRequired: 35 },
+      { level: 5, name: 'Truth Master', experienceRequired: 55 },
+      { level: 6, name: 'Carnival Legend', experienceRequired: 80 },
+      { level: 7, name: 'Ultimate Detective', experienceRequired: 110 },
+    ];
+
+    const nextLevelIndex = levels.findIndex(l => l.level === currentLevel.level + 1);
+    
+    if (nextLevelIndex === -1) {
+      // Max level reached
+      return {
+        isMaxLevel: true,
+        nextLevel: null,
+        experienceNeeded: 0,
+        progressPercentage: 100,
+      };
+    }
+
+    const nextLevel = levels[nextLevelIndex];
+    const currentLevelExp = levels[currentLevel.level - 1]?.experienceRequired || 0;
+    const experienceNeeded = nextLevel.experienceRequired - userStats.experience;
+    const experienceInCurrentLevel = userStats.experience - currentLevelExp;
+    const experienceRequiredForCurrentLevel = nextLevel.experienceRequired - currentLevelExp;
+    const progressPercentage = Math.round((experienceInCurrentLevel / experienceRequiredForCurrentLevel) * 100);
+
+    return {
+      isMaxLevel: false,
+      nextLevel,
+      experienceNeeded,
+      progressPercentage: Math.max(0, Math.min(100, progressPercentage)),
+    };
+  };
+
   return (
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
@@ -97,59 +141,139 @@ export const LeaderboardInterface = ({
             >
               <text size="small" weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
               
-              <hstack gap="large">
-                <vstack>
-                  <text size="xsmall" color={CarnivalTheme.colors.text}>
-                    🎯 Level {userStats.level}
-                  </text>
-                  <text size="xsmall" color={CarnivalTheme.colors.text}>
-                    ⭐ {userStats.experience} XP
-                  </text>
+              {/* Main stats section with vertical divider */}
+              <hstack gap="small" alignment="top">
+                {/* Left side - Current stats */}
+                <vstack gap="small" grow>
+                  <hstack gap="large">
+                    <vstack>
+                      <text size="xsmall" color={CarnivalTheme.colors.text}>
+                        🎯 Level {userStats.level}
+                      </text>
+                      <text size="xsmall" color={CarnivalTheme.colors.text}>
+                        ⭐ {userStats.experience} XP
+                      </text>
+                    </vstack>
+                    <vstack>
+                      <text size="xsmall" color={CarnivalTheme.colors.text}>
+                        🎮 Games: {userStats.totalGames}
+                      </text>
+                      <text size="xsmall" color={CarnivalTheme.colors.text}>
+                        🎯 Accuracy: {userStats.totalGames > 0 
+                          ? Math.round((userStats.correctGuesses / userStats.totalGames) * 100) 
+                          : 0}%
+                      </text>
+                    </vstack>
+                  </hstack>
+                  
+                  {/* Leaderboard Positions Section */}
+                  <vstack gap="xsmall">
+                    <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
+                      Leaderboard Positions
+                    </text>
+                    
+                    <hstack gap="medium">
+                      <vstack gap="xxsmall">
+                        <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                          📅 This Week
+                        </text>
+                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                          🕵️ {formatRank(userWeeklyGuesserRank)} guesser
+                        </text>
+                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                          🎭 {formatRank(userWeeklyLiarRank)} liar
+                        </text>
+                      </vstack>
+                      
+                      <vstack gap="xxsmall">
+                        <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                          🏆 All-Time
+                        </text>
+                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                          🕵️ {formatRank(userAllTimeGuesserRank)} guesser
+                        </text>
+                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                          🎭 {formatRank(userAllTimeLiarRank)} liar
+                        </text>
+                      </vstack>
+                    </hstack>
+                  </vstack>
                 </vstack>
-                <vstack>
-                  <text size="xsmall" color={CarnivalTheme.colors.text}>
-                    🎮 Games: {userStats.totalGames}
-                  </text>
-                  <text size="xsmall" color={CarnivalTheme.colors.text}>
-                    🎯 Accuracy: {userStats.totalGames > 0 
-                      ? Math.round((userStats.correctGuesses / userStats.totalGames) * 100) 
-                      : 0}%
-                  </text>
+
+                {/* Vertical divider - bluish bar that doesn't quite touch borders */}
+                <vstack height="100%" width="2px" alignment="center middle">
+                  <spacer height="4px" />
+                  <vstack grow width="2px" backgroundColor={CarnivalTheme.colors.primary} />
+                  <spacer height="4px" />
+                </vstack>
+
+                {/* Right side - Next level progress */}
+                <vstack gap="xsmall" grow>
+                  {(() => {
+                    const nextLevelInfo = getNextLevelInfo(userStats);
+                    
+                    if (nextLevelInfo.isMaxLevel) {
+                      return (
+                        <vstack gap="xsmall" alignment="center">
+                          <text size="xsmall" weight="bold" color={CarnivalTheme.colors.accent}>
+                            🏆 Max Level Reached!
+                          </text>
+                          <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
+                            You've achieved the highest rank: Ultimate Detective!
+                          </text>
+                        </vstack>
+                      );
+                    }
+
+                    return (
+                      <vstack gap="xsmall">
+                        <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
+                          🎯 Next Level
+                        </text>
+                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                          {nextLevelInfo.nextLevel?.name}
+                        </text>
+                        
+                        {/* Progress bar */}
+                        <vstack gap="xxsmall">
+                          <hstack 
+                            width="100%" 
+                            height="6px" 
+                            backgroundColor="rgba(0,0,0,0.1)" 
+                            cornerRadius="small"
+                          >
+                            <hstack 
+                              width={`${nextLevelInfo.progressPercentage}%`} 
+                              height="100%" 
+                              backgroundColor={CarnivalTheme.colors.accent}
+                              cornerRadius="small"
+                            />
+                          </hstack>
+                          <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                            {nextLevelInfo.progressPercentage}% complete
+                          </text>
+                        </vstack>
+                        
+                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                          🎯 Need {nextLevelInfo.experienceNeeded} more XP
+                        </text>
+                        
+                        <vstack gap="xxsmall">
+                          <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                            💡 Earn XP by:
+                          </text>
+                          <text size="xsmall" color={CarnivalTheme.colors.text}>
+                            • Playing games (+1 XP)
+                          </text>
+                          <text size="xsmall" color={CarnivalTheme.colors.text}>
+                            • Correct guesses (+4 XP)
+                          </text>
+                        </vstack>
+                      </vstack>
+                    );
+                  })()}
                 </vstack>
               </hstack>
-              
-              {/* Leaderboard Positions Section */}
-              <vstack gap="xsmall">
-                <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
-                  Leaderboard Positions
-                </text>
-                
-                <hstack gap="medium">
-                  <vstack gap="xxsmall">
-                    <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                      📅 This Week
-                    </text>
-                    <text size="xsmall" color={CarnivalTheme.colors.text}>
-                      🕵️ {formatRank(userWeeklyGuesserRank)} guesser
-                    </text>
-                    <text size="xsmall" color={CarnivalTheme.colors.text}>
-                      🎭 {formatRank(userWeeklyLiarRank)} liar
-                    </text>
-                  </vstack>
-                  
-                  <vstack gap="xxsmall">
-                    <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                      🏆 All-Time
-                    </text>
-                    <text size="xsmall" color={CarnivalTheme.colors.text}>
-                      🕵️ {formatRank(userAllTimeGuesserRank)} guesser
-                    </text>
-                    <text size="xsmall" color={CarnivalTheme.colors.text}>
-                      🎭 {formatRank(userAllTimeLiarRank)} liar
-                    </text>
-                  </vstack>
-                </hstack>
-              </vstack>
             </vstack>
           )}
 
