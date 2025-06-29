@@ -166,7 +166,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       const experiencePoints = isCorrect ? 2 : 1; // CHANGED: Reduced from 4 to 2
       const guesserPoints = isCorrect ? 1 : 0;
       
-      // Save to database and update flair with scheduler access for level-up notifications
+      // Save to database and update scores - these functions handle all score updates internally
       const [experienceResult, guesserResult] = await Promise.all([
         gameService.saveUserGuess(newUserGuess),
         gameService.updateGamePost(updatedGamePost),
@@ -179,13 +179,9 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1, reddit, scheduler);
       }
 
-      const userScore = await gameService.getUserScore(userId);
-      const newLevel = gameService.getLevelByExperience(userScore.experience);
-      
-      if (newLevel.level > userScore.level) {
-        userScore.level = newLevel.level;
-        await gameService.updateUserScore(userScore, reddit, scheduler);
-        ui.showToast(`Level up! You are now ${newLevel.name}!`);
+      // Check if user leveled up from the experience award result
+      if (experienceResult && experienceResult.leveledUp) {
+        ui.showToast(`Level up! You are now ${experienceResult.newLevel.name}!`);
       }
 
       // Show immediate feedback
