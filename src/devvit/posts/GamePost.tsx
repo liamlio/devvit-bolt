@@ -19,6 +19,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
   const [error, setError] = useState<string>('');
   const [gameState, setGameState] = useState<'play' | 'result' | 'description' | 'create'>('play');
   const [viewingDescription, setViewingDescription] = useState<{ statement: Statement; title: string } | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Add refresh trigger
 
   // Load game data
   const { data: gameData, loading } = useAsync(async () => {
@@ -54,7 +55,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       console.error('Error loading game data:', err);
       throw err;
     }
-  });
+  }, [refreshTrigger]); // Add refreshTrigger as dependency
 
   const handleSubmitGuess = async () => {
     if (selectedIndex === null || !userId || !reddit || !gameData || gameData.type !== 'game') return;
@@ -123,12 +124,13 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         ui.showToast(`Level up! You are now ${newLevel.name}!`);
       }
 
-      // Change UI to post-guess state instead of just showing toast
+      // Show immediate feedback
+      ui.showToast(isCorrect ? '🎉 Correct! You spotted the lie!' : '😅 Nice try! Better luck next time!');
+
+      // Change UI to post-guess state and trigger data refresh
       setGameState('result');
+      setRefreshTrigger(prev => prev + 1); // Trigger useAsync to re-run
       
-      // Trigger reload to get updated data
-      setError('reload');
-      setError('');
     } catch (err) {
       console.error('Error submitting guess:', err);
       ui.showToast('Error submitting guess. Please try again.');
@@ -158,9 +160,9 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       
       ui.showToast('🔄 Reset complete! You can guess again.');
       
-      // Trigger reload
-      setError('reload');
-      setError('');
+      // Trigger data refresh
+      setRefreshTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error('Error resetting guess:', err);
       ui.showToast('Error resetting guess. Please try again.');
@@ -189,9 +191,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         error={error || 'Something went wrong. Please try again.'} 
         onRetry={() => {
           setError('');
-          // Trigger reload by setting and clearing error
-          setError('reload');
-          setError('');
+          setRefreshTrigger(prev => prev + 1); // Use refresh trigger instead of error manipulation
         }} 
       />
     );
@@ -259,5 +259,5 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
   }
 
   // Fallback
-  return <ErrorState error="Unknown game state" onRetry={() => setError('')} />;
+  return <ErrorState error="Unknown game state" onRetry={() => setRefreshTrigger(prev => prev + 1)} />;
 };
