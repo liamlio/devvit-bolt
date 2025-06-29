@@ -43,7 +43,7 @@ export const CreateGameInterface = ({
       console.error('Error checking user level:', error);
       return { canCreatePost: false, userLevel: 0, username: null };
     }
-  }, [userId]);
+  });
 
   const { mount, unmount, postMessage } = useWebView({
     url: 'index.html',
@@ -266,10 +266,10 @@ export const CreateGameInterface = ({
               gap="small"
             >
               <text alignment="center" color={CarnivalTheme.colors.text}>
-                You're currently <strong>Level {userLevelData.userLevel}: {levelInfo.name}</strong>
+                You are currently Level {userLevelData.userLevel}: {levelInfo.name}
               </text>
               <text alignment="center" color={CarnivalTheme.colors.text}>
-                You need to reach <strong>Level 1: {nextLevelInfo.name}</strong> before you can create posts.
+                You need to reach Level 1: {nextLevelInfo.name} before you can create posts.
               </text>
             </vstack>
 
@@ -284,7 +284,7 @@ export const CreateGameInterface = ({
                 gap="small"
               >
                 <text alignment="center" color={CarnivalTheme.colors.text}>
-                  <strong>Play 1 game</strong> to earn 1 XP and reach Level 1!
+                  Play 1 game to earn 1 XP and reach Level 1!
                 </text>
                 <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
                   • Participate in any Two Truths One Lie game (+1 XP)
