@@ -218,20 +218,27 @@ export class GameService {
   // User Flair Management
   async updateUserFlair(username: string, subredditName: string, reddit: any): Promise<void> {
     try {
-      // Get user's current level
+      // Get user's current level and stats
       const userScore = await this.getUserScore(`user_${username}`); // Assuming userId format
       const levelInfo = this.getLevelByExperience(userScore.experience);
       
-      // Set user flair with level name and carnival-themed color
+      // Get user's weekly guesser rank
+      const weeklyGuesserRank = await this.getUserLeaderboardRank(`user_${username}`, 'guesser', 'weekly');
+      
+      // Format the complex flair text: "{level title} | {current EXP} | Weekly guesser rank"
+      const rankText = weeklyGuesserRank ? `#${weeklyGuesserRank}` : 'Unranked';
+      const flairText = `${levelInfo.name} | ${userScore.experience} XP | ${rankText}`;
+      
+      // Set user flair with complex information and carnival-themed color
       await reddit.setUserFlair({
         subredditName,
         username,
-        text: levelInfo.name,
+        text: flairText,
         backgroundColor: this.getLevelFlairColor(levelInfo.level),
         textColor: 'dark', // Use dark text for better readability
       });
       
-      console.log(`Updated flair for ${username}: ${levelInfo.name} (Level ${levelInfo.level})`);
+      console.log(`Updated complex flair for ${username}: "${flairText}" (Level ${levelInfo.level})`);
     } catch (error) {
       console.error(`Error updating flair for ${username}:`, error);
     }
@@ -319,8 +326,8 @@ export class GameService {
     const result = await this.updateUserScore(userScore);
     console.log(`Guesser points awarded. New totals - All-time: ${userScore.guesserPoints}, Weekly: ${userScore.weeklyGuesserPoints}`);
     
-    // Update flair if level changed and we have reddit API access
-    if (result.leveledUp && reddit) {
+    // Always update flair after awarding guesser points (since weekly rank may change)
+    if (reddit) {
       const gameSettings = await this.getGameSettings();
       if (gameSettings.subredditName) {
         await this.updateUserFlair(username, gameSettings.subredditName, reddit);
