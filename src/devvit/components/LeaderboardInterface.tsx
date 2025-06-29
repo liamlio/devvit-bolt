@@ -154,7 +154,7 @@ export const LeaderboardInterface = ({
             /* Small screen: Stack title and back button vertically */
             <vstack gap="xxsmall" alignment="center">
               {/* Title */}
-              <vstack gap="xsmall" alignment="center">>
+              <vstack gap="xsmall" alignment="center">
                 <text size="large" alignment="center" color={CarnivalTheme.colors.text} grow>
                   🏆 Two Truths One Lie
                 </text>
