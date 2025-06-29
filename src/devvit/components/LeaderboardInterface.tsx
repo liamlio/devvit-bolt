@@ -13,9 +13,8 @@ interface LeaderboardInterfaceProps {
   userWeeklyLiarRank?: number;
   userAllTimeGuesserRank?: number;
   userAllTimeLiarRank?: number;
-  activeTab: 'guessers' | 'liars';
-  onTabChange: (tab: 'guessers' | 'liars') => void;
   onCreateGame: () => void;
+  onViewFullLeaderboard: () => void;
 }
 
 export const LeaderboardInterface = ({ 
@@ -27,15 +26,47 @@ export const LeaderboardInterface = ({
   userWeeklyLiarRank,
   userAllTimeGuesserRank,
   userAllTimeLiarRank,
-  activeTab, 
-  onTabChange, 
-  onCreateGame 
+  onCreateGame,
+  onViewFullLeaderboard
 }: LeaderboardInterfaceProps): JSX.Element => {
-  const currentLeaderboard = activeTab === 'guessers' ? guesserLeaderboard : liarLeaderboard;
-  
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
+
+  // Show only top 3 for preview
+  const topGuessers = guesserLeaderboard.slice(0, 3);
+  const topLiars = liarLeaderboard.slice(0, 3);
+
+  const renderTopThree = (entries: LeaderboardEntry[], type: 'guesser' | 'liar') => {
+    if (entries.length === 0) {
+      return (
+        <text size="xsmall" color={CarnivalTheme.colors.textLight} alignment="center">
+          No entries yet!
+        </text>
+      );
+    }
+
+    return (
+      <vstack gap="xxsmall">
+        {entries.map((entry, index) => {
+          const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+          const scoreText = type === 'guesser' 
+            ? `${entry.score} correct`
+            : `${entry.score} fooled`;
+          
+          return (
+            <text 
+              key={entry.userId}
+              size="xsmall" 
+              color={CarnivalTheme.colors.text}
+            >
+              {rank} u/{entry.username} - {scoreText}
+            </text>
+          );
+        })}
+      </vstack>
+    );
+  };
 
   return (
     <CarnivalBackground>
@@ -46,7 +77,7 @@ export const LeaderboardInterface = ({
             Welcome to the carnival of deception! Can you spot the lies?
           </text>
 
-          {/* User Stats - More Compact Layout */}
+          {/* User Stats */}
           {userStats && (
             <vstack 
               padding="small"
@@ -58,7 +89,6 @@ export const LeaderboardInterface = ({
             >
               <text size="small" weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
               
-              {/* First Row: Level, XP, Games, Accuracy */}
               <hstack gap="large">
                 <vstack>
                   <text size="xsmall" color={CarnivalTheme.colors.text}>
@@ -80,7 +110,6 @@ export const LeaderboardInterface = ({
                 </vstack>
               </hstack>
               
-              {/* Second Row: Leaderboard Positions - All in one horizontal line */}
               <hstack gap="medium" alignment="middle">
                 <text size="xsmall" color={CarnivalTheme.colors.text}>
                   Weekly: #{userWeeklyGuesserRank || 'N/A'} guesser, #{userWeeklyLiarRank || 'N/A'} liar
@@ -93,65 +122,50 @@ export const LeaderboardInterface = ({
             </vstack>
           )}
 
-          {/* Tab Navigation */}
+          {/* Top 3 Leaderboards Preview */}
           <hstack gap="small">
-            <button
-              appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
-              onPress={() => onTabChange('guessers')}
+            <vstack 
               grow
-              size="small"
+              padding="small"
+              backgroundColor={CarnivalTheme.colors.background} 
+              cornerRadius="medium"
+              border="thin"
+              borderColor={CarnivalTheme.colors.shadow}
+              gap="small"
             >
-              🕵️ Best Guessers (Weekly)
-            </button>
-            <button
-              appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
-              onPress={() => onTabChange('liars')}
+              <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                🕵️ Top Guessers (Weekly)
+              </text>
+              {renderTopThree(topGuessers, 'guesser')}
+            </vstack>
+
+            <vstack 
               grow
-              size="small"
+              padding="small"
+              backgroundColor={CarnivalTheme.colors.background} 
+              cornerRadius="medium"
+              border="thin"
+              borderColor={CarnivalTheme.colors.shadow}
+              gap="small"
             >
-              🎭 Best Liars (Weekly)
-            </button>
+              <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                🎭 Top Liars (Weekly)
+              </text>
+              {renderTopThree(topLiars, 'liar')}
+            </vstack>
           </hstack>
 
-          {/* Single Block Leaderboard */}
-          <vstack 
-            padding="small"
-            backgroundColor={CarnivalTheme.colors.background} 
-            cornerRadius="medium"
-            border="thin"
-            borderColor={CarnivalTheme.colors.shadow}
-            maxHeight="400px"
-            overflow="scroll"
-            gap="none"
+          {/* View Full Leaderboard Button */}
+          <button
+            appearance="secondary"
+            onPress={onViewFullLeaderboard}
+            width="100%"
+            size="small"
           >
-            {currentLeaderboard.length > 0 ? (
-              currentLeaderboard.map((entry, index) => {
-                const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
-                const scoreText = activeTab === 'guessers' 
-                  ? `${entry.score} correct`
-                  : `${entry.score} fooled`;
-                
-                return (
-                  <text 
-                    key={entry.userId}
-                    size="xsmall" 
-                    color={CarnivalTheme.colors.text}
-                  >
-                    {rank} u/{entry.username} - {scoreText}
-                  </text>
-                );
-              })
-            ) : (
-              <vstack alignment="center middle" padding="medium">
-                <text size="medium" color={CarnivalTheme.colors.text}>🎪</text>
-                <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                  No entries yet! Be the first to play!
-                </text>
-              </vstack>
-            )}
-          </vstack>
+            View Leaderboard 🏆
+          </button>
 
-          {/* Action Button */}
+          {/* Create Game Button */}
           <button
             appearance="primary"
             onPress={onCreateGame}

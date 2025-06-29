@@ -3,6 +3,7 @@ import { GameService } from '../service/GameService.js';
 import { LoadingState } from '../components/LoadingState.js';
 import { ErrorState } from '../components/ErrorState.js';
 import { LeaderboardInterface } from '../components/LeaderboardInterface.js';
+import { FullLeaderboardInterface } from '../components/FullLeaderboardInterface.js';
 import { CreateGameInterface } from '../components/CreateGameInterface.js';
 import type { GamePost as GamePostType, Statement } from '../../shared/types/game.js';
 
@@ -13,7 +14,7 @@ interface PinnedPostProps {
 export const PinnedPost = ({ context }: PinnedPostProps): JSX.Element => {
   const { postId, userId, redis, reddit, ui } = context;
   const gameService = new GameService(redis);
-  const [gameState, setGameState] = useState<'leaderboard' | 'create'>('leaderboard');
+  const [gameState, setGameState] = useState<'leaderboard' | 'fullLeaderboard' | 'create'>('leaderboard');
   const [activeTab, setActiveTab] = useState<'guessers' | 'liars'>('guessers');
 
   // This will be handled by the CreateGameInterface component now
@@ -25,9 +26,16 @@ export const PinnedPost = ({ context }: PinnedPostProps): JSX.Element => {
   // Load leaderboard data
   const { data: leaderboardData, loading } = useAsync(async () => {
     try {
-      const [guesserLeaderboard, liarLeaderboard] = await Promise.all([
-        gameService.getLeaderboard('guesser', 'weekly', 10),
-        gameService.getLeaderboard('liar', 'weekly', 10),
+      const [
+        weeklyGuesserLeaderboard, 
+        weeklyLiarLeaderboard,
+        allTimeGuesserLeaderboard,
+        allTimeLiarLeaderboard
+      ] = await Promise.all([
+        gameService.getLeaderboard('guesser', 'weekly', 20),
+        gameService.getLeaderboard('liar', 'weekly', 20),
+        gameService.getLeaderboard('guesser', 'alltime', 20),
+        gameService.getLeaderboard('liar', 'alltime', 20),
       ]);
 
       let userStats;
@@ -49,8 +57,10 @@ export const PinnedPost = ({ context }: PinnedPostProps): JSX.Element => {
       }
 
       return {
-        guesserLeaderboard,
-        liarLeaderboard,
+        weeklyGuesserLeaderboard,
+        weeklyLiarLeaderboard,
+        allTimeGuesserLeaderboard,
+        allTimeLiarLeaderboard,
         userStats,
         userWeeklyGuesserRank,
         userWeeklyLiarRank,
@@ -91,20 +101,34 @@ export const PinnedPost = ({ context }: PinnedPostProps): JSX.Element => {
     );
   }
 
-  // Leaderboard view (default for pinned post)
+  if (gameState === 'fullLeaderboard') {
+    return (
+      <FullLeaderboardInterface
+        context={context}
+        weeklyGuesserLeaderboard={leaderboardData.weeklyGuesserLeaderboard}
+        allTimeGuesserLeaderboard={leaderboardData.allTimeGuesserLeaderboard}
+        weeklyLiarLeaderboard={leaderboardData.weeklyLiarLeaderboard}
+        allTimeLiarLeaderboard={leaderboardData.allTimeLiarLeaderboard}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onBack={() => setGameState('leaderboard')}
+      />
+    );
+  }
+
+  // Leaderboard preview (default for pinned post)
   return (
     <LeaderboardInterface
       context={context}
-      guesserLeaderboard={leaderboardData.guesserLeaderboard}
-      liarLeaderboard={leaderboardData.liarLeaderboard}
+      guesserLeaderboard={leaderboardData.weeklyGuesserLeaderboard}
+      liarLeaderboard={leaderboardData.weeklyLiarLeaderboard}
       userStats={leaderboardData.userStats}
       userWeeklyGuesserRank={leaderboardData.userWeeklyGuesserRank}
       userWeeklyLiarRank={leaderboardData.userWeeklyLiarRank}
       userAllTimeGuesserRank={leaderboardData.userAllTimeGuesserRank}
       userAllTimeLiarRank={leaderboardData.userAllTimeLiarRank}
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
       onCreateGame={() => setGameState('create')}
+      onViewFullLeaderboard={() => setGameState('fullLeaderboard')}
     />
   );
 };
