@@ -91,33 +91,34 @@ export const LeaderboardInterface = ({
             </button>
           </hstack>
 
-          {/* Leaderboard - Simplified single line format */}
-          <vstack gap="xxsmall" maxHeight="350px" overflow="scroll">
+          {/* Single Block Leaderboard */}
+          <vstack 
+            padding="small"
+            backgroundColor={CarnivalTheme.colors.background} 
+            cornerRadius="medium"
+            border="thin"
+            borderColor={CarnivalTheme.colors.shadow}
+            maxHeight="400px"
+            overflow="scroll"
+            gap="none"
+          >
             {currentLeaderboard.length > 0 ? (
-              currentLeaderboard.map((entry, index) => (
-                <hstack 
-                  key={entry.userId} 
-                  padding="xsmall"
-                  backgroundColor={CarnivalTheme.colors.background} 
-                  cornerRadius="small"
-                  border="thin"
-                  borderColor={CarnivalTheme.colors.shadow}
-                  alignment="middle"
-                >
-                  <text size="xsmall" weight="bold" width="30px" color={CarnivalTheme.colors.text}>
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+              currentLeaderboard.map((entry, index) => {
+                const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+                const scoreText = activeTab === 'guessers' 
+                  ? `${entry.score} correct`
+                  : `${entry.score} fooled`;
+                
+                return (
+                  <text 
+                    key={entry.userId}
+                    size="xsmall" 
+                    color={CarnivalTheme.colors.text}
+                  >
+                    {rank} u/{entry.username} - {scoreText}
                   </text>
-                  <text size="xsmall" grow color={CarnivalTheme.colors.text}>
-                    u/{entry.username}
-                  </text>
-                  <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
-                    {entry.score} {activeTab === 'guessers' 
-                      ? `correct guess${entry.score !== 1 ? 'es' : ''}`
-                      : `player${entry.score !== 1 ? 's' : ''} fooled`
-                    }
-                  </text>
-                </hstack>
-              ))
+                );
+              })
             ) : (
               <vstack alignment="center middle" padding="medium">
                 <text size="medium" color={CarnivalTheme.colors.text}>🎪</text>
