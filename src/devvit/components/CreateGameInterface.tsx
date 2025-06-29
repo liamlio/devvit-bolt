@@ -201,7 +201,7 @@ export const CreateGameInterface = ({
               >
                 Create Post 🎪
               </button>
-                            <button
+               <button
                 appearance="secondary"
                 onPress={onBack}
                 width="100%"
