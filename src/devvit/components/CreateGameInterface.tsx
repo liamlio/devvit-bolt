@@ -178,7 +178,7 @@ export const CreateGameInterface = ({
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding={isSmallScreen ? "medium" : "large"} gap="small" aligment="center">
+      <vstack width="100%" height="100%" alignment="center middle" padding={isSmallScreen ? "medium" : "large"} gap="small">
         <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
