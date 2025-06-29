@@ -4,6 +4,7 @@ import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
 import { GameService } from '../service/GameService.js';
 import type { LeaderboardEntry, UserScore } from '../../shared/types/game.js';
+import { useState } from '@devvit/public-api';
 
 interface LeaderboardInterfaceProps {
   context: Context;
@@ -33,6 +34,9 @@ export const LeaderboardInterface = ({
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
+
+  // NEW: State for toggling between guesser and liar leaderboards on small screens
+  const [activeLeaderboard, setActiveLeaderboard] = useState<'guessers' | 'liars'>('guessers');
 
   // Show only top 3 for preview
   const topGuessers = guesserLeaderboard.slice(0, 3);
@@ -266,34 +270,28 @@ export const LeaderboardInterface = ({
                           )}
                         </vstack>
                         
-                        <text size="xsmall" color={CarnivalTheme.colors.text}>
-                          {nextLevelInfo.experienceNeeded} XP to go
-                        </text>
+                        {/* UPDATED: Remove "X XP to go" text for small screens */}
+                        {!isSmallScreen && (
+                          <text size="xsmall" color={CarnivalTheme.colors.text}>
+                            {nextLevelInfo.experienceNeeded} XP to go
+                          </text>
+                        )}
                         
                         <vstack gap="xxsmall">
                           <text size="xsmall" color={CarnivalTheme.colors.textLight}>
                             💡 Earn XP by:
                           </text>
-                          {/* UPDATED: XP methods with values on new lines for small screens */}
+                          {/* UPDATED: Remove XP values for small screens */}
                           {isSmallScreen ? (
                             <vstack gap="xxsmall">
                               <text size="xsmall" color={CarnivalTheme.colors.text}>
                                 • Playing games
                               </text>
                               <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                  (+1 XP)
-                              </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
                                 • Correct guesses
                               </text>
                               <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                  (+2 XP)
-                              </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
                                 • Posts with 5+ guesses
-                              </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                  (+10 XP)
                               </text>
                             </vstack>
                           ) : (
@@ -318,38 +316,79 @@ export const LeaderboardInterface = ({
             </vstack>
           )}
 
-          {/* Top 3 Leaderboards Preview */}
-          <hstack gap="small">
-            <vstack 
-              grow
-              padding="small"
-              backgroundColor={CarnivalTheme.colors.background} 
-              cornerRadius="medium"
-              border="thin"
-              borderColor={CarnivalTheme.colors.shadow}
-              gap="small"
-            >
-              <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
-                🕵️ Top Guessers (Weekly)
-              </text>
-              {renderTopThree(topGuessers, 'guesser')}
-            </vstack>
+          {/* UPDATED: Top 3 Leaderboards Preview with toggle for small screens */}
+          {isSmallScreen ? (
+            /* Small screen: Toggle between guesser and liar leaderboards */
+            <vstack gap="small">
+              {/* Toggle buttons */}
+              <hstack gap="small">
+                <button
+                  appearance={activeLeaderboard === 'guessers' ? 'primary' : 'secondary'}
+                  onPress={() => setActiveLeaderboard('guessers')}
+                  grow
+                  size="small"
+                >
+                  🕵️ Top Guessers
+                </button>
+                <button
+                  appearance={activeLeaderboard === 'liars' ? 'primary' : 'secondary'}
+                  onPress={() => setActiveLeaderboard('liars')}
+                  grow
+                  size="small"
+                >
+                  🎭 Top Liars
+                </button>
+              </hstack>
 
-            <vstack 
-              grow
-              padding="small"
-              backgroundColor={CarnivalTheme.colors.background} 
-              cornerRadius="medium"
-              border="thin"
-              borderColor={CarnivalTheme.colors.shadow}
-              gap="small"
-            >
-              <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
-                🎭 Top Liars (Weekly)
-              </text>
-              {renderTopThree(topLiars, 'liar')}
+              {/* Single leaderboard display */}
+              <vstack 
+                padding="small"
+                backgroundColor={CarnivalTheme.colors.background} 
+                cornerRadius="medium"
+                border="thin"
+                borderColor={CarnivalTheme.colors.shadow}
+                gap="small"
+              >
+                <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                  {activeLeaderboard === 'guessers' ? '🕵️ Top Guessers (Weekly)' : '🎭 Top Liars (Weekly)'}
+                </text>
+                {renderTopThree(activeLeaderboard === 'guessers' ? topGuessers : topLiars, activeLeaderboard === 'guessers' ? 'guesser' : 'liar')}
+              </vstack>
             </vstack>
-          </hstack>
+          ) : (
+            /* Large screen: Side-by-side leaderboards */
+            <hstack gap="small">
+              <vstack 
+                grow
+                padding="small"
+                backgroundColor={CarnivalTheme.colors.background} 
+                cornerRadius="medium"
+                border="thin"
+                borderColor={CarnivalTheme.colors.shadow}
+                gap="small"
+              >
+                <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                  🕵️ Top Guessers (Weekly)
+                </text>
+                {renderTopThree(topGuessers, 'guesser')}
+              </vstack>
+
+              <vstack 
+                grow
+                padding="small"
+                backgroundColor={CarnivalTheme.colors.background} 
+                cornerRadius="medium"
+                border="thin"
+                borderColor={CarnivalTheme.colors.shadow}
+                gap="small"
+              >
+                <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+                  🎭 Top Liars (Weekly)
+                </text>
+                {renderTopThree(topLiars, 'liar')}
+              </vstack>
+            </hstack>
+          )}
 
           {/* View Full Leaderboard Button */}
           <button
