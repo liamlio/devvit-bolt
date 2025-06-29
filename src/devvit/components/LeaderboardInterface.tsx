@@ -84,6 +84,7 @@ export const LeaderboardInterface = ({
     
     // Get all levels to find the next one
     const levels = [
+      { level: 0, name: 'Clown', experienceRequired: 0 },
       { level: 1, name: 'Rookie Detective', experienceRequired: 1 },
       { level: 2, name: 'Truth Seeker', experienceRequired: 10 },
       { level: 3, name: 'Lie Detector', experienceRequired: 20 },
@@ -106,7 +107,7 @@ export const LeaderboardInterface = ({
     }
 
     const nextLevel = levels[nextLevelIndex];
-    const currentLevelExp = levels[currentLevel.level - 1]?.experienceRequired || 0;
+    const currentLevelExp = levels[currentLevel.level]?.experienceRequired || 0;
     const experienceNeeded = nextLevel.experienceRequired - userStats.experience;
     const experienceInCurrentLevel = userStats.experience - currentLevelExp;
     const experienceRequiredForCurrentLevel = nextLevel.experienceRequired - currentLevelExp;

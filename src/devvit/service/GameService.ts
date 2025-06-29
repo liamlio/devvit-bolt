@@ -54,7 +54,7 @@ export class GameService {
       liarPoints: 0,
       weeklyGuesserPoints: 0,
       weeklyLiarPoints: 0,
-      level: 1,
+      level: 0, // Start at level 0
       experience: 0,
       totalGames: 0,
       correctGuesses: 0,
@@ -222,7 +222,7 @@ export class GameService {
       const userScore = await this.getUserScore(`user_${username}`); // Assuming userId format
       const levelInfo = this.getLevelByExperience(userScore.experience);
       
-      // Set user flair with level name
+      // Set user flair with level name and carnival-themed color
       await reddit.setUserFlair({
         subredditName,
         username,
@@ -231,25 +231,26 @@ export class GameService {
         textColor: 'dark', // Use dark text for better readability
       });
       
-      console.log(`Updated flair for ${username}: ${levelInfo.name}`);
+      console.log(`Updated flair for ${username}: ${levelInfo.name} (Level ${levelInfo.level})`);
     } catch (error) {
       console.error(`Error updating flair for ${username}:`, error);
     }
   }
 
   private getLevelFlairColor(level: number): string {
-    // Return different colors for different level ranges
-    const colors = [
-      '#94A3B8', // Level 1 - Slate
-      '#60A5FA', // Level 2 - Blue  
-      '#34D399', // Level 3 - Emerald
-      '#FBBF24', // Level 4 - Amber
-      '#F97316', // Level 5 - Orange
-      '#EF4444', // Level 6 - Red
-      '#A855F7', // Level 7 - Purple
+    // Carnival-themed colors for each level
+    const carnivalColors = [
+      '#FF69B4', // Level 0 - Hot Pink (Clown)
+      '#87CEEB', // Level 1 - Sky Blue (Rookie Detective)
+      '#98FB98', // Level 2 - Pale Green (Truth Seeker)
+      '#FFD700', // Level 3 - Gold (Lie Detector)
+      '#FF6347', // Level 4 - Tomato Red (Master Sleuth)
+      '#DA70D6', // Level 5 - Orchid Purple (Truth Master)
+      '#FF4500', // Level 6 - Orange Red (Carnival Legend)
+      '#8A2BE2', // Level 7 - Blue Violet (Ultimate Detective)
     ];
     
-    return colors[Math.min(level - 1, colors.length - 1)] || colors[0];
+    return carnivalColors[Math.min(level, carnivalColors.length - 1)] || carnivalColors[0];
   }
 
   // Utility Methods
@@ -264,6 +265,7 @@ export class GameService {
 
   getLevelByExperience(experience: number): { level: number; name: string } {
     const levels = [
+      { level: 0, name: 'Clown', experienceRequired: 0 }, // Start at level 0
       { level: 1, name: 'Rookie Detective', experienceRequired: 1 },
       { level: 2, name: 'Truth Seeker', experienceRequired: 10 },
       { level: 3, name: 'Lie Detector', experienceRequired: 20 },
@@ -278,7 +280,7 @@ export class GameService {
         return levels[i];
       }
     }
-    return levels[0];
+    return levels[0]; // Return level 0 (Clown) as default
   }
 
   async awardExperience(userId: string, username: string, points: number, reddit?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {

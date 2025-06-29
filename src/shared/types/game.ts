@@ -35,7 +35,7 @@ export type UserScore = {
   liarPoints: number;
   weeklyGuesserPoints: number;
   weeklyLiarPoints: number;
-  level: number;
+  level: number; // Now starts at 0
   experience: number;
   totalGames: number;
   correctGuesses: number;

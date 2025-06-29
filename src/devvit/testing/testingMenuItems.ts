@@ -17,14 +17,14 @@ export const resetLiamlioLevel = Devvit.addMenuItem({
       // Get current user score
       const userScore = await gameService.getUserScore(targetUserId);
       
+      // Set username if not already set
       if (!userScore.username) {
-        ui.showToast({ text: 'u/liamlio not found in the system' });
-        return;
+        userScore.username = targetUsername;
       }
       
       // Reset to level 0 (0 experience)
       userScore.experience = 0;
-      userScore.level = 1; // Will be recalculated
+      userScore.level = 0; // Will be recalculated to level 0 (Clown)
       
       await gameService.updateUserScore(userScore);
       
@@ -34,7 +34,7 @@ export const resetLiamlioLevel = Devvit.addMenuItem({
         await gameService.updateUserFlair(targetUsername, gameSettings.subredditName, reddit);
       }
       
-      ui.showToast({ text: `Reset u/${targetUsername} to level 0 (0 XP)! 🔄` });
+      ui.showToast({ text: `Reset u/${targetUsername} to Level 0: Clown (0 XP)! 🤡` });
     } catch (error) {
       console.error('Error resetting user level:', error);
       ui.showToast({
@@ -60,15 +60,16 @@ export const levelUpLiamlio = Devvit.addMenuItem({
       // Get current user score
       const userScore = await gameService.getUserScore(targetUserId);
       
+      // Set username if not already set
       if (!userScore.username) {
-        ui.showToast({ text: 'u/liamlio not found in the system' });
-        return;
+        userScore.username = targetUsername;
       }
       
       const currentLevel = gameService.getLevelByExperience(userScore.experience);
       
       // Get all levels to find the next one
       const levels = [
+        { level: 0, name: 'Clown', experienceRequired: 0 },
         { level: 1, name: 'Rookie Detective', experienceRequired: 1 },
         { level: 2, name: 'Truth Seeker', experienceRequired: 10 },
         { level: 3, name: 'Lie Detector', experienceRequired: 20 },
