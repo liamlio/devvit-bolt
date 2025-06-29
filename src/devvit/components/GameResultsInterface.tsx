@@ -1,14 +1,14 @@
-import { Devvit, Context } from '@devvit/public-api';
+import { Devvit, Context, useAsync } from '@devvit/public-api';
 import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
+import { GameService } from '../service/GameService.js';
 import type { GamePost, Statement, UserGuess } from '../../shared/types/game.js';
 
 interface GameResultsInterfaceProps {
   context: Context;
   gamePost: GamePost;
   userGuess?: UserGuess;
-  onViewLeaderboard: () => void;
   onViewDescription: (statement: Statement, title: string) => void;
   // TESTING EXCEPTION: Optional back button for u/liamlio testing
   showBackButton?: boolean;
@@ -19,11 +19,13 @@ export const GameResultsInterface = ({
   context,
   gamePost, 
   userGuess, 
-  onViewLeaderboard,
   onViewDescription,
   showBackButton = false,
   onBackToGuessing
 }: GameResultsInterfaceProps): JSX.Element => {
+  const { redis, ui } = context;
+  const gameService = new GameService(redis);
+  
   // FIXED: Create the statements array in the same order as displayed in GamePlayInterface
   const statements: Statement[] = [null, null, null];
   
@@ -42,6 +44,76 @@ export const GameResultsInterface = ({
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
+
+  // Get pinned post ID for "Return to Hub" functionality
+  const { data: pinnedPostId } = useAsync(async () => {
+    try {
+      return await gameService.getPinnedPost();
+    } catch (error) {
+      console.error('Error getting pinned post:', error);
+      return null;
+    }
+  });
+
+  // Handle navigation to leaderboard (pinned post)
+  const handleViewLeaderboard = async () => {
+    try {
+      if (pinnedPostId) {
+        const post = await context.reddit?.getPostById(pinnedPostId);
+        if (post) {
+          ui.navigateTo(post.url);
+          return;
+        }
+      }
+      
+      // Fallback: show toast if pinned post not found
+      ui.showToast('Leaderboard not found. Please check the community hub.');
+    } catch (error) {
+      console.error('Error navigating to leaderboard:', error);
+      ui.showToast('Error navigating to leaderboard. Please try again.');
+    }
+  };
+
+  // Handle navigation to hub (same as leaderboard)
+  const handleReturnToHub = async () => {
+    try {
+      if (pinnedPostId) {
+        const post = await context.reddit?.getPostById(pinnedPostId);
+        if (post) {
+          ui.navigateTo(post.url);
+          return;
+        }
+      }
+      
+      // Fallback: show toast if pinned post not found
+      ui.showToast('Community hub not found. Please check for the pinned post.');
+    } catch (error) {
+      console.error('Error navigating to hub:', error);
+      ui.showToast('Error navigating to hub. Please try again.');
+    }
+  };
+
+  // Handle navigation to create post interface
+  const handleCreatePost = async () => {
+    try {
+      if (pinnedPostId) {
+        const post = await context.reddit?.getPostById(pinnedPostId);
+        if (post) {
+          // Navigate to the hub post, which will show the create game interface
+          ui.navigateTo(post.url);
+          // Show a toast to guide the user
+          ui.showToast('Click "Create a Game" in the hub to make a new post! 🎪');
+          return;
+        }
+      }
+      
+      // Fallback: show toast if pinned post not found
+      ui.showToast('Please visit the community hub to create a new post.');
+    } catch (error) {
+      console.error('Error navigating to create post:', error);
+      ui.showToast('Error navigating to create post. Please try again.');
+    }
+  };
 
   return (
     <CarnivalBackground>
@@ -116,47 +188,88 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* FIXED: Responsive button layout - stack vertically on small screens */}
+          {/* UPDATED: Navigation buttons with responsive layout */}
           {isSmallScreen ? (
-            <vstack gap="medium" alignment="center" padding="xxsmall">
+            <vstack gap="small" alignment="center" padding="xxsmall">
               {/* TESTING EXCEPTION: Back button only for u/liamlio */}
               {showBackButton && onBackToGuessing && (
                 <button
                   appearance="destructive"
                   onPress={onBackToGuessing}
                   width="100%"
+                  size="small"
                 >
                   🔄 Test Again (liamlio only)
                 </button>
               )}
               
+              {/* NEW: Navigation buttons */}
+              <hstack gap="small" width="100%">
+                <button
+                  appearance="secondary"
+                  onPress={handleReturnToHub}
+                  grow
+                  size="small"
+                >
+                  🏠 Return to Hub
+                </button>
+                <button
+                  appearance="primary"
+                  onPress={handleCreatePost}
+                  grow
+                  size="small"
+                >
+                  ➕ Create Post
+                </button>
+              </hstack>
+              
               <button
                 appearance="secondary"
-                onPress={onViewLeaderboard}
+                onPress={handleViewLeaderboard}
                 width="100%"
+                size="small"
               >
-                View Leaderboard 🏆
+                🏆 View Leaderboard
               </button>
             </vstack>
           ) : (
-            <hstack gap="medium" alignment="center" padding="xxsmall">
+            <vstack gap="small" alignment="center" padding="xxsmall">
               {/* TESTING EXCEPTION: Back button only for u/liamlio */}
               {showBackButton && onBackToGuessing && (
                 <button
                   appearance="destructive"
                   onPress={onBackToGuessing}
+                  size="small"
                 >
                   🔄 Test Again (liamlio only)
                 </button>
               )}
               
-              <button
-                appearance="secondary"
-                onPress={onViewLeaderboard}
-              >
-                View Leaderboard 🏆
-              </button>
-            </hstack>
+              {/* NEW: Navigation buttons in horizontal layout for larger screens */}
+              <hstack gap="medium" alignment="center">
+                <button
+                  appearance="secondary"
+                  onPress={handleReturnToHub}
+                  size="small"
+                >
+                  🏠 Return to Hub
+                </button>
+                <button
+                  appearance="primary"
+                  onPress={handleCreatePost}
+                  size="small"
+                >
+                  ➕ Create Post
+                </button>
+                <button
+                  appearance="secondary"
+                  onPress={handleViewLeaderboard}
+                  size="small"
+                >
+                  🏆 View Leaderboard
+                </button>
+              </hstack>
+            </vstack>
           )}
           
           <text size={isSmallScreen ? "xsmall" : "small"} alignment="center" color={CarnivalTheme.colors.text}>
