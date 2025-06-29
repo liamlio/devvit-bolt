@@ -53,11 +53,9 @@ export const GameResultsInterface = ({
       
       if (!user) return { isSubscribed: false, subredditName: subreddit.name };
       
-      // Get all subreddits the user is subscribed to
-      const userSubreddits = await reddit.getUserSubreddits().all();
-      
-      // Check if the current subreddit is in the user's subscribed subreddits
-      const isSubscribed = userSubreddits.some(sub => sub.name === subreddit.name);
+      // Use the correct method to check subscription status
+      const subscription = await reddit.getSubscriptionBySubredditName(subreddit.name);
+      const isSubscribed = subscription !== null;
       
       return {
         isSubscribed,
@@ -69,20 +67,27 @@ export const GameResultsInterface = ({
     }
   });
 
-  // Handle subscribe action
+  // Handle subscribe action with runtime check
   const handleSubscribe = async () => {
     if (!reddit || !subscriptionData) return;
     
     try {
       const subreddit = await reddit.getCurrentSubreddit();
-      await reddit.subscribe(subreddit.name);
-      ui.showToast(`🎪 Welcome to r/${subreddit.name}! You're now subscribed!`);
       
-      // Refresh subscription data
-      window.location.reload();
+      // Check if subscribe method is available
+      if (typeof reddit.subscribe === 'function') {
+        await reddit.subscribe(subreddit.name);
+        ui.showToast(`🎪 Welcome to r/${subreddit.name}! You're now subscribed!`);
+        
+        // Refresh subscription data
+        window.location.reload();
+      } else {
+        console.warn('reddit.subscribe method not available in current environment');
+        ui.showToast(`Please subscribe to r/${subreddit.name} manually to stay updated with new games!`);
+      }
     } catch (error) {
       console.error('Error subscribing to subreddit:', error);
-      ui.showToast('Error subscribing to community. Please try again.');
+      ui.showToast('Error subscribing to community. Please try subscribing manually.');
     }
   };
 
