@@ -152,8 +152,23 @@ export const LeaderboardInterface = ({
         <CarnivalCard padding="medium">
           {/* UPDATED: Responsive header layout */}
           {isSmallScreen ? (
-            /* Small screen: Stack title and subscribe button vertically */
+            /* Small screen: Stack subscribe button, title, and back button vertically */
             <vstack gap="small" alignment="center">
+              {/* Subscribe button above title */}
+              <button
+                appearance="primary"
+                onPress={handleSubscribe}
+                size="small"
+                backgroundColor="#FF4444"
+              >
+                Subscribe
+              </button>
+              
+              {/* Title */}
+              <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
+                🏆 Two Truths One Lie
+              </text>
+              
               {/* Back button row if needed */}
               {showBackButton && onBack && (
                 <hstack width="100%" alignment="start">
@@ -166,21 +181,6 @@ export const LeaderboardInterface = ({
                   </button>
                 </hstack>
               )}
-              
-              {/* Title */}
-              <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
-                🏆 Two Truths One Lie
-              </text>
-              
-              {/* Subscribe button underneath title */}
-              <button
-                appearance="primary"
-                onPress={handleSubscribe}
-                size="small"
-                backgroundColor="#FF4444"
-              >
-                Subscribe
-              </button>
             </vstack>
           ) : (
             /* Large screen: Keep original horizontal layout */
