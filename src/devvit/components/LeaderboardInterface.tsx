@@ -316,7 +316,7 @@ export const LeaderboardInterface = ({
                         {/* UPDATED: Display next level with title using proper Devvit components */}
                         <hstack gap="xsmall" alignment="middle">
                           <text size="xsmall" color={CarnivalTheme.colors.text}>
-                            Lvl. {nextLevelInfo.nextLevel?.level}: 
+                            Lvl.{nextLevelInfo.nextLevel?.level}: 
                           </text>
                           <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
                              {nextLevelInfo.nextLevel?.name}
