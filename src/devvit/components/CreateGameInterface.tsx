@@ -22,7 +22,7 @@ export const CreateGameInterface = ({
   
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
-  const isSmallScreen = width < 380;
+  const isSmallScreen = width < 450;
 
   const { mount, unmount, postMessage } = useWebView({
     url: 'index.html',
