@@ -11,8 +11,8 @@ export const resetLiamlioLevel = Devvit.addMenuItem({
     
     try {
       const gameService = new GameService(redis);
-      const targetUsername = 'u/liamlio';
-      const targetUserId = `t2_13bqqk `;
+      const targetUsername = 'liamlio';
+      const targetUserId = 't2_13bqqk';
       
       // Get current user score
       const userScore = await gameService.getUserScore(targetUserId);
