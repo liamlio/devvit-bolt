@@ -197,10 +197,12 @@ export const LeaderboardInterface = ({
             </hstack>
           )}
           
-          {/* UPDATED: Reduced gap between title and subtitle */}
-          <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
-            Welcome to the carnival of deception! Can you spot the lies?
-          </text>
+          {/* UPDATED: Reduced gap between title and subtitle to small */}
+          <vstack gap="small">
+            <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
+              Welcome to the carnival of deception! Can you spot the lies?
+            </text>
+          </vstack>
 
           {/* User Stats */}
           {userStats && (
