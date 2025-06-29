@@ -152,7 +152,7 @@ export const LeaderboardInterface = ({
           {/* UPDATED: Header layout without subscribe button */}
           {isSmallScreen ? (
             /* Small screen: Stack title and back button vertically */
-            <vstack gap="small" alignment="center">
+            <vstack gap="xxsmall" alignment="center">
               {/* Title */}
               <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
                 🏆 Two Truths One Lie
@@ -197,6 +197,7 @@ export const LeaderboardInterface = ({
             </hstack>
           )}
           
+          {/* UPDATED: Reduced gap between title and subtitle */}
           <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
             Welcome to the carnival of deception! Can you spot the lies?
           </text>
