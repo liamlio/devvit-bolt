@@ -182,7 +182,7 @@ export const CreateGameInterface = ({
         <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
           <text alignment="center" color={CarnivalTheme.colors.text}>
-            Ready to create your Two Truths One Lie game? Use our enhanced form with real-time character counting!
+            Ready to create your Two Truths One Lie game? Click create game!!
           </text>
           
           {/* Responsive button layout */}
