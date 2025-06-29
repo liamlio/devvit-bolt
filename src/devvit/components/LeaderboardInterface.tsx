@@ -150,20 +150,10 @@ export const LeaderboardInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
         <CarnivalCard padding="medium">
-          {/* UPDATED: Responsive header layout */}
+          {/* UPDATED: Header layout without subscribe button */}
           {isSmallScreen ? (
-            /* Small screen: Stack subscribe button, title, and back button vertically */
+            /* Small screen: Stack title and back button vertically */
             <vstack gap="small" alignment="center">
-              {/* Subscribe button above title */}
-              <button
-                appearance="primary"
-                onPress={handleSubscribe}
-                size="small"
-                backgroundColor="#FF4444"
-              >
-                Subscribe
-              </button>
-              
               {/* Title */}
               <text size="large" alignment="center" color={CarnivalTheme.colors.text}>
                 🏆 Two Truths One Lie
@@ -183,7 +173,7 @@ export const LeaderboardInterface = ({
               )}
             </vstack>
           ) : (
-            /* Large screen: Keep original horizontal layout */
+            /* Large screen: Horizontal layout */
             <hstack alignment="middle" gap="medium">
               {/* Left side: Back button or spacer */}
               {showBackButton && onBack ? (
@@ -203,15 +193,8 @@ export const LeaderboardInterface = ({
                 🏆 Two Truths One Lie
               </text>
               
-              {/* Right side: Subscribe button */}
-              <button
-                appearance="primary"
-                onPress={handleSubscribe}
-                size="small"
-                backgroundColor="#FF4444"
-              >
-                Subscribe
-              </button>
+              {/* Right side: Spacer to balance layout */}
+              <spacer width="60px" />
             </hstack>
           )}
           
@@ -492,6 +475,17 @@ export const LeaderboardInterface = ({
             size="small"
           >
             Create a Game 🎪
+          </button>
+
+          {/* MOVED: Subscribe button now appears below Create a Game button */}
+          <button
+            appearance="primary"
+            onPress={handleSubscribe}
+            width="100%"
+            size="small"
+            backgroundColor="#FF4444"
+          >
+            Subscribe
           </button>
         </CarnivalCard>
       </vstack>
