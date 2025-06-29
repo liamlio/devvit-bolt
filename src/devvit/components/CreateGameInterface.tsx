@@ -195,18 +195,18 @@ export const CreateGameInterface = ({
           {isSmallScreen ? (
             <vstack gap="medium" alignment="center">
               <button
-                appearance="secondary"
-                onPress={onBack}
-                width="100%"
-              >
-                Back
-              </button>
-              <button
                 appearance="primary"
                 onPress={handleOpenWebview}
                 width="100%"
               >
                 Create Post 🎪
+              </button>
+                            <button
+                appearance="secondary"
+                onPress={onBack}
+                width="100%"
+              >
+                Back
               </button>
             </vstack>
           ) : (
