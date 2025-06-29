@@ -126,26 +126,33 @@ export const CreateGameInterface = ({
       },
     });
 
-    // FIXED: Properly randomize the positions without changing which statement is the lie
-    // Create array with statements in their original positions
-    const statements = [truth1, truth2, lie];
+    // FIXED: Properly randomize the positions while maintaining correct lie tracking
+    // Create array with statements and their types
+    const statementsWithTypes = [
+      { statement: truth1, type: 'truth1' },
+      { statement: truth2, type: 'truth2' },
+      { statement: lie, type: 'lie' }
+    ];
     
     // Shuffle the array to randomize positions
-    for (let i = statements.length - 1; i > 0; i--) {
+    for (let i = statementsWithTypes.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [statements[i], statements[j]] = [statements[j], statements[i]];
+      [statementsWithTypes[i], statementsWithTypes[j]] = [statementsWithTypes[j], statementsWithTypes[i]];
     }
     
-    // Find where the original lie ended up after shuffling
-    const lieIndex = statements.findIndex(statement => statement === lie);
+    // Find where the lie ended up after shuffling
+    const lieIndex = statementsWithTypes.findIndex(item => item.type === 'lie');
+    
+    // Extract the shuffled statements
+    const shuffledStatements = statementsWithTypes.map(item => item.statement);
     
     const gamePost: GamePostType = {
       postId: post.id,
       authorId: userId,
       authorUsername: user.username,
-      truth1: statements[0], // First position after shuffle
-      truth2: statements[1], // Second position after shuffle  
-      lie: statements[2],    // Third position after shuffle
+      truth1: shuffledStatements[0], // First position after shuffle
+      truth2: shuffledStatements[1], // Second position after shuffle  
+      lie: shuffledStatements[2],    // Third position after shuffle
       lieIndex, // This now correctly reflects where the original lie is positioned
       createdAt: Date.now(),
       totalGuesses: 0,
@@ -183,7 +190,7 @@ export const CreateGameInterface = ({
         height="100%" 
         padding={isSmallScreen ? "medium" : "large"} 
         gap="small"
-        alignment={isSmallScreen ? "middle" : "center middle"}
+        alignment={isSmallScreen ? "center top" : "center middle"}
       >
         <CarnivalCard padding={isSmallScreen ? "medium" : "medium"}>
           <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Create Your Game</text>
