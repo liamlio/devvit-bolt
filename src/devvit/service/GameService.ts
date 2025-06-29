@@ -54,7 +54,7 @@ export class GameService {
       liarPoints: 0,
       weeklyGuesserPoints: 0,
       weeklyLiarPoints: 0,
-      level: 0, // Start at level 0
+      level: 0, // Start at level 0 (Huge Clown)
       experience: 0,
       totalGames: 0,
       correctGuesses: 0,
