@@ -63,11 +63,14 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     }
   }, [refreshTrigger]);
 
-  // FIXED: Load leaderboard data when needed - updated dependency array
+  // FIXED: Separate leaderboard data loading that always loads when requested
   const { data: leaderboardData, loading: leaderboardLoading } = useAsync(async () => {
     // Only load leaderboard data when we need it
     const needsLeaderboardData = gameState === 'leaderboard' || gameState === 'fullLeaderboard' || gameState === 'hub';
-    if (!needsLeaderboardData) return null;
+    if (!needsLeaderboardData) {
+      console.log(`Skipping leaderboard data load for gameState: ${gameState}`);
+      return null;
+    }
     
     try {
       console.log(`Loading leaderboard data for gameState: ${gameState}`);
@@ -119,7 +122,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       console.error('Error loading leaderboard data:', err);
       throw err;
     }
-  }, [gameState, userId]); // FIXED: Include gameState in dependency array
+  }, [gameState, userId]); // Include gameState in dependency array
 
   const handleSubmitGuess = async () => {
     if (selectedIndex === null || !userId || !reddit || !gameData || gameData.type !== 'game') return;
@@ -327,10 +330,24 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
 
     // NEW: Hub interface (community hub shown within the game post)
     if (gameState === 'hub') {
-      // FIXED: Show loading state while leaderboard data loads
-      if (leaderboardLoading || !leaderboardData) {
-        console.log('Hub state: showing loading state', { leaderboardLoading, hasLeaderboardData: !!leaderboardData });
+      // FIXED: Check if we're currently loading leaderboard data
+      if (leaderboardLoading) {
+        console.log('Hub state: loading leaderboard data');
         return <LoadingState />;
+      }
+
+      // FIXED: Check if leaderboard data failed to load
+      if (!leaderboardData) {
+        console.log('Hub state: no leaderboard data available');
+        return (
+          <ErrorState 
+            error="Failed to load leaderboard data" 
+            onRetry={() => {
+              console.log('Retrying leaderboard data load');
+              setRefreshTrigger(prev => prev + 1);
+            }} 
+          />
+        );
       }
 
       console.log('Hub state: showing LeaderboardInterface with data');
@@ -366,10 +383,24 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
 
     // Leaderboard interface
     if (gameState === 'leaderboard') {
-      // FIXED: Show loading state while leaderboard data loads
-      if (leaderboardLoading || !leaderboardData) {
-        console.log('Leaderboard state: showing loading state', { leaderboardLoading, hasLeaderboardData: !!leaderboardData });
+      // FIXED: Check if we're currently loading leaderboard data
+      if (leaderboardLoading) {
+        console.log('Leaderboard state: loading leaderboard data');
         return <LoadingState />;
+      }
+
+      // FIXED: Check if leaderboard data failed to load
+      if (!leaderboardData) {
+        console.log('Leaderboard state: no leaderboard data available');
+        return (
+          <ErrorState 
+            error="Failed to load leaderboard data" 
+            onRetry={() => {
+              console.log('Retrying leaderboard data load');
+              setRefreshTrigger(prev => prev + 1);
+            }} 
+          />
+        );
       }
 
       console.log('Leaderboard state: showing LeaderboardInterface with data');
@@ -394,8 +425,19 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
 
     // Full leaderboard interface
     if (gameState === 'fullLeaderboard') {
-      if (leaderboardLoading || !leaderboardData) {
+      if (leaderboardLoading) {
         return <LoadingState />;
+      }
+
+      if (!leaderboardData) {
+        return (
+          <ErrorState 
+            error="Failed to load leaderboard data" 
+            onRetry={() => {
+              setRefreshTrigger(prev => prev + 1);
+            }} 
+          />
+        );
       }
 
       return (
