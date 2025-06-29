@@ -6,7 +6,9 @@ import { CreateGameInterface } from '../components/CreateGameInterface.js';
 import { GamePlayInterface } from '../components/GamePlayInterface.js';
 import { GameResultsInterface } from '../components/GameResultsInterface.js';
 import { DescriptionViewInterface } from '../components/DescriptionViewInterface.js';
-import type { GamePost as GamePostType, UserGuess, Statement } from '../../shared/types/game.js';
+import { LeaderboardInterface } from '../components/LeaderboardInterface.js';
+import { FullLeaderboardInterface } from '../components/FullLeaderboardInterface.js';
+import type { GamePost as GamePostType, UserGuess, Statement, LeaderboardEntry } from '../../shared/types/game.js';
 
 interface GamePostProps {
   context: Context;
@@ -17,9 +19,10 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
   const gameService = new GameService(redis);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [error, setError] = useState<string>('');
-  const [gameState, setGameState] = useState<'play' | 'result' | 'description' | 'create'>('play');
+  const [gameState, setGameState] = useState<'play' | 'result' | 'description' | 'create' | 'leaderboard' | 'fullLeaderboard'>('play');
   const [viewingDescription, setViewingDescription] = useState<{ statement: Statement; title: string } | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [activeLeaderboardTab, setActiveLeaderboardTab] = useState<'guessers' | 'liars'>('guessers');
   
   // Store the user's guess locally for immediate UI updates
   const [localUserGuess, setLocalUserGuess] = useState<UserGuess | null>(null);
@@ -59,6 +62,58 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       throw err;
     }
   }, [refreshTrigger]);
+
+  // Load leaderboard data when needed
+  const { data: leaderboardData, loading: leaderboardLoading } = useAsync(async () => {
+    if (gameState !== 'leaderboard' && gameState !== 'fullLeaderboard') return null;
+    
+    try {
+      const [
+        weeklyGuesserLeaderboard, 
+        weeklyLiarLeaderboard,
+        allTimeGuesserLeaderboard,
+        allTimeLiarLeaderboard
+      ] = await Promise.all([
+        gameService.getLeaderboard('guesser', 'weekly', 20),
+        gameService.getLeaderboard('liar', 'weekly', 20),
+        gameService.getLeaderboard('guesser', 'alltime', 20),
+        gameService.getLeaderboard('liar', 'alltime', 20),
+      ]);
+
+      let userStats;
+      let userWeeklyGuesserRank;
+      let userWeeklyLiarRank;
+      let userAllTimeGuesserRank;
+      let userAllTimeLiarRank;
+      
+      if (userId) {
+        userStats = await gameService.getUserScore(userId);
+        
+        // Get user's leaderboard positions
+        [userWeeklyGuesserRank, userWeeklyLiarRank, userAllTimeGuesserRank, userAllTimeLiarRank] = await Promise.all([
+          gameService.getUserLeaderboardRank(userId, 'guesser', 'weekly'),
+          gameService.getUserLeaderboardRank(userId, 'liar', 'weekly'),
+          gameService.getUserLeaderboardRank(userId, 'guesser', 'alltime'),
+          gameService.getUserLeaderboardRank(userId, 'liar', 'alltime'),
+        ]);
+      }
+
+      return {
+        weeklyGuesserLeaderboard,
+        weeklyLiarLeaderboard,
+        allTimeGuesserLeaderboard,
+        allTimeLiarLeaderboard,
+        userStats,
+        userWeeklyGuesserRank,
+        userWeeklyLiarRank,
+        userAllTimeGuesserRank,
+        userAllTimeLiarRank,
+      };
+    } catch (err) {
+      console.error('Error loading leaderboard data:', err);
+      throw err;
+    }
+  }, [gameState, userId]);
 
   const handleSubmitGuess = async () => {
     if (selectedIndex === null || !userId || !reddit || !gameData || gameData.type !== 'game') return;
@@ -189,6 +244,50 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     setGameState('result');
   };
 
+  // NEW: Navigation handlers for the three different buttons
+  const handleViewLeaderboard = () => {
+    setGameState('leaderboard');
+  };
+
+  const handleReturnToHub = async () => {
+    try {
+      const pinnedPostId = await gameService.getPinnedPost();
+      if (pinnedPostId) {
+        const post = await reddit?.getPostById(pinnedPostId);
+        if (post) {
+          ui.navigateTo(post.url);
+          return;
+        }
+      }
+      
+      // Fallback: show toast if pinned post not found
+      ui.showToast('Community hub not found. Please check for the pinned post.');
+    } catch (error) {
+      console.error('Error navigating to hub:', error);
+      ui.showToast('Error navigating to hub. Please try again.');
+    }
+  };
+
+  const handleCreatePost = () => {
+    setGameState('create');
+  };
+
+  const handleBackFromLeaderboard = () => {
+    setGameState('result');
+  };
+
+  const handleViewFullLeaderboard = () => {
+    setGameState('fullLeaderboard');
+  };
+
+  const handleBackFromFullLeaderboard = () => {
+    setGameState('leaderboard');
+  };
+
+  const handleBackFromCreate = () => {
+    setGameState('result');
+  };
+
   // Handle loading state
   if (loading) {
     return <LoadingState />;
@@ -229,6 +328,59 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     // TESTING EXCEPTION: Check if this is the test user
     const isTestUser = currentUser?.username === 'liamlio';
 
+    // Create game interface
+    if (gameState === 'create') {
+      return (
+        <CreateGameInterface
+          context={context}
+          onBack={handleBackFromCreate}
+          onShowToast={(message) => ui.showToast(message)}
+        />
+      );
+    }
+
+    // Leaderboard interface
+    if (gameState === 'leaderboard') {
+      if (leaderboardLoading || !leaderboardData) {
+        return <LoadingState />;
+      }
+
+      return (
+        <LeaderboardInterface
+          context={context}
+          guesserLeaderboard={leaderboardData.weeklyGuesserLeaderboard}
+          liarLeaderboard={leaderboardData.weeklyLiarLeaderboard}
+          userStats={leaderboardData.userStats}
+          userWeeklyGuesserRank={leaderboardData.userWeeklyGuesserRank}
+          userWeeklyLiarRank={leaderboardData.userWeeklyLiarRank}
+          userAllTimeGuesserRank={leaderboardData.userAllTimeGuesserRank}
+          userAllTimeLiarRank={leaderboardData.userAllTimeLiarRank}
+          onCreateGame={handleCreatePost}
+          onViewFullLeaderboard={handleViewFullLeaderboard}
+        />
+      );
+    }
+
+    // Full leaderboard interface
+    if (gameState === 'fullLeaderboard') {
+      if (leaderboardLoading || !leaderboardData) {
+        return <LoadingState />;
+      }
+
+      return (
+        <FullLeaderboardInterface
+          context={context}
+          weeklyGuesserLeaderboard={leaderboardData.weeklyGuesserLeaderboard}
+          allTimeGuesserLeaderboard={leaderboardData.allTimeGuesserLeaderboard}
+          weeklyLiarLeaderboard={leaderboardData.weeklyLiarLeaderboard}
+          allTimeLiarLeaderboard={leaderboardData.allTimeLiarLeaderboard}
+          activeTab={activeLeaderboardTab}
+          onTabChange={setActiveLeaderboardTab}
+          onBack={handleBackFromFullLeaderboard}
+        />
+      );
+    }
+
     // Description view
     if (gameState === 'description' && viewingDescription) {
       return (
@@ -248,11 +400,10 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
           context={context}
           gamePost={gamePost}
           userGuess={effectiveUserGuess}
-          onViewLeaderboard={() => {
-            // This would need to be handled by the parent component
-            ui.showToast('Leaderboard feature coming soon!');
-          }}
           onViewDescription={handleViewDescription}
+          onViewLeaderboard={handleViewLeaderboard}
+          onReturnToHub={handleReturnToHub}
+          onCreatePost={handleCreatePost}
           // TESTING EXCEPTION: Show back button only for u/liamlio
           showBackButton={isTestUser}
           onBackToGuessing={handleBackToGuessing}

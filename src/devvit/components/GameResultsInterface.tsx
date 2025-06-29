@@ -10,6 +10,9 @@ interface GameResultsInterfaceProps {
   gamePost: GamePost;
   userGuess?: UserGuess;
   onViewDescription: (statement: Statement, title: string) => void;
+  onViewLeaderboard: () => void;
+  onReturnToHub: () => void;
+  onCreatePost: () => void;
   // TESTING EXCEPTION: Optional back button for u/liamlio testing
   showBackButton?: boolean;
   onBackToGuessing?: () => void;
@@ -20,12 +23,12 @@ export const GameResultsInterface = ({
   gamePost, 
   userGuess, 
   onViewDescription,
+  onViewLeaderboard,
+  onReturnToHub,
+  onCreatePost,
   showBackButton = false,
   onBackToGuessing
 }: GameResultsInterfaceProps): JSX.Element => {
-  const { redis, ui } = context;
-  const gameService = new GameService(redis);
-  
   // FIXED: Create the statements array in the same order as displayed in GamePlayInterface
   const statements: Statement[] = [null, null, null];
   
@@ -44,76 +47,6 @@ export const GameResultsInterface = ({
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
-
-  // Get pinned post ID for "Return to Hub" functionality
-  const { data: pinnedPostId } = useAsync(async () => {
-    try {
-      return await gameService.getPinnedPost();
-    } catch (error) {
-      console.error('Error getting pinned post:', error);
-      return null;
-    }
-  });
-
-  // Handle navigation to leaderboard (pinned post)
-  const handleViewLeaderboard = async () => {
-    try {
-      if (pinnedPostId) {
-        const post = await context.reddit?.getPostById(pinnedPostId);
-        if (post) {
-          ui.navigateTo(post.url);
-          return;
-        }
-      }
-      
-      // Fallback: show toast if pinned post not found
-      ui.showToast('Leaderboard not found. Please check the community hub.');
-    } catch (error) {
-      console.error('Error navigating to leaderboard:', error);
-      ui.showToast('Error navigating to leaderboard. Please try again.');
-    }
-  };
-
-  // Handle navigation to hub (same as leaderboard)
-  const handleReturnToHub = async () => {
-    try {
-      if (pinnedPostId) {
-        const post = await context.reddit?.getPostById(pinnedPostId);
-        if (post) {
-          ui.navigateTo(post.url);
-          return;
-        }
-      }
-      
-      // Fallback: show toast if pinned post not found
-      ui.showToast('Community hub not found. Please check for the pinned post.');
-    } catch (error) {
-      console.error('Error navigating to hub:', error);
-      ui.showToast('Error navigating to hub. Please try again.');
-    }
-  };
-
-  // Handle navigation to create post interface
-  const handleCreatePost = async () => {
-    try {
-      if (pinnedPostId) {
-        const post = await context.reddit?.getPostById(pinnedPostId);
-        if (post) {
-          // Navigate to the hub post, which will show the create game interface
-          ui.navigateTo(post.url);
-          // Show a toast to guide the user
-          ui.showToast('Click "Create a Game" in the hub to make a new post! 🎪');
-          return;
-        }
-      }
-      
-      // Fallback: show toast if pinned post not found
-      ui.showToast('Please visit the community hub to create a new post.');
-    } catch (error) {
-      console.error('Error navigating to create post:', error);
-      ui.showToast('Error navigating to create post. Please try again.');
-    }
-  };
 
   return (
     <CarnivalBackground>
@@ -188,7 +121,7 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* UPDATED: Navigation buttons with responsive layout */}
+          {/* FIXED: Navigation buttons with proper handlers */}
           {isSmallScreen ? (
             <vstack gap="small" alignment="center" padding="xxsmall">
               {/* TESTING EXCEPTION: Back button only for u/liamlio */}
@@ -203,11 +136,11 @@ export const GameResultsInterface = ({
                 </button>
               )}
               
-              {/* NEW: Navigation buttons */}
+              {/* Navigation buttons */}
               <hstack gap="small" width="100%">
                 <button
                   appearance="secondary"
-                  onPress={handleReturnToHub}
+                  onPress={onReturnToHub}
                   grow
                   size="small"
                 >
@@ -215,7 +148,7 @@ export const GameResultsInterface = ({
                 </button>
                 <button
                   appearance="primary"
-                  onPress={handleCreatePost}
+                  onPress={onCreatePost}
                   grow
                   size="small"
                 >
@@ -225,7 +158,7 @@ export const GameResultsInterface = ({
               
               <button
                 appearance="secondary"
-                onPress={handleViewLeaderboard}
+                onPress={onViewLeaderboard}
                 width="100%"
                 size="small"
               >
@@ -245,25 +178,25 @@ export const GameResultsInterface = ({
                 </button>
               )}
               
-              {/* NEW: Navigation buttons in horizontal layout for larger screens */}
+              {/* Navigation buttons in horizontal layout for larger screens */}
               <hstack gap="medium" alignment="center">
                 <button
                   appearance="secondary"
-                  onPress={handleReturnToHub}
+                  onPress={onReturnToHub}
                   size="small"
                 >
                   🏠 Return to Hub
                 </button>
                 <button
                   appearance="primary"
-                  onPress={handleCreatePost}
+                  onPress={onCreatePost}
                   size="small"
                 >
                   ➕ Create Post
                 </button>
                 <button
                   appearance="secondary"
-                  onPress={handleViewLeaderboard}
+                  onPress={onViewLeaderboard}
                   size="small"
                 >
                   🏆 View Leaderboard
