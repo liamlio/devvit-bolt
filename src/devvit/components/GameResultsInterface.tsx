@@ -32,17 +32,17 @@ export const GameResultsInterface = ({
 
   return (
     <CarnivalBackground>
-      <vstack width="100%" height="100%" padding={isSmallScreen ? "medium" : "large"} gap="small">
+      <vstack width="100%" height="100%" padding={isSmallScreen ? "small" : "medium"} gap="small">
         <CarnivalCard padding="small">
           <vstack width="100%" height="100%" padding="xxsmall" gap="xxsmall">
-          <text size="xxlarge" alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
-          <text alignment="center" color={CarnivalTheme.colors.text}>
+          <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
+          <text size={isSmallScreen ? "small" : "medium"} alignment="center" color={CarnivalTheme.colors.text}>
             {userGuess?.isCorrect 
               ? '🎉 Congratulations! You spotted the lie!' 
               : '😅 Nice try! Better luck next time!'
             }
           </text>
-          <text size="small" alignment="center" color={CarnivalTheme.colors.textLight}>
+          <text size={isSmallScreen ? "xsmall" : "small"} alignment="center" color={CarnivalTheme.colors.textLight}>
             By u/{gamePost.authorUsername} • {gamePost.totalGuesses} player{gamePost.totalGuesses !== 1 ? 's' : ''} {gamePost.totalGuesses !== 1 ? 'have' : 'has'} guessed
           </text>
           </vstack>
@@ -64,7 +64,7 @@ export const GameResultsInterface = ({
               return (
                 <vstack 
                   key={index} 
-                  padding={isSmallScreen ? "small" : "medium"}
+                  padding={isSmallScreen ? "xsmall" : "small"}
                   backgroundColor={isLie ? "rgba(255,68,68,0.2)" : "rgba(50,205,50,0.2)"} 
                   cornerRadius="medium"
                   border="thick"
@@ -72,16 +72,20 @@ export const GameResultsInterface = ({
                   gap="small"
                 >
                   <hstack alignment="middle">
-                    <text grow weight="bold" color={CarnivalTheme.colors.text} wrap>
-                      {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
-                    </text>
-                    <vstack alignment="end" gap="xxsmall">
-                      {isUserChoice && (
-                        <text color={CarnivalTheme.colors.primary} weight="bold" size="small">(Your choice)</text>
-                      )}
-                      <text size="small" color={CarnivalTheme.colors.textLight}>
-                        {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                    <vstack grow gap="xxsmall">
+                      <text size={isSmallScreen ? "small" : "medium"} weight="bold" color={CarnivalTheme.colors.text} wrap>
+                        {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
                       </text>
+                      <hstack gap="small" alignment="start">
+                        {isUserChoice && (
+                          <text color={CarnivalTheme.colors.primary} weight="bold" size={isSmallScreen ? "xsmall" : "small"}>
+                            (Your choice)
+                          </text>
+                        )}
+                        <text size={isSmallScreen ? "xsmall" : "small"} color={CarnivalTheme.colors.textLight}>
+                          {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
+                        </text>
+                      </hstack>
                     </vstack>
                   </hstack>
                   
@@ -91,6 +95,7 @@ export const GameResultsInterface = ({
                       appearance="secondary"
                       size="small"
                       onPress={() => onViewDescription(statement, descriptionTitle)}
+                      width={isSmallScreen ? "100%" : undefined}
                     >
                       📖 Expand Description
                     </button>
@@ -100,14 +105,14 @@ export const GameResultsInterface = ({
             })}
           </vstack>
 
-          {/* Responsive button layout */}
-          <vstack gap="medium" alignment="center" padding="xxsmall">
+          {/* Always vertically stacked buttons */}
+          <vstack gap="small" alignment="center" padding="xxsmall">
             {/* TESTING EXCEPTION: Back button only for u/liamlio */}
             {showBackButton && onBackToGuessing && (
               <button
                 appearance="destructive"
                 onPress={onBackToGuessing}
-                width={isSmallScreen ? "100%" : undefined}
+                width={isSmallScreen ? "100%" : "200px"}
               >
                 🔄 Test Again (liamlio only)
               </button>
@@ -116,13 +121,13 @@ export const GameResultsInterface = ({
             <button
               appearance="secondary"
               onPress={onViewLeaderboard}
-              width={isSmallScreen ? "100%" : undefined}
+              width={isSmallScreen ? "100%" : "200px"}
             >
               View Leaderboard 🏆
             </button>
           </vstack>
           
-          <text alignment="center" color={CarnivalTheme.colors.text}>
+          <text size={isSmallScreen ? "xsmall" : "small"} alignment="center" color={CarnivalTheme.colors.text}>
             💬 How surprising were the truths? Comment below!
           </text>
         </CarnivalCard>
