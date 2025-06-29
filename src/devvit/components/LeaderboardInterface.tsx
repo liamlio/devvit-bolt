@@ -9,6 +9,10 @@ interface LeaderboardInterfaceProps {
   guesserLeaderboard: LeaderboardEntry[];
   liarLeaderboard: LeaderboardEntry[];
   userStats?: UserScore;
+  userWeeklyGuesserRank?: number;
+  userWeeklyLiarRank?: number;
+  userAllTimeGuesserRank?: number;
+  userAllTimeLiarRank?: number;
   activeTab: 'guessers' | 'liars';
   onTabChange: (tab: 'guessers' | 'liars') => void;
   onCreateGame: () => void;
@@ -19,6 +23,10 @@ export const LeaderboardInterface = ({
   guesserLeaderboard, 
   liarLeaderboard, 
   userStats, 
+  userWeeklyGuesserRank,
+  userWeeklyLiarRank,
+  userAllTimeGuesserRank,
+  userAllTimeLiarRank,
   activeTab, 
   onTabChange, 
   onCreateGame 
@@ -46,6 +54,7 @@ export const LeaderboardInterface = ({
               cornerRadius="medium" 
               border="thin" 
               borderColor={CarnivalTheme.colors.primary}
+              gap="small"
             >
               <text size="small" weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
               <hstack gap="large">
@@ -68,6 +77,29 @@ export const LeaderboardInterface = ({
                   </text>
                 </vstack>
               </hstack>
+              
+              {/* Leaderboard Positions */}
+              <vstack gap="xxsmall">
+                <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>Leaderboard Positions</text>
+                <hstack gap="large">
+                  <vstack>
+                    <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      Weekly Guesser: #{userWeeklyGuesserRank || 'Unranked'}
+                    </text>
+                    <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      All-Time Guesser: #{userAllTimeGuesserRank || 'Unranked'}
+                    </text>
+                  </vstack>
+                  <vstack>
+                    <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      Weekly Liar: #{userWeeklyLiarRank || 'Unranked'}
+                    </text>
+                    <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      All-Time Liar: #{userAllTimeLiarRank || 'Unranked'}
+                    </text>
+                  </vstack>
+                </hstack>
+              </vstack>
             </vstack>
           )}
 
@@ -79,7 +111,7 @@ export const LeaderboardInterface = ({
               grow
               size="small"
             >
-              🕵️ Best Guessers
+              🕵️ Best Guessers (Weekly)
             </button>
             <button
               appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
@@ -87,7 +119,7 @@ export const LeaderboardInterface = ({
               grow
               size="small"
             >
-              🎭 Best Liars
+              🎭 Best Liars (Weekly)
             </button>
           </hstack>
 

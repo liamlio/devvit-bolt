@@ -26,19 +26,36 @@ export const PinnedPost = ({ context }: PinnedPostProps): JSX.Element => {
   const { data: leaderboardData, loading } = useAsync(async () => {
     try {
       const [guesserLeaderboard, liarLeaderboard] = await Promise.all([
-        gameService.getLeaderboard('guesser', 'alltime', 10),
-        gameService.getLeaderboard('liar', 'alltime', 10),
+        gameService.getLeaderboard('guesser', 'weekly', 10),
+        gameService.getLeaderboard('liar', 'weekly', 10),
       ]);
 
       let userStats;
+      let userWeeklyGuesserRank;
+      let userWeeklyLiarRank;
+      let userAllTimeGuesserRank;
+      let userAllTimeLiarRank;
+      
       if (userId) {
         userStats = await gameService.getUserScore(userId);
+        
+        // Get user's leaderboard positions
+        [userWeeklyGuesserRank, userWeeklyLiarRank, userAllTimeGuesserRank, userAllTimeLiarRank] = await Promise.all([
+          gameService.getUserLeaderboardRank(userId, 'guesser', 'weekly'),
+          gameService.getUserLeaderboardRank(userId, 'liar', 'weekly'),
+          gameService.getUserLeaderboardRank(userId, 'guesser', 'alltime'),
+          gameService.getUserLeaderboardRank(userId, 'liar', 'alltime'),
+        ]);
       }
 
       return {
         guesserLeaderboard,
         liarLeaderboard,
         userStats,
+        userWeeklyGuesserRank,
+        userWeeklyLiarRank,
+        userAllTimeGuesserRank,
+        userAllTimeLiarRank,
       };
     } catch (err) {
       console.error('Error loading leaderboard data:', err);
@@ -81,6 +98,10 @@ export const PinnedPost = ({ context }: PinnedPostProps): JSX.Element => {
       guesserLeaderboard={leaderboardData.guesserLeaderboard}
       liarLeaderboard={leaderboardData.liarLeaderboard}
       userStats={leaderboardData.userStats}
+      userWeeklyGuesserRank={leaderboardData.userWeeklyGuesserRank}
+      userWeeklyLiarRank={leaderboardData.userWeeklyLiarRank}
+      userAllTimeGuesserRank={leaderboardData.userAllTimeGuesserRank}
+      userAllTimeLiarRank={leaderboardData.userAllTimeLiarRank}
       activeTab={activeTab}
       onTabChange={setActiveTab}
       onCreateGame={() => setGameState('create')}

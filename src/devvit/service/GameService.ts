@@ -124,6 +124,16 @@ export class GameService {
     return leaderboard;
   }
 
+  async getUserLeaderboardRank(userId: string, type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime'): Promise<number | null> {
+    const weekNumber = this.getWeekNumber();
+    const key = timeframe === 'weekly' 
+      ? `leaderboard:${type}:weekly:${weekNumber}`
+      : `leaderboard:${type}:alltime`;
+
+    const rank = await this.redis.zRevRank(key, userId);
+    return rank !== null ? rank + 1 : null; // Convert 0-based to 1-based ranking
+  }
+
   // Game Settings
   async getGameSettings(): Promise<{ subredditName: string }> {
     const data = await this.redis.get('game_settings');
