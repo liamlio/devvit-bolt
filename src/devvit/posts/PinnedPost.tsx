@@ -5,6 +5,7 @@ import { ErrorState } from '../components/ErrorState.js';
 import { LeaderboardInterface } from '../components/LeaderboardInterface.js';
 import { FullLeaderboardInterface } from '../components/FullLeaderboardInterface.js';
 import { CreateGameInterface } from '../components/CreateGameInterface.js';
+import { NextLevelInterface } from '../components/NextLevelInterface.js';
 import type { GamePost as GamePostType, Statement } from '../../shared/types/game.js';
 
 interface PinnedPostProps {
@@ -14,7 +15,7 @@ interface PinnedPostProps {
 export const PinnedPost = ({ context }: PinnedPostProps): JSX.Element => {
   const { postId, userId, redis, reddit, ui } = context;
   const gameService = new GameService(redis);
-  const [gameState, setGameState] = useState<'leaderboard' | 'fullLeaderboard' | 'create'>('leaderboard');
+  const [gameState, setGameState] = useState<'leaderboard' | 'fullLeaderboard' | 'create' | 'nextLevel'>('leaderboard');
   const [activeTab, setActiveTab] = useState<'guessers' | 'liars'>('guessers');
 
   // This will be handled by the CreateGameInterface component now
@@ -101,6 +102,28 @@ export const PinnedPost = ({ context }: PinnedPostProps): JSX.Element => {
     );
   }
 
+  // NEW: Next Level interface
+  if (gameState === 'nextLevel') {
+    if (!leaderboardData.userStats) {
+      return (
+        <ErrorState 
+          error="User stats not available" 
+          onRetry={() => {
+            window.location.reload();
+          }} 
+        />
+      );
+    }
+
+    return (
+      <NextLevelInterface
+        context={context}
+        userStats={leaderboardData.userStats}
+        onBack={() => setGameState('leaderboard')}
+      />
+    );
+  }
+
   if (gameState === 'fullLeaderboard') {
     return (
       <FullLeaderboardInterface
@@ -129,6 +152,7 @@ export const PinnedPost = ({ context }: PinnedPostProps): JSX.Element => {
       userAllTimeLiarRank={leaderboardData.userAllTimeLiarRank}
       onCreateGame={() => setGameState('create')}
       onViewFullLeaderboard={() => setGameState('fullLeaderboard')}
+      onViewNextLevel={() => setGameState('nextLevel')}
     />
   );
 };

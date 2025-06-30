@@ -16,7 +16,9 @@ interface LeaderboardInterfaceProps {
   userAllTimeLiarRank?: number;
   onCreateGame: () => void;
   onViewFullLeaderboard: () => void;
-  // NEW: Optional back button functionality
+  // NEW: Add callback for viewing next level details
+  onViewNextLevel?: () => void;
+  // Optional back button functionality
   onBack?: () => void;
   showBackButton?: boolean;
 }
@@ -32,6 +34,7 @@ export const LeaderboardInterface = ({
   userAllTimeLiarRank,
   onCreateGame,
   onViewFullLeaderboard,
+  onViewNextLevel,
   onBack,
   showBackButton = false
 }: LeaderboardInterfaceProps): JSX.Element => {
@@ -41,10 +44,10 @@ export const LeaderboardInterface = ({
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
 
-  // NEW: State for toggling between guesser and liar leaderboards on small screens
+  // State for toggling between guesser and liar leaderboards on small screens
   const [activeLeaderboard, setActiveLeaderboard] = useState<'guessers' | 'liars'>('guessers');
 
-  // NEW: Handle subscribe action using the correct API
+  // Handle subscribe action using the correct API
   const handleSubscribe = async () => {
     if (!reddit) return;
     
@@ -57,7 +60,7 @@ export const LeaderboardInterface = ({
     }
   };
 
-  // NEW: Handle logo click to navigate to Bolt.new
+  // Handle logo click to navigate to Bolt.new
   const handleLogoClick = () => {
     ui.navigateTo('https://bolt.new/');
   };
@@ -154,7 +157,7 @@ export const LeaderboardInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="xsmall" overflow="scroll">
         <CarnivalCard padding="medium" gap="small" width="100%">
-          {/* FIXED: Header with logo positioned within the card */}
+          {/* Header with logo positioned within the card */}
           {isSmallScreen ? (
             /* Small screen: Stack title and back button vertically */
             <vstack gap="xxsmall" alignment="center">
@@ -254,7 +257,7 @@ export const LeaderboardInterface = ({
                 <vstack gap="small" grow>
                   <hstack gap="medium">
                     <vstack>
-                      {/* UPDATED: Display current level with title using proper Devvit components */}
+                      {/* Display current level with title using proper Devvit components */}
                       <hstack gap="xsmall" alignment="middle">
                         <text size="xsmall" color={CarnivalTheme.colors.text}>
                           🎯 Lvl.{userStats.level}: 
@@ -324,7 +327,7 @@ export const LeaderboardInterface = ({
                   <spacer height="4px" />
                 </vstack>
 
-                {/* Right side - Next level progress */}
+                {/* UPDATED: Right side - Simplified for small screens, detailed for large screens */}
                 <vstack gap="xsmall" grow>
                   {(() => {
                     const nextLevelInfo = getNextLevelInfo(userStats);
@@ -342,77 +345,82 @@ export const LeaderboardInterface = ({
                       );
                     }
 
-                    return (
-                      <vstack gap="xsmall">
-                        <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
-                          🎯 Next Level
-                        </text>
-                        
-                        {/* UPDATED: Display next level with title using proper Devvit components */}
-                        <hstack gap="xsmall" alignment="middle">
-                          <text size="xsmall" color={CarnivalTheme.colors.text}>
-                            Lvl.{nextLevelInfo.nextLevel?.level}: 
+                    if (isSmallScreen) {
+                      // UPDATED: Small screen - Show simplified next level info with button
+                      return (
+                        <vstack gap="xsmall" alignment="center">
+                          <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
+                            🎯 Next Level
                           </text>
-                          <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
-                             {nextLevelInfo.nextLevel?.name}
+                          <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold" alignment="center">
+                            Lvl.{nextLevelInfo.nextLevel?.level}: {nextLevelInfo.nextLevel?.name}
                           </text>
-                        </hstack>
-                        
-                        {/* UPDATED: Progress display for small screens */}
-                        <vstack gap="xxsmall">
-                          {isSmallScreen ? (
-                            // Small screen: Show current/required XP instead of 0% progress bar
-                            <text size="xsmall" color={CarnivalTheme.colors.text}>
-                              {userStats.experience}/{nextLevelInfo.nextLevel?.experienceRequired} XP
-                            </text>
-                          ) : (
-                            // Large screen: Show progress bar
-                            <>
-                              <hstack 
-                                width="100%" 
-                                height="6px" 
-                                backgroundColor="rgba(0,0,0,0.1)" 
-                                cornerRadius="small"
-                              >
-                                <hstack 
-                                  width={`${nextLevelInfo.progressPercentage}%`} 
-                                  height="100%" 
-                                  backgroundColor={CarnivalTheme.colors.accent}
-                                  cornerRadius="small"
-                                />
-                              </hstack>
-                              <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                                {nextLevelInfo.progressPercentage}% complete
-                              </text>
-                            </>
+                          <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
+                            {userStats.experience}/{nextLevelInfo.nextLevel?.experienceRequired} XP
+                          </text>
+                          <text size="xsmall" color={CarnivalTheme.colors.accent} alignment="center">
+                            {nextLevelInfo.experienceNeeded} XP to go
+                          </text>
+                          
+                          {/* NEW: Button to view full next level details */}
+                          {onViewNextLevel && (
+                            <button
+                              appearance="secondary"
+                              onPress={onViewNextLevel}
+                              size="small"
+                              width="100%"
+                            >
+                              View Details →
+                            </button>
                           )}
                         </vstack>
-                        
-                        {/* UPDATED: Remove "X XP to go" text for small screens */}
-                        {!isSmallScreen && (
+                      );
+                    } else {
+                      // Large screen: Show full next level details as before
+                      return (
+                        <vstack gap="xsmall">
+                          <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
+                            🎯 Next Level
+                          </text>
+                          
+                          {/* Display next level with title using proper Devvit components */}
+                          <hstack gap="xsmall" alignment="middle">
+                            <text size="xsmall" color={CarnivalTheme.colors.text}>
+                              Lvl.{nextLevelInfo.nextLevel?.level}: 
+                            </text>
+                            <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
+                               {nextLevelInfo.nextLevel?.name}
+                            </text>
+                          </hstack>
+                          
+                          {/* Progress display for large screens */}
+                          <vstack gap="xxsmall">
+                            <hstack 
+                              width="100%" 
+                              height="6px" 
+                              backgroundColor="rgba(0,0,0,0.1)" 
+                              cornerRadius="small"
+                            >
+                              <hstack 
+                                width={`${nextLevelInfo.progressPercentage}%`} 
+                                height="100%" 
+                                backgroundColor={CarnivalTheme.colors.accent}
+                                cornerRadius="small"
+                              />
+                            </hstack>
+                            <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                              {nextLevelInfo.progressPercentage}% complete
+                            </text>
+                          </vstack>
+                          
                           <text size="xsmall" color={CarnivalTheme.colors.text}>
                             {nextLevelInfo.experienceNeeded} XP to go
                           </text>
-                        )}
-                        
-                        <vstack gap="xxsmall">
-                          <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                            💡 Earn XP by:
-                          </text>
-                          {/* UPDATED: Remove XP values for small screens */}
-                          {isSmallScreen ? (
-                            <vstack gap="xxsmall">
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Playing games
-                              </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Correct guesses
-                              </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Posts with 5+ guesses
-                              </text>
-                            </vstack>
-                          ) : (
+                          
+                          <vstack gap="xxsmall">
+                            <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                              💡 Earn XP by:
+                            </text>
                             <vstack gap="xxsmall">
                               <text size="xsmall" color={CarnivalTheme.colors.text}>
                                 • Playing games (+1 XP)
@@ -424,17 +432,17 @@ export const LeaderboardInterface = ({
                                 • Posts with 5+ guesses (+10 XP)
                               </text>
                             </vstack>
-                          )}
+                          </vstack>
                         </vstack>
-                      </vstack>
-                    );
+                      );
+                    }
                   })()}
                 </vstack>
               </hstack>
             </vstack>
           )}
 
-          {/* UPDATED: Top 3 Leaderboards Preview with toggle for small screens */}
+          {/* Top 3 Leaderboards Preview with toggle for small screens */}
           {isSmallScreen ? (
             /* Small screen: Toggle between guesser and liar leaderboards */
             <vstack gap="small">
@@ -508,7 +516,7 @@ export const LeaderboardInterface = ({
             </hstack>
           )}
 
-          {/* UPDATED: Bottom buttons wrapped in vstack with small gap */}
+          {/* Bottom buttons wrapped in vstack with small gap */}
           <vstack gap="small">
             {/* View Full Leaderboard Button */}
             <button
@@ -530,7 +538,7 @@ export const LeaderboardInterface = ({
               Create a Game 🎪
             </button>
 
-            {/* UPDATED: Subscribe button now red with white text */}
+            {/* Subscribe button now red with white text */}
             <hstack
               backgroundColor="#FF4444"
               cornerRadius="medium"

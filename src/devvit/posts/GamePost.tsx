@@ -8,6 +8,7 @@ import { GameResultsInterface } from '../components/GameResultsInterface.js';
 import { DescriptionViewInterface } from '../components/DescriptionViewInterface.js';
 import { LeaderboardInterface } from '../components/LeaderboardInterface.js';
 import { FullLeaderboardInterface } from '../components/FullLeaderboardInterface.js';
+import { NextLevelInterface } from '../components/NextLevelInterface.js';
 import type { GamePost as GamePostType, UserGuess, Statement, LeaderboardEntry } from '../../shared/types/game.js';
 
 interface GamePostProps {
@@ -19,7 +20,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
   const gameService = new GameService(redis);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [error, setError] = useState<string>('');
-  const [gameState, setGameState] = useState<'play' | 'result' | 'description' | 'create' | 'leaderboard' | 'fullLeaderboard' | 'hub'>('play');
+  const [gameState, setGameState] = useState<'play' | 'result' | 'description' | 'create' | 'leaderboard' | 'fullLeaderboard' | 'hub' | 'nextLevel'>('play');
   const [viewingDescription, setViewingDescription] = useState<{ statement: Statement; title: string } | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeLeaderboardTab, setActiveLeaderboardTab] = useState<'guessers' | 'liars'>('guessers');
@@ -68,10 +69,10 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     }
   }, [refreshTrigger]);
 
-  // FIXED: Separate leaderboard data loading that always loads when requested
+  // Separate leaderboard data loading that always loads when requested
   const { data: leaderboardData, loading: leaderboardLoading } = useAsync(async () => {
     // Only load leaderboard data when we need it
-    const needsLeaderboardData = gameState === 'leaderboard' || gameState === 'fullLeaderboard' || gameState === 'hub';
+    const needsLeaderboardData = gameState === 'leaderboard' || gameState === 'fullLeaderboard' || gameState === 'hub' || gameState === 'nextLevel';
     if (!needsLeaderboardData) {
       console.log(`Skipping leaderboard data load for gameState: ${gameState}`);
       return null;
@@ -224,19 +225,19 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     setGameState('result');
   };
 
-  // UPDATED: Navigation handlers for the three different buttons
+  // Navigation handlers for the different buttons
   const handleViewLeaderboard = () => {
     console.log('Switching to leaderboard state');
     setGameState('leaderboard');
   };
 
-  // FIXED: Show hub interface instead of navigating to URL
+  // Show hub interface instead of navigating to URL
   const handleReturnToHub = () => {
     console.log('Switching to hub state');
     setGameState('hub');
   };
 
-  // FIXED: Show create interface instead of navigating to URL
+  // Show create interface instead of navigating to URL
   const handleCreatePost = () => {
     console.log('Switching to create state');
     setGameState('create');
@@ -254,13 +255,23 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     setGameState('leaderboard');
   };
 
-  // FIXED: Back from create and hub should return to results
+  // Back from create and hub should return to results
   const handleBackFromCreate = () => {
     setGameState('result');
   };
 
   const handleBackFromHub = () => {
     setGameState('result');
+  };
+
+  // NEW: Handle next level navigation
+  const handleViewNextLevel = () => {
+    console.log('Switching to nextLevel state');
+    setGameState('nextLevel');
+  };
+
+  const handleBackFromNextLevel = () => {
+    setGameState('leaderboard');
   };
 
   // Handle loading state
@@ -300,18 +311,50 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     const effectiveUserGuess = localUserGuess || userGuess;
     const effectiveHasGuessed = hasGuessed || localUserGuess !== null;
 
-    // NEW: Check if current user is the post author
+    // Check if current user is the post author
     const isAuthor = userId === gamePost.authorId;
 
-    // NEW: Hub interface (community hub shown within the game post)
+    // NEW: Next Level interface
+    if (gameState === 'nextLevel') {
+      // Check if we're currently loading leaderboard data
+      if (leaderboardLoading) {
+        console.log('NextLevel state: loading leaderboard data');
+        return <LoadingState />;
+      }
+
+      // Check if leaderboard data failed to load or user stats not available
+      if (!leaderboardData || !leaderboardData.userStats) {
+        console.log('NextLevel state: no user stats available');
+        return (
+          <ErrorState 
+            error="Failed to load user stats" 
+            onRetry={() => {
+              console.log('Retrying user stats load');
+              setRefreshTrigger(prev => prev + 1);
+            }} 
+          />
+        );
+      }
+
+      console.log('NextLevel state: showing NextLevelInterface with data');
+      return (
+        <NextLevelInterface
+          context={context}
+          userStats={leaderboardData.userStats}
+          onBack={handleBackFromNextLevel}
+        />
+      );
+    }
+
+    // Hub interface (community hub shown within the game post)
     if (gameState === 'hub') {
-      // FIXED: Check if we're currently loading leaderboard data
+      // Check if we're currently loading leaderboard data
       if (leaderboardLoading) {
         console.log('Hub state: loading leaderboard data');
         return <LoadingState />;
       }
 
-      // FIXED: Check if leaderboard data failed to load
+      // Check if leaderboard data failed to load
       if (!leaderboardData) {
         console.log('Hub state: no leaderboard data available');
         return (
@@ -338,7 +381,8 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
           userAllTimeLiarRank={leaderboardData.userAllTimeLiarRank}
           onCreateGame={handleCreatePost}
           onViewFullLeaderboard={handleViewFullLeaderboard}
-          // NEW: Add back button functionality
+          onViewNextLevel={handleViewNextLevel}
+          // Add back button functionality
           onBack={handleBackFromHub}
           showBackButton={true}
         />
@@ -358,13 +402,13 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
 
     // Leaderboard interface
     if (gameState === 'leaderboard') {
-      // FIXED: Check if we're currently loading leaderboard data
+      // Check if we're currently loading leaderboard data
       if (leaderboardLoading) {
         console.log('Leaderboard state: loading leaderboard data');
         return <LoadingState />;
       }
 
-      // FIXED: Check if leaderboard data failed to load
+      // Check if leaderboard data failed to load
       if (!leaderboardData) {
         console.log('Leaderboard state: no leaderboard data available');
         return (
@@ -391,7 +435,8 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
           userAllTimeLiarRank={leaderboardData.userAllTimeLiarRank}
           onCreateGame={handleCreatePost}
           onViewFullLeaderboard={handleViewFullLeaderboard}
-          // NEW: Add back button functionality
+          onViewNextLevel={handleViewNextLevel}
+          // Add back button functionality
           onBack={handleBackFromLeaderboard}
           showBackButton={true}
         />
@@ -457,7 +502,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       );
     }
 
-    // Game play interface - UPDATED: Pass the new onViewResults callback
+    // Game play interface - Pass the new onViewResults callback
     return (
       <GamePlayInterface
         context={context}
