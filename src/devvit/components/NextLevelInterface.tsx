@@ -289,7 +289,7 @@ export const NextLevelInterface = ({
               
               <vstack gap="xxsmall">
                 <hstack gap="xsmall" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.primary}>🎮</text>
+                  <text size="small" color={CarnivalTheme.colors.primary}>🎮 </text>
                   <text size="xsmall" color={CarnivalTheme.colors.text} grow>
                     Play games
                   </text>
@@ -299,7 +299,7 @@ export const NextLevelInterface = ({
                 </hstack>
 
                 <hstack gap="xsmall" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.success}>🎯</text>
+                  <text size="small" color={CarnivalTheme.colors.success}>🎯 </text>
                   <text size="xsmall" color={CarnivalTheme.colors.text} grow>
                     Guess correctly
                   </text>
@@ -309,7 +309,7 @@ export const NextLevelInterface = ({
                 </hstack>
 
                 <hstack gap="xsmall" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.warning}>🔥</text>
+                  <text size="small" color={CarnivalTheme.colors.warning}>🔥 </text>
                   <text size="xsmall" color={CarnivalTheme.colors.text} grow>
                     Viral posts (5+ guesses)
                   </text>
