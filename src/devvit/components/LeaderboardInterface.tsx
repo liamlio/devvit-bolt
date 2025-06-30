@@ -249,11 +249,27 @@ export const LeaderboardInterface = ({
               borderColor={CarnivalTheme.colors.primary}
               gap="small"
             >
-              <text size="small" weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
+              {/* UPDATED: Header with Next Level button for small screens */}
+              <hstack alignment="middle">
+                <text size="small" weight="bold" color={CarnivalTheme.colors.text}>Your Stats</text>
+                {/* NEW: Show Next Level button only on small screens */}
+                {isSmallScreen && onViewNextLevel && (
+                  <>
+                    <spacer grow />
+                    <button
+                      appearance="secondary"
+                      onPress={onViewNextLevel}
+                      size="small"
+                    >
+                      Next Level info→
+                    </button>
+                  </>
+                )}
+              </hstack>
               
-              {/* Main stats section with vertical divider */}
+              {/* Main stats section */}
               <hstack gap="small" alignment="top">
-                {/* Left side - Current stats */}
+                {/* Left side - Current stats (now takes more space on small screens) */}
                 <vstack gap="small" grow>
                   <hstack gap="medium">
                     <vstack>
@@ -320,124 +336,97 @@ export const LeaderboardInterface = ({
                   </vstack>
                 </vstack>
 
-                {/* Vertical divider - bluish bar that doesn't quite touch borders */}
-                <vstack height="100%" width="2px" alignment="center middle">
-                  <spacer height="4px" />
-                  <vstack grow width="2px" backgroundColor={CarnivalTheme.colors.primary} />
-                  <spacer height="4px" />
-                </vstack>
+                {/* UPDATED: Only show divider and next level info on large screens */}
+                {!isSmallScreen && (
+                  <>
+                    {/* Vertical divider - bluish bar that doesn't quite touch borders */}
+                    <vstack height="100%" width="2px" alignment="center middle">
+                      <spacer height="4px" />
+                      <vstack grow width="2px" backgroundColor={CarnivalTheme.colors.primary} />
+                      <spacer height="4px" />
+                    </vstack>
 
-                {/* UPDATED: Right side - Simplified for small screens, detailed for large screens */}
-                <vstack gap="xsmall" grow>
-                  {(() => {
-                    const nextLevelInfo = getNextLevelInfo(userStats);
-                    
-                    if (nextLevelInfo.isMaxLevel) {
-                      return (
-                        <vstack gap="xsmall" alignment="center">
-                          <text size="xsmall" weight="bold" color={CarnivalTheme.colors.accent}>
-                            🏆 Max Level Reached!
-                          </text>
-                          <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
-                            You've achieved the highest rank: Carnival Legend!
-                          </text>
-                        </vstack>
-                      );
-                    }
-
-                    if (isSmallScreen) {
-                      // UPDATED: Small screen - Show simplified next level info with button
-                      return (
-                        <vstack gap="xsmall" alignment="center">
-                          <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
-                            🎯 Next Level
-                          </text>
-                          <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold" alignment="center">
-                            Lvl.{nextLevelInfo.nextLevel?.level}: {nextLevelInfo.nextLevel?.name}
-                          </text>
-                          <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
-                            {userStats.experience}/{nextLevelInfo.nextLevel?.experienceRequired} XP
-                          </text>
-                          <text size="xsmall" color={CarnivalTheme.colors.accent} alignment="center">
-                            {nextLevelInfo.experienceNeeded} XP to go
-                          </text>
-                          
-                          {/* NEW: Button to view full next level details */}
-                          {onViewNextLevel && (
-                            <button
-                              appearance="secondary"
-                              onPress={onViewNextLevel}
-                              size="small"
-                              width="100%"
-                            >
-                              View Details →
-                            </button>
-                          )}
-                        </vstack>
-                      );
-                    } else {
-                      // Large screen: Show full next level details as before
-                      return (
-                        <vstack gap="xsmall">
-                          <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
-                            🎯 Next Level
-                          </text>
-                          
-                          {/* Display next level with title using proper Devvit components */}
-                          <hstack gap="xsmall" alignment="middle">
-                            <text size="xsmall" color={CarnivalTheme.colors.text}>
-                              Lvl.{nextLevelInfo.nextLevel?.level}: 
-                            </text>
-                            <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
-                               {nextLevelInfo.nextLevel?.name}
-                            </text>
-                          </hstack>
-                          
-                          {/* Progress display for large screens */}
-                          <vstack gap="xxsmall">
-                            <hstack 
-                              width="100%" 
-                              height="6px" 
-                              backgroundColor="rgba(0,0,0,0.1)" 
-                              cornerRadius="small"
-                            >
-                              <hstack 
-                                width={`${nextLevelInfo.progressPercentage}%`} 
-                                height="100%" 
-                                backgroundColor={CarnivalTheme.colors.accent}
-                                cornerRadius="small"
-                              />
-                            </hstack>
-                            <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                              {nextLevelInfo.progressPercentage}% complete
-                            </text>
-                          </vstack>
-                          
-                          <text size="xsmall" color={CarnivalTheme.colors.text}>
-                            {nextLevelInfo.experienceNeeded} XP to go
-                          </text>
-                          
-                          <vstack gap="xxsmall">
-                            <text size="xsmall" color={CarnivalTheme.colors.textLight}>
-                              💡 Earn XP by:
-                            </text>
-                            <vstack gap="xxsmall">
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Playing games (+1 XP)
+                    {/* Right side - Next level info (only on large screens) */}
+                    <vstack gap="xsmall" grow>
+                      {(() => {
+                        const nextLevelInfo = getNextLevelInfo(userStats);
+                        
+                        if (nextLevelInfo.isMaxLevel) {
+                          return (
+                            <vstack gap="xsmall" alignment="center">
+                              <text size="xsmall" weight="bold" color={CarnivalTheme.colors.accent}>
+                                🏆 Max Level Reached!
                               </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Correct guesses (+2 XP)
-                              </text>
-                              <text size="xsmall" color={CarnivalTheme.colors.text}>
-                                • Posts with 5+ guesses (+10 XP)
+                              <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
+                                You've achieved the highest rank: Carnival Legend!
                               </text>
                             </vstack>
+                          );
+                        }
+
+                        // Large screen: Show full next level details as before
+                        return (
+                          <vstack gap="xsmall">
+                            <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
+                              🎯 Next Level
+                            </text>
+                            
+                            {/* Display next level with title using proper Devvit components */}
+                            <hstack gap="xsmall" alignment="middle">
+                              <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                Lvl.{nextLevelInfo.nextLevel?.level}: 
+                              </text>
+                              <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
+                                 {nextLevelInfo.nextLevel?.name}
+                              </text>
+                            </hstack>
+                            
+                            {/* Progress display for large screens */}
+                            <vstack gap="xxsmall">
+                              <hstack 
+                                width="100%" 
+                                height="6px" 
+                                backgroundColor="rgba(0,0,0,0.1)" 
+                                cornerRadius="small"
+                              >
+                                <hstack 
+                                  width={`${nextLevelInfo.progressPercentage}%`} 
+                                  height="100%" 
+                                  backgroundColor={CarnivalTheme.colors.accent}
+                                  cornerRadius="small"
+                                />
+                              </hstack>
+                              <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                                {nextLevelInfo.progressPercentage}% complete
+                              </text>
+                            </vstack>
+                            
+                            <text size="xsmall" color={CarnivalTheme.colors.text}>
+                              {nextLevelInfo.experienceNeeded} XP to go
+                            </text>
+                            
+                            <vstack gap="xxsmall">
+                              <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                                💡 Earn XP by:
+                              </text>
+                              <vstack gap="xxsmall">
+                                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  • Playing games (+1 XP)
+                                </text>
+                                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  • Correct guesses (+2 XP)
+                                </text>
+                                <text size="xsmall" color={CarnivalTheme.colors.text}>
+                                  • Posts with 5+ guesses (+10 XP)
+                                </text>
+                              </vstack>
+                            </vstack>
                           </vstack>
-                        </vstack>
-                      );
-                    }
-                  })()}
-                </vstack>
+                        );
+                      })()}
+                    </vstack>
+                  </>
+                )}
               </hstack>
             </vstack>
           )}

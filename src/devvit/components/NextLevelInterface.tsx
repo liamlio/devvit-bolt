@@ -70,7 +70,7 @@ export const NextLevelInterface = ({
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding="medium" gap="small" overflow="scroll">
         <CarnivalCard padding="medium">
-          {/* Header with Back Button */}
+          {/* Header with Back Button - UPDATED: Smaller text sizes */}
           <hstack alignment="middle" gap="medium">
             <button
               appearance="secondary"
@@ -79,89 +79,89 @@ export const NextLevelInterface = ({
             >
               ← Back
             </button>
-            <text size="large" weight="bold" color={CarnivalTheme.colors.text} grow alignment="center">
+            <text size={isSmallScreen ? "medium" : "large"} weight="bold" color={CarnivalTheme.colors.text} grow alignment="center">
               🎯 Level Progress
             </text>
             <spacer width="60px" /> {/* Balance the back button */}
           </hstack>
 
-          {/* Current Level Section */}
+          {/* Current Level Section - UPDATED: Smaller padding and text */}
           <vstack 
-            padding="medium"
+            padding={isSmallScreen ? "small" : "medium"}
             backgroundColor={CarnivalTheme.colors.background} 
             cornerRadius="medium"
             border="thin"
             borderColor={CarnivalTheme.colors.primary}
-            gap="medium"
+            gap="small"
           >
-            <text size="medium" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+            <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
               Current Level
             </text>
             
-            <vstack gap="small" alignment="center">
-              <text size="xxlarge" color={CarnivalTheme.colors.primary}>
+            <vstack gap="xsmall" alignment="center">
+              <text size={isSmallScreen ? "large" : "xxlarge"} color={CarnivalTheme.colors.primary}>
                 🎪
               </text>
-              <text size="large" weight="bold" color={CarnivalTheme.colors.text}>
+              <text size={isSmallScreen ? "medium" : "large"} weight="bold" color={CarnivalTheme.colors.text}>
                 Level {currentLevel.level}: {currentLevel.name}
               </text>
-              <text size="medium" color={CarnivalTheme.colors.text}>
+              <text size="small" color={CarnivalTheme.colors.text}>
                 {userStats.experience} XP
               </text>
             </vstack>
           </vstack>
 
-          {/* Next Level Section */}
+          {/* Next Level Section - UPDATED: Smaller padding and text */}
           {nextLevelInfo.isMaxLevel ? (
             <vstack 
-              padding="medium"
+              padding={isSmallScreen ? "small" : "medium"}
               backgroundColor="rgba(255, 215, 0, 0.1)" 
               cornerRadius="medium"
               border="thin"
               borderColor={CarnivalTheme.colors.accent}
-              gap="medium"
+              gap="small"
               alignment="center"
             >
-              <text size="xxlarge" color={CarnivalTheme.colors.accent}>
+              <text size={isSmallScreen ? "large" : "xxlarge"} color={CarnivalTheme.colors.accent}>
                 🏆
               </text>
-              <text size="large" weight="bold" color={CarnivalTheme.colors.accent} alignment="center">
+              <text size={isSmallScreen ? "medium" : "large"} weight="bold" color={CarnivalTheme.colors.accent} alignment="center">
                 Maximum Level Reached!
               </text>
-              <text size="medium" color={CarnivalTheme.colors.text} alignment="center">
+              <text size="small" color={CarnivalTheme.colors.text} alignment="center">
                 You've achieved the highest rank: Carnival Legend!
               </text>
-              <text size="small" color={CarnivalTheme.colors.textLight} alignment="center">
+              <text size="xsmall" color={CarnivalTheme.colors.textLight} alignment="center">
                 You are truly a master of the carnival of deception!
               </text>
             </vstack>
           ) : (
             <vstack 
-              padding="medium"
+              padding={isSmallScreen ? "small" : "medium"}
               backgroundColor={CarnivalTheme.colors.background} 
               cornerRadius="medium"
               border="thin"
               borderColor={CarnivalTheme.colors.accent}
-              gap="medium"
+              gap="small"
             >
-              <text size="medium" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+              <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
                 Next Level
               </text>
               
-              <vstack gap="small" alignment="center">
-                <text size="large" weight="bold" color={CarnivalTheme.colors.accent}>
+              <vstack gap="xsmall" alignment="center">
+                <text size={isSmallScreen ? "medium" : "large"} weight="bold" color={CarnivalTheme.colors.accent}>
                   Level {nextLevelInfo.nextLevel?.level}: {nextLevelInfo.nextLevel?.name}
                 </text>
-                <text size="medium" color={CarnivalTheme.colors.text}>
+                <text size="small" color={CarnivalTheme.colors.text}>
                   Requires {nextLevelInfo.nextLevel?.experienceRequired} XP
                 </text>
               </vstack>
 
-              {/* Progress Bar */}
-              <vstack gap="small">
+              {/* Progress Bar - UPDATED: Smaller height */}
+              <vstack gap="xsmall">
                 <hstack 
                   width="100%" 
-                  height="12px" 
+                  height={isSmallScreen ? "8px" : "12px"}
                   backgroundColor="rgba(0,0,0,0.1)" 
                   cornerRadius="medium"
                 >
@@ -174,137 +174,137 @@ export const NextLevelInterface = ({
                 </hstack>
                 
                 <hstack width="100%" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.text}>
+                  <text size="xsmall" color={CarnivalTheme.colors.text}>
                     {userStats.experience} XP
                   </text>
                   <spacer grow />
-                  <text size="small" weight="bold" color={CarnivalTheme.colors.accent}>
+                  <text size="xsmall" weight="bold" color={CarnivalTheme.colors.accent}>
                     {nextLevelInfo.progressPercentage}% complete
                   </text>
                   <spacer grow />
-                  <text size="small" color={CarnivalTheme.colors.text}>
+                  <text size="xsmall" color={CarnivalTheme.colors.text}>
                     {nextLevelInfo.nextLevel?.experienceRequired} XP
                   </text>
                 </hstack>
               </vstack>
 
               <vstack 
-                padding="medium"
+                padding="small"
                 backgroundColor="rgba(59, 130, 246, 0.1)" 
                 cornerRadius="medium"
-                gap="small"
+                gap="xsmall"
               >
-                <text size="medium" weight="bold" color={CarnivalTheme.colors.primary} alignment="center">
+                <text size="small" weight="bold" color={CarnivalTheme.colors.primary} alignment="center">
                   {nextLevelInfo.experienceNeeded} XP to go!
                 </text>
               </vstack>
             </vstack>
           )}
 
-          {/* How to Earn XP Section */}
+          {/* How to Earn XP Section - UPDATED: Smaller padding and text */}
           <vstack 
-            padding="medium"
+            padding="small"
             backgroundColor={CarnivalTheme.colors.background} 
             cornerRadius="medium"
             border="thin"
             borderColor={CarnivalTheme.colors.shadow}
-            gap="medium"
+            gap="small"
           >
-            <text size="medium" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+            <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
               💡 How to Earn XP
             </text>
             
-            <vstack gap="small">
-              <hstack gap="medium" alignment="middle">
-                <text size="large" color={CarnivalTheme.colors.primary}>🎮</text>
-                <vstack gap="xsmall" grow>
-                  <text size="small" weight="bold" color={CarnivalTheme.colors.text}>
+            <vstack gap="xsmall">
+              <hstack gap="small" alignment="middle">
+                <text size={isSmallScreen ? "medium" : "large"} color={CarnivalTheme.colors.primary}>🎮</text>
+                <vstack gap="xxsmall" grow>
+                  <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
                     Play any game
                   </text>
                   <text size="xsmall" color={CarnivalTheme.colors.textLight}>
                     Earn +1 XP for each game you participate in
                   </text>
                 </vstack>
-                <text size="medium" weight="bold" color={CarnivalTheme.colors.accent}>
+                <text size="small" weight="bold" color={CarnivalTheme.colors.accent}>
                   +1 XP
                 </text>
               </hstack>
 
-              <hstack gap="medium" alignment="middle">
-                <text size="large" color={CarnivalTheme.colors.success}>🎯</text>
-                <vstack gap="xsmall" grow>
-                  <text size="small" weight="bold" color={CarnivalTheme.colors.text}>
+              <hstack gap="small" alignment="middle">
+                <text size={isSmallScreen ? "medium" : "large"} color={CarnivalTheme.colors.success}>🎯</text>
+                <vstack gap="xxsmall" grow>
+                  <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
                     Guess correctly
                   </text>
                   <text size="xsmall" color={CarnivalTheme.colors.textLight}>
                     Bonus XP for spotting the lie correctly
                   </text>
                 </vstack>
-                <text size="medium" weight="bold" color={CarnivalTheme.colors.accent}>
+                <text size="small" weight="bold" color={CarnivalTheme.colors.accent}>
                   +2 XP
                 </text>
               </hstack>
 
-              <hstack gap="medium" alignment="middle">
-                <text size="large" color={CarnivalTheme.colors.warning}>🔥</text>
-                <vstack gap="xsmall" grow>
-                  <text size="small" weight="bold" color={CarnivalTheme.colors.text}>
+              <hstack gap="small" alignment="middle">
+                <text size={isSmallScreen ? "medium" : "large"} color={CarnivalTheme.colors.warning}>🔥</text>
+                <vstack gap="xxsmall" grow>
+                  <text size="xsmall" weight="bold" color={CarnivalTheme.colors.text}>
                     Create engaging posts
                   </text>
                   <text size="xsmall" color={CarnivalTheme.colors.textLight}>
                     Big bonus when your post gets 5+ guesses
                   </text>
                 </vstack>
-                <text size="medium" weight="bold" color={CarnivalTheme.colors.accent}>
+                <text size="small" weight="bold" color={CarnivalTheme.colors.accent}>
                   +10 XP
                 </text>
               </hstack>
             </vstack>
           </vstack>
 
-          {/* Level Benefits Section */}
+          {/* Level Benefits Section - UPDATED: Smaller padding and text */}
           <vstack 
-            padding="medium"
+            padding="small"
             backgroundColor={CarnivalTheme.colors.background} 
             cornerRadius="medium"
             border="thin"
             borderColor={CarnivalTheme.colors.shadow}
-            gap="medium"
+            gap="small"
           >
-            <text size="medium" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
+            <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
               🎪 Level Benefits
             </text>
             
-            <vstack gap="small">
-              <text size="small" color={CarnivalTheme.colors.text} alignment="center">
+            <vstack gap="xsmall">
+              <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
                 As you level up, you unlock:
               </text>
               
-              <vstack gap="xsmall">
-                <hstack gap="small" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.primary}>🎨</text>
-                  <text size="small" color={CarnivalTheme.colors.text} grow>
+              <vstack gap="xxsmall">
+                <hstack gap="xsmall" alignment="middle">
+                  <text size="xsmall" color={CarnivalTheme.colors.primary}>🎨</text>
+                  <text size="xsmall" color={CarnivalTheme.colors.text} grow>
                     Exclusive user flair showing your rank and progress
                   </text>
                 </hstack>
                 
-                <hstack gap="small" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.primary}>🏆</text>
-                  <text size="small" color={CarnivalTheme.colors.text} grow>
+                <hstack gap="xsmall" alignment="middle">
+                  <text size="xsmall" color={CarnivalTheme.colors.primary}>🏆</text>
+                  <text size="xsmall" color={CarnivalTheme.colors.text} grow>
                     Higher positions on leaderboards
                   </text>
                 </hstack>
                 
-                <hstack gap="small" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.primary}>👑</text>
-                  <text size="small" color={CarnivalTheme.colors.text} grow>
+                <hstack gap="xsmall" alignment="middle">
+                  <text size="xsmall" color={CarnivalTheme.colors.primary}>👑</text>
+                  <text size="xsmall" color={CarnivalTheme.colors.text} grow>
                     Prestigious titles that show your expertise
                   </text>
                 </hstack>
                 
-                <hstack gap="small" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.primary}>🎉</text>
-                  <text size="small" color={CarnivalTheme.colors.text} grow>
+                <hstack gap="xsmall" alignment="middle">
+                  <text size="xsmall" color={CarnivalTheme.colors.primary}>🎉</text>
+                  <text size="xsmall" color={CarnivalTheme.colors.text} grow>
                     Recognition in the community
                   </text>
                 </hstack>
