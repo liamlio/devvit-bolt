@@ -249,7 +249,7 @@ export class GameService {
     }
   }
 
-  // FIXED: Declare userScore outside try block to fix scope issue
+  // FIXED: Initialize userScore to null to prevent ReferenceError
   async getUserLeaderboardRank(userId: string, type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime'): Promise<number | null> {
     const weekNumber = this.getWeekNumber();
     const key = timeframe === 'weekly' 
@@ -258,8 +258,8 @@ export class GameService {
 
     console.log(`🔍 Getting user rank for ${userId} in ${key}`);
 
-    // Declare userScore outside try block to fix scope issue
-    let userScore: number | null | undefined;
+    // FIXED: Initialize userScore to null to prevent ReferenceError in catch block
+    let userScore: number | null = null;
 
     try {
       // Get the user's score first
@@ -299,9 +299,9 @@ export class GameService {
       try {
         console.log(`🔄 Attempting fallback method for user rank calculation...`);
         
-        // Check if userScore is defined before proceeding with fallback
+        // FIXED: Check if userScore is null before proceeding with fallback
         if (userScore === null || userScore === undefined) {
-          console.log(`❌ Cannot proceed with fallback: userScore is not defined`);
+          console.log(`❌ Cannot proceed with fallback: userScore is null or undefined`);
           return null;
         }
         
