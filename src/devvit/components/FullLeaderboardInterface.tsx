@@ -36,9 +36,11 @@ export const FullLeaderboardInterface = ({
   // NEW: State for timeframe toggle on small screens
   const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'alltime'>('weekly');
 
-  // Get user's leaderboard positions
+  // FIXED: Get user's leaderboard positions with proper debugging
   const { data: userPositions } = useAsync(async () => {
     if (!userId) return null;
+    
+    console.log(`🔍 Getting user positions for ${userId} on activeTab: ${activeTab}`);
     
     const [weeklyGuesserRank, weeklyLiarRank, allTimeGuesserRank, allTimeLiarRank] = await Promise.all([
       gameService.getUserLeaderboardRank(userId, 'guesser', 'weekly'),
@@ -46,6 +48,13 @@ export const FullLeaderboardInterface = ({
       gameService.getUserLeaderboardRank(userId, 'guesser', 'alltime'),
       gameService.getUserLeaderboardRank(userId, 'liar', 'alltime'),
     ]);
+
+    console.log(`📊 User positions for ${userId}:`, {
+      weeklyGuesserRank,
+      weeklyLiarRank,
+      allTimeGuesserRank,
+      allTimeLiarRank,
+    });
 
     return {
       weeklyGuesserRank,
@@ -119,7 +128,7 @@ export const FullLeaderboardInterface = ({
 
         <spacer grow />
 
-        {/* User's Position */}
+        {/* FIXED: User's Position with proper rank calculation */}
         {userPositions && userId && (
           <vstack 
             padding="xsmall"
@@ -134,11 +143,16 @@ export const FullLeaderboardInterface = ({
             <text size="xsmall" color={CarnivalTheme.colors.text} alignment="center">
               {(() => {
                 let rank: number | null = null;
-                if (timeframe === 'weekly') {
-                  rank = type === 'guesser' ? userPositions.weeklyGuesserRank : userPositions.weeklyLiarRank;
+                
+                // FIXED: Get the correct rank based on current type and timeframe
+                if (type === 'guesser') {
+                  rank = timeframe === 'weekly' ? userPositions.weeklyGuesserRank : userPositions.allTimeGuesserRank;
                 } else {
-                  rank = type === 'guesser' ? userPositions.allTimeGuesserRank : userPositions.allTimeLiarRank;
+                  rank = timeframe === 'weekly' ? userPositions.weeklyLiarRank : userPositions.allTimeLiarRank;
                 }
+                
+                console.log(`🏆 Displaying rank for ${type} ${timeframe}: ${rank}`);
+                
                 return rank ? `#${rank}` : 'Not ranked yet';
               })()}
             </text>
