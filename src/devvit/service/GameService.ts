@@ -249,7 +249,7 @@ export class GameService {
     }
   }
 
-  // FIXED: Completely rewritten to properly calculate user ranks
+  // FIXED: Replace zCount with zRange workaround for compatibility
   async getUserLeaderboardRank(userId: string, type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime'): Promise<number | null> {
     const weekNumber = this.getWeekNumber();
     const key = timeframe === 'weekly' 
@@ -275,8 +275,17 @@ export class GameService {
         return null;
       }
       
+      // WORKAROUND: Use zRange to get all entries and manually count higher scores
+      // This replaces the unavailable zCount method
+      const allEntries = await this.redis.zRange(key, 0, -1, { withScores: true });
+      
       // Count how many users have a higher score than this user
-      const higherScoreCount = await this.redis.zCount(key, `(${userScore}`, '+inf');
+      let higherScoreCount = 0;
+      for (const entry of allEntries) {
+        if (entry.score > userScore) {
+          higherScoreCount++;
+        }
+      }
       
       // User's rank is the number of users with higher scores + 1
       const userRank = higherScoreCount + 1;
