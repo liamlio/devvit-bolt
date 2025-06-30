@@ -36,11 +36,11 @@ export const FullLeaderboardInterface = ({
   // NEW: State for timeframe toggle on small screens
   const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'alltime'>('weekly');
 
-  // FIXED: Get user's leaderboard positions with proper debugging
+  // FIXED: Get user's leaderboard positions with enhanced debugging
   const { data: userPositions } = useAsync(async () => {
     if (!userId) return null;
     
-    console.log(`🔍 Getting user positions for ${userId} on activeTab: ${activeTab}`);
+    console.log(`🔍 FullLeaderboard: Getting user positions for ${userId} on activeTab: ${activeTab}`);
     
     const [weeklyGuesserRank, weeklyLiarRank, allTimeGuesserRank, allTimeLiarRank] = await Promise.all([
       gameService.getUserLeaderboardRank(userId, 'guesser', 'weekly'),
@@ -49,7 +49,7 @@ export const FullLeaderboardInterface = ({
       gameService.getUserLeaderboardRank(userId, 'liar', 'alltime'),
     ]);
 
-    console.log(`📊 User positions for ${userId}:`, {
+    console.log(`📊 FullLeaderboard: User positions for ${userId}:`, {
       weeklyGuesserRank,
       weeklyLiarRank,
       allTimeGuesserRank,
@@ -92,6 +92,8 @@ export const FullLeaderboardInterface = ({
     // Show only top 10
     const topEntries = entries.slice(0, 10);
     
+    console.log(`🎯 FullLeaderboard: Rendering ${type} ${timeframe} leaderboard with ${topEntries.length} entries`);
+    
     if (topEntries.length === 0) {
       return (
         <vstack alignment="center middle" padding="medium" grow>
@@ -109,10 +111,13 @@ export const FullLeaderboardInterface = ({
         <vstack gap="xxsmall" maxHeight="300px" overflow="scroll">
           {topEntries.map((entry, index) => {
             const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
-            // FIXED: Display correct text for each leaderboard type
+            
+            // FIXED: Ensure correct scoreText based on the type parameter
             const scoreText = type === 'guesser' 
               ? `${entry.score} correct`
               : `${entry.score} fooled`;
+            
+            console.log(`📝 FullLeaderboard: Entry ${index + 1} for ${type}: u/${entry.username} - ${scoreText}`);
             
             return (
               <text 
@@ -128,7 +133,7 @@ export const FullLeaderboardInterface = ({
 
         <spacer grow />
 
-        {/* FIXED: User's Position with proper rank calculation */}
+        {/* FIXED: User's Position with enhanced debugging */}
         {userPositions && userId && (
           <vstack 
             padding="xsmall"
@@ -144,14 +149,14 @@ export const FullLeaderboardInterface = ({
               {(() => {
                 let rank: number | null = null;
                 
-                // FIXED: Get the correct rank based on current type and timeframe
+                // FIXED: Get the correct rank based on current type and timeframe being displayed
                 if (type === 'guesser') {
                   rank = timeframe === 'weekly' ? userPositions.weeklyGuesserRank : userPositions.allTimeGuesserRank;
-                } else {
+                } else { // type === 'liar'
                   rank = timeframe === 'weekly' ? userPositions.weeklyLiarRank : userPositions.allTimeLiarRank;
                 }
                 
-                console.log(`🏆 Displaying rank for ${type} ${timeframe}: ${rank}`);
+                console.log(`🏆 FullLeaderboard: Displaying rank for ${type} ${timeframe}: ${rank}`);
                 
                 return rank ? `#${rank}` : 'Not ranked yet';
               })()}
@@ -187,7 +192,10 @@ export const FullLeaderboardInterface = ({
           <hstack gap="small">
             <button
               appearance={activeTab === 'guessers' ? 'primary' : 'secondary'}
-              onPress={() => onTabChange('guessers')}
+              onPress={() => {
+                console.log(`🔄 FullLeaderboard: Switching to guessers tab`);
+                onTabChange('guessers');
+              }}
               grow
               size="small"
             >
@@ -195,7 +203,10 @@ export const FullLeaderboardInterface = ({
             </button>
             <button
               appearance={activeTab === 'liars' ? 'primary' : 'secondary'}
-              onPress={() => onTabChange('liars')}
+              onPress={() => {
+                console.log(`🔄 FullLeaderboard: Switching to liars tab`);
+                onTabChange('liars');
+              }}
               grow
               size="small"
             >
@@ -208,7 +219,10 @@ export const FullLeaderboardInterface = ({
             <hstack gap="small">
               <button
                 appearance={activeTimeframe === 'weekly' ? 'primary' : 'secondary'}
-                onPress={() => setActiveTimeframe('weekly')}
+                onPress={() => {
+                  console.log(`🔄 FullLeaderboard: Switching to weekly timeframe`);
+                  setActiveTimeframe('weekly');
+                }}
                 grow
                 size="small"
               >
@@ -216,7 +230,10 @@ export const FullLeaderboardInterface = ({
               </button>
               <button
                 appearance={activeTimeframe === 'alltime' ? 'primary' : 'secondary'}
-                onPress={() => setActiveTimeframe('alltime')}
+                onPress={() => {
+                  console.log(`🔄 FullLeaderboard: Switching to alltime timeframe`);
+                  setActiveTimeframe('alltime');
+                }}
                 grow
                 size="small"
               >
@@ -240,7 +257,8 @@ export const FullLeaderboardInterface = ({
               <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
                 {activeTimeframe === 'weekly' ? '📅 This Week' : '🏆 All-Time'}
               </text>
-              {renderLeaderboard(leaderboards.current, activeTab, activeTimeframe)}
+              {/* FIXED: Pass the correct type parameter */}
+              {renderLeaderboard(leaderboards.current, activeTab === 'guessers' ? 'guesser' : 'liar', activeTimeframe)}
             </vstack>
           ) : (
             /* Large screen: Side-by-Side Leaderboards */
@@ -258,7 +276,8 @@ export const FullLeaderboardInterface = ({
                 <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
                   📅 This Week
                 </text>
-                {renderLeaderboard(leaderboards.weekly, activeTab, 'weekly')}
+                {/* FIXED: Pass the correct type parameter */}
+                {renderLeaderboard(leaderboards.weekly, activeTab === 'guessers' ? 'guesser' : 'liar', 'weekly')}
               </vstack>
 
               {/* All-Time Leaderboard */}
@@ -274,7 +293,8 @@ export const FullLeaderboardInterface = ({
                 <text size="small" weight="bold" color={CarnivalTheme.colors.text} alignment="center">
                   🏆 All-Time
                 </text>
-                {renderLeaderboard(leaderboards.alltime, activeTab, 'alltime')}
+                {/* FIXED: Pass the correct type parameter */}
+                {renderLeaderboard(leaderboards.alltime, activeTab === 'guessers' ? 'guesser' : 'liar', 'alltime')}
               </vstack>
             </hstack>
           )}
