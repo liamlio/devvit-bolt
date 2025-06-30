@@ -98,7 +98,7 @@ export const GameResultsInterface = ({
                   gap="small"
                 >
                   <hstack alignment="middle">
-                    <text grow size={isSmallScreen ? "medium" : "medium"} weight="bold" color={CarnivalTheme.colors.text} wrap>
+                    <text grow size={isSmallScreen ? "small" : "medium"} weight="bold" color={CarnivalTheme.colors.text} wrap>
                       {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
                     </text>
                     <vstack gap="xxsmall" alignment="end">
