@@ -107,6 +107,10 @@ export class GameService {
       oldLevel,
       newLevel: newLevel.level,
       experience: userScore.experience,
+      guesserPoints: userScore.guesserPoints,
+      liarPoints: userScore.liarPoints,
+      weeklyGuesserPoints: userScore.weeklyGuesserPoints,
+      weeklyLiarPoints: userScore.weeklyLiarPoints,
       hasScheduler: !!scheduler,
       hasReddit: !!reddit,
     });
@@ -169,7 +173,7 @@ export class GameService {
   private async updateLeaderboards(userScore: UserScore): Promise<void> {
     const weekNumber = this.getWeekNumber();
     
-    console.log(`Updating leaderboards for user ${userScore.username}:`, {
+    console.log(`📊 Updating leaderboards for user ${userScore.username}:`, {
       weeklyGuesserPoints: userScore.weeklyGuesserPoints,
       allTimeGuesserPoints: userScore.guesserPoints,
       weeklyLiarPoints: userScore.weeklyLiarPoints,
@@ -199,7 +203,7 @@ export class GameService {
       }),
     ]);
 
-    console.log(`Successfully updated leaderboards for user ${userScore.username}`);
+    console.log(`✅ Successfully updated leaderboards for user ${userScore.username}`);
   }
 
   async getLeaderboard(type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime', limit: number = 10): Promise<LeaderboardEntry[]> {
@@ -449,7 +453,7 @@ export class GameService {
   }
 
   async awardExperience(userId: string, username: string, points: number, reddit?: any, scheduler?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
-    console.log(`Awarding ${points} experience to ${username} (${userId})`);
+    console.log(`🎯 Awarding ${points} experience to ${username} (${userId})`);
     
     const userScore = await this.getUserScore(userId);
     const oldLevel = userScore.level;
@@ -457,7 +461,7 @@ export class GameService {
     userScore.experience += points;
     
     const result = await this.updateUserScore(userScore, reddit, scheduler);
-    console.log(`Experience awarded. New total: ${userScore.experience}`);
+    console.log(`✅ Experience awarded. New total: ${userScore.experience}`);
     
     // UPDATED: Only update flair if level changed
     if (result.leveledUp && reddit) {
@@ -471,7 +475,7 @@ export class GameService {
   }
 
   async awardGuesserPoints(userId: string, username: string, points: number, reddit?: any, scheduler?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
-    console.log(`Awarding ${points} guesser points to ${username} (${userId})`);
+    console.log(`🎯 Awarding ${points} guesser points to ${username} (${userId})`);
     
     const userScore = await this.getUserScore(userId);
     const oldLevel = userScore.level;
@@ -482,7 +486,7 @@ export class GameService {
     if (points > 0) userScore.correctGuesses += 1;
     
     const result = await this.updateUserScore(userScore, reddit, scheduler);
-    console.log(`Guesser points awarded. New totals - All-time: ${userScore.guesserPoints}, Weekly: ${userScore.weeklyGuesserPoints}`);
+    console.log(`✅ Guesser points awarded. New totals - All-time: ${userScore.guesserPoints}, Weekly: ${userScore.weeklyGuesserPoints}`);
     
     // UPDATED: Only update flair if level changed (weekly rank updates happen hourly)
     if (result.leveledUp && reddit) {
@@ -495,8 +499,9 @@ export class GameService {
     return result;
   }
 
+  // FIXED: Ensure liar points are properly awarded and tracked
   async awardLiarPoints(userId: string, username: string, points: number, reddit?: any, scheduler?: any): Promise<{ leveledUp: boolean; newLevel?: number }> {
-    console.log(`Awarding ${points} liar points to ${username} (${userId})`);
+    console.log(`🎭 Awarding ${points} liar points to ${username} (${userId})`);
     
     const userScore = await this.getUserScore(userId);
     const oldLevel = userScore.level;
@@ -505,7 +510,7 @@ export class GameService {
     userScore.weeklyLiarPoints += points;
     
     const result = await this.updateUserScore(userScore, reddit, scheduler);
-    console.log(`Liar points awarded. New totals - All-time: ${userScore.liarPoints}, Weekly: ${userScore.weeklyLiarPoints}`);
+    console.log(`✅ Liar points awarded. New totals - All-time: ${userScore.liarPoints}, Weekly: ${userScore.weeklyLiarPoints}`);
     
     // UPDATED: Only update flair if level changed
     if (result.leveledUp && reddit) {

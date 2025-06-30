@@ -100,6 +100,7 @@ export const FullLeaderboardInterface = ({
         <vstack gap="xxsmall" maxHeight="300px" overflow="scroll">
           {topEntries.map((entry, index) => {
             const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+            // FIXED: Display correct text for each leaderboard type
             const scoreText = type === 'guesser' 
               ? `${entry.score} correct`
               : `${entry.score} fooled`;

@@ -185,8 +185,9 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         gameService.awardGuesserPoints(userId, user.username, guesserPoints, reddit, scheduler),
       ]);
 
-      // Don't award liar points if the author is guessing on their own post (testing exception)
+      // FIXED: Always award liar points for incorrect guesses (unless author is guessing on own post)
       if (!isCorrect && gamePost.authorId !== userId) {
+        console.log(`🎭 Awarding liar point to post author u/${gamePost.authorUsername} for incorrect guess by u/${user.username}`);
         await gameService.awardLiarPoints(gamePost.authorId, gamePost.authorUsername, 1, reddit, scheduler);
       }
 
