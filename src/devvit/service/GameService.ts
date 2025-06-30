@@ -249,7 +249,7 @@ export class GameService {
     }
   }
 
-  // FIXED: Replace zCount with zRange workaround for compatibility
+  // FIXED: Completely rewritten to avoid zCount and use zRank instead
   async getUserLeaderboardRank(userId: string, type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime'): Promise<number | null> {
     const weekNumber = this.getWeekNumber();
     const key = timeframe === 'weekly' 
@@ -275,27 +275,48 @@ export class GameService {
         return null;
       }
       
-      // WORKAROUND: Use zRange to get all entries and manually count higher scores
-      // This replaces the unavailable zCount method
-      const allEntries = await this.redis.zRange(key, 0, -1, { withScores: true });
+      // Use zRevRank to get the rank directly (reverse order for highest scores first)
+      const rank = await this.redis.zRevRank(key, userId);
       
-      // Count how many users have a higher score than this user
-      let higherScoreCount = 0;
-      for (const entry of allEntries) {
-        if (entry.score > userScore) {
-          higherScoreCount++;
-        }
+      if (rank === null || rank === undefined) {
+        console.log(`❌ Could not determine rank for user ${userId} in ${key}`);
+        return null;
       }
       
-      // User's rank is the number of users with higher scores + 1
-      const userRank = higherScoreCount + 1;
+      // zRevRank returns 0-based index, so add 1 for 1-based rank
+      const userRank = rank + 1;
       
-      console.log(`🏆 User ${userId} rank in ${key}: ${userRank} (score: ${userScore}, users with higher scores: ${higherScoreCount})`);
+      console.log(`🏆 User ${userId} rank in ${key}: ${userRank} (score: ${userScore})`);
       
       return userRank;
     } catch (error) {
       console.error(`❌ Error getting user leaderboard rank for ${key}:`, error);
-      return null;
+      
+      // Fallback to manual counting if zRevRank fails
+      try {
+        console.log(`🔄 Attempting fallback method for user rank calculation...`);
+        
+        // Get all entries and manually count higher scores
+        const allEntries = await this.redis.zRange(key, 0, -1, { withScores: true });
+        
+        // Count how many users have a higher score than this user
+        let higherScoreCount = 0;
+        for (const entry of allEntries) {
+          if (entry.score > userScore) {
+            higherScoreCount++;
+          }
+        }
+        
+        // User's rank is the number of users with higher scores + 1
+        const userRank = higherScoreCount + 1;
+        
+        console.log(`🏆 Fallback: User ${userId} rank in ${key}: ${userRank} (score: ${userScore}, users with higher scores: ${higherScoreCount})`);
+        
+        return userRank;
+      } catch (fallbackError) {
+        console.error(`❌ Fallback method also failed for ${key}:`, fallbackError);
+        return null;
+      }
     }
   }
 
