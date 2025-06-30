@@ -336,28 +336,14 @@ export const NextLevelInterface = ({
               
               <vstack gap="xxsmall">
                 <hstack gap="xsmall" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.primary}>🎨</text>
+                  <text size="small" color={CarnivalTheme.colors.primary}>🎨 </text>
                   <text size="xsmall" color={CarnivalTheme.colors.text} grow>
                     Exclusive flair
                   </text>
                 </hstack>
                 
                 <hstack gap="xsmall" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.primary}>🏆</text>
-                  <text size="xsmall" color={CarnivalTheme.colors.text} grow>
-                    Leaderboard rank
-                  </text>
-                </hstack>
-                
-                <hstack gap="xsmall" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.primary}>👑</text>
-                  <text size="xsmall" color={CarnivalTheme.colors.text} grow>
-                    Prestigious titles
-                  </text>
-                </hstack>
-                
-                <hstack gap="xsmall" alignment="middle">
-                  <text size="small" color={CarnivalTheme.colors.primary}>🎉</text>
+                  <text size="small" color={CarnivalTheme.colors.primary}>🎉 </text>
                   <text size="xsmall" color={CarnivalTheme.colors.text} grow>
                     Community recognition
                   </text>
