@@ -259,7 +259,7 @@ export const LeaderboardInterface = ({
                     <button
                       appearance="secondary"
                       onPress={onViewNextLevel}
-                      size="xsmall"
+                      size="small"
                     >
                       Next Level info→
                     </button>
