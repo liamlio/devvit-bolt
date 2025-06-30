@@ -3,12 +3,13 @@ import { CarnivalBackground } from './CarnivalBackground.js';
 import { CarnivalCard } from './CarnivalCard.js';
 import { CarnivalTheme } from './CarnivalTheme.js';
 import { GameService } from '../service/GameService.js';
-import type { GamePost, Statement, UserGuess } from '../../shared/types/game.js';
+import type { GamePost, Statement, UserGuess, GameSettings } from '../../shared/types/game.js';
 
 interface GameResultsInterfaceProps {
   context: Context;
   gamePost: GamePost;
   userGuess?: UserGuess;
+  gameSettings: GameSettings;
   onViewDescription: (statement: Statement, title: string) => void;
   onViewLeaderboard: () => void;
   onReturnToHub: () => void;
@@ -19,6 +20,7 @@ export const GameResultsInterface = ({
   context,
   gamePost, 
   userGuess, 
+  gameSettings,
   onViewDescription,
   onViewLeaderboard,
   onReturnToHub,
@@ -42,6 +44,17 @@ export const GameResultsInterface = ({
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
+
+  // NEW: Handle navigation to twotruthsonelie subreddit
+  const handleViewLeaderboard = () => {
+    // Navigate to the twotruthsonelie subreddit specifically
+    context.ui.navigateTo('https://www.reddit.com/r/twotruthsonelie');
+  };
+
+  const handleReturnToHub = () => {
+    // Navigate to the twotruthsonelie subreddit specifically
+    context.ui.navigateTo('https://www.reddit.com/r/twotruthsonelie');
+  };
 
   return (
     <CarnivalBackground>
@@ -132,7 +145,7 @@ export const GameResultsInterface = ({
             <hstack gap="small" width="100%">
               <button
                 appearance="secondary"
-                onPress={onReturnToHub}
+                onPress={handleReturnToHub}
                 grow
                 size="small"
               >
@@ -140,7 +153,7 @@ export const GameResultsInterface = ({
               </button>
               <button
                 appearance="secondary"
-                onPress={onViewLeaderboard}
+                onPress={handleViewLeaderboard}
                 grow
                 size="small"
               >

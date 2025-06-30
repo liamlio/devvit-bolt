@@ -39,6 +39,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       let hasGuessed = false;
       let userGuess: UserGuess | undefined;
       let currentUser: any = null;
+      let gameSettings;
       
       if (userId && reddit) {
         try {
@@ -50,12 +51,16 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         }
       }
 
+      // Always load game settings for navigation
+      gameSettings = await gameService.getGameSettings();
+
       return {
         type: 'game' as const,
         gamePost,
         hasGuessed,
         userGuess,
         currentUser,
+        gameSettings,
       };
     } catch (err) {
       console.error('Error loading game data:', err);
@@ -136,10 +141,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         return;
       }
 
-      // TESTING EXCEPTION: Allow u/liamlio to guess on their own posts
-      // This is for testing purposes only and should be removed in production
-      const isTestUser = currentUser?.username === 'liamlio';
-      if (gamePost.authorId === userId && !isTestUser) {
+      if (gamePost.authorId === userId) {
         ui.showToast('You cannot guess on your own post');
         return;
       }
@@ -203,39 +205,6 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     } catch (err) {
       console.error('Error submitting guess:', err);
       ui.showToast('Error submitting guess. Please try again.');
-    }
-  };
-
-  const handleBackToGuessing = async () => {
-    if (!userId || !gameData || gameData.type !== 'game') return;
-
-    try {
-      // TESTING EXCEPTION: Allow u/liamlio to reset their guess and guess again
-      // This is for testing purposes only and should be removed in production
-      const { currentUser } = gameData;
-      const isTestUser = currentUser?.username === 'liamlio';
-      
-      if (!isTestUser) {
-        ui.showToast('This feature is only available for testing');
-        return;
-      }
-
-      // Remove the user's guess to allow them to guess again
-      await gameService.removeUserGuess(postId, userId);
-      
-      // Reset local state
-      setLocalUserGuess(null);
-      setSelectedIndex(null);
-      setGameState('play');
-      
-      ui.showToast('🔄 Reset complete! You can guess again.');
-      
-      // Trigger data refresh
-      setRefreshTrigger(prev => prev + 1);
-      
-    } catch (err) {
-      console.error('Error resetting guess:', err);
-      ui.showToast('Error resetting guess. Please try again.');
     }
   };
 
@@ -319,14 +288,11 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
 
   // Game post
   if (gameData.type === 'game') {
-    const { gamePost, hasGuessed, userGuess, currentUser } = gameData;
+    const { gamePost, hasGuessed, userGuess, currentUser, gameSettings } = gameData;
 
     // Use local user guess if available (for immediate UI updates), otherwise use database guess
     const effectiveUserGuess = localUserGuess || userGuess;
     const effectiveHasGuessed = hasGuessed || localUserGuess !== null;
-
-    // TESTING EXCEPTION: Check if this is the test user
-    const isTestUser = currentUser?.username === 'liamlio';
 
     // NEW: Hub interface (community hub shown within the game post)
     if (gameState === 'hub') {
@@ -473,13 +439,11 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
           context={context}
           gamePost={gamePost}
           userGuess={effectiveUserGuess}
+          gameSettings={gameSettings}
           onViewDescription={handleViewDescription}
           onViewLeaderboard={handleViewLeaderboard}
           onReturnToHub={handleReturnToHub}
           onCreatePost={handleCreatePost}
-          // TESTING EXCEPTION: Show back button only for u/liamlio
-          showBackButton={isTestUser}
-          onBackToGuessing={handleBackToGuessing}
         />
       );
     }
