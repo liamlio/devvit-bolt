@@ -249,7 +249,7 @@ export class GameService {
     }
   }
 
-  // FIXED: Initialize userScore to null to prevent ReferenceError
+  // FIXED: Replace zRevRank with zRange-based approach
   async getUserLeaderboardRank(userId: string, type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime'): Promise<number | null> {
     const weekNumber = this.getWeekNumber();
     const key = timeframe === 'weekly' 
@@ -258,12 +258,9 @@ export class GameService {
 
     console.log(`🔍 Getting user rank for ${userId} in ${key}`);
 
-    // FIXED: Initialize userScore to null to prevent ReferenceError in catch block
-    let userScore: number | null = null;
-
     try {
       // Get the user's score first
-      userScore = await this.redis.zScore(key, userId);
+      const userScore = await this.redis.zScore(key, userId);
       
       if (userScore === null || userScore === undefined) {
         console.log(`❌ User ${userId} not found in leaderboard ${key}`);
@@ -278,54 +275,29 @@ export class GameService {
         return null;
       }
       
-      // Use zRevRank to get the rank directly (reverse order for highest scores first)
-      const rank = await this.redis.zRevRank(key, userId);
+      // FIXED: Use zRange with reverse order to get all entries sorted by score (highest first)
+      const allEntries = await this.redis.zRange(key, 0, -1, { 
+        withScores: true, 
+        reverse: true 
+      });
       
-      if (rank === null || rank === undefined) {
-        console.log(`❌ Could not determine rank for user ${userId} in ${key}`);
-        return null;
+      console.log(`📋 Retrieved ${allEntries.length} entries from ${key}`);
+      
+      // Find the user's position in the sorted list
+      for (let i = 0; i < allEntries.length; i++) {
+        if (allEntries[i].member === userId) {
+          const userRank = i + 1; // Convert 0-based index to 1-based rank
+          console.log(`🏆 User ${userId} rank in ${key}: ${userRank} (score: ${userScore})`);
+          return userRank;
+        }
       }
       
-      // zRevRank returns 0-based index, so add 1 for 1-based rank
-      const userRank = rank + 1;
+      console.log(`❌ User ${userId} not found in sorted entries for ${key}`);
+      return null;
       
-      console.log(`🏆 User ${userId} rank in ${key}: ${userRank} (score: ${userScore})`);
-      
-      return userRank;
     } catch (error) {
       console.error(`❌ Error getting user leaderboard rank for ${key}:`, error);
-      
-      // Fallback to manual counting if zRevRank fails
-      try {
-        console.log(`🔄 Attempting fallback method for user rank calculation...`);
-        
-        // FIXED: Check if userScore is null before proceeding with fallback
-        if (userScore === null || userScore === undefined) {
-          console.log(`❌ Cannot proceed with fallback: userScore is null or undefined`);
-          return null;
-        }
-        
-        // Get all entries and manually count higher scores
-        const allEntries = await this.redis.zRange(key, 0, -1, { withScores: true });
-        
-        // Count how many users have a higher score than this user
-        let higherScoreCount = 0;
-        for (const entry of allEntries) {
-          if (entry.score > userScore) {
-            higherScoreCount++;
-          }
-        }
-        
-        // User's rank is the number of users with higher scores + 1
-        const userRank = higherScoreCount + 1;
-        
-        console.log(`🏆 Fallback: User ${userId} rank in ${key}: ${userRank} (score: ${userScore}, users with higher scores: ${higherScoreCount})`);
-        
-        return userRank;
-      } catch (fallbackError) {
-        console.error(`❌ Fallback method also failed for ${key}:`, fallbackError);
-        return null;
-      }
+      return null;
     }
   }
 
