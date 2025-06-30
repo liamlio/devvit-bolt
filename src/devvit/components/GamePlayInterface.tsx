@@ -10,6 +10,8 @@ interface GamePlayInterfaceProps {
   selectedIndex: number | null;
   onSelectStatement: (index: number) => void;
   onSubmitGuess: () => void;
+  // NEW: Add callback for author to view results
+  onViewResults?: () => void;
 }
 
 export const GamePlayInterface = ({ 
@@ -17,7 +19,8 @@ export const GamePlayInterface = ({
   gamePost, 
   selectedIndex, 
   onSelectStatement, 
-  onSubmitGuess 
+  onSubmitGuess,
+  onViewResults
 }: GamePlayInterfaceProps): JSX.Element => {
   // FIXED: Create the statements array in the order they should be displayed
   // The lieIndex tells us where the lie should appear in the display
@@ -38,6 +41,9 @@ export const GamePlayInterface = ({
   // Get screen width for responsive design
   const width = context.dimensions?.width || 400;
   const isSmallScreen = width < 450;
+
+  // NEW: Check if current user is the post author
+  const isAuthor = context.userId === gamePost.authorId;
 
   return (
     <CarnivalBackground>
@@ -69,14 +75,35 @@ export const GamePlayInterface = ({
             ))}
           </vstack>
 
-          <button
-            appearance="primary"
-            onPress={onSubmitGuess}
-            disabled={selectedIndex === null}
-            width={isSmallScreen ? "100%" : undefined}
-          >
-            Submit Guess! 🎯
-          </button>
+          {/* NEW: Conditional rendering based on whether user is the author */}
+          {isAuthor ? (
+            /* Author view: Show "View Results" button instead of guess submission */
+            <vstack gap="small" alignment="center">
+              <text size="small" alignment="center" color={CarnivalTheme.colors.primary} weight="bold">
+                👑 You created this post
+              </text>
+              <button
+                appearance="primary"
+                onPress={onViewResults}
+                width={isSmallScreen ? "100%" : undefined}
+              >
+                📊 View Results So Far
+              </button>
+              <text size="xsmall" alignment="center" color={CarnivalTheme.colors.textLight}>
+                See how players are guessing on your post
+              </text>
+            </vstack>
+          ) : (
+            /* Regular player view: Show guess submission */
+            <button
+              appearance="primary"
+              onPress={onSubmitGuess}
+              disabled={selectedIndex === null}
+              width={isSmallScreen ? "100%" : undefined}
+            >
+              Submit Guess! 🎯
+            </button>
+          )}
         </CarnivalCard>
       </vstack>
     </CarnivalBackground>

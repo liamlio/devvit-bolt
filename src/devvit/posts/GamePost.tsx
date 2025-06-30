@@ -208,6 +208,11 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     }
   };
 
+  // NEW: Handle author viewing results without guessing
+  const handleAuthorViewResults = () => {
+    setGameState('result');
+  };
+
   const handleViewDescription = (statement: Statement, title: string) => {
     setViewingDescription({ statement, title });
     setGameState('description');
@@ -293,6 +298,9 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
     // Use local user guess if available (for immediate UI updates), otherwise use database guess
     const effectiveUserGuess = localUserGuess || userGuess;
     const effectiveHasGuessed = hasGuessed || localUserGuess !== null;
+
+    // NEW: Check if current user is the post author
+    const isAuthor = userId === gamePost.authorId;
 
     // NEW: Hub interface (community hub shown within the game post)
     if (gameState === 'hub') {
@@ -432,7 +440,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       );
     }
 
-    // Show results immediately after guessing, or if already guessed
+    // Show results immediately after guessing, if already guessed, OR if author views results
     if (effectiveHasGuessed || gameState === 'result') {
       return (
         <GameResultsInterface
@@ -448,7 +456,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
       );
     }
 
-    // Game play interface
+    // Game play interface - UPDATED: Pass the new onViewResults callback
     return (
       <GamePlayInterface
         context={context}
@@ -456,6 +464,7 @@ export const GamePost = ({ context }: GamePostProps): JSX.Element => {
         selectedIndex={selectedIndex}
         onSelectStatement={setSelectedIndex}
         onSubmitGuess={handleSubmitGuess}
+        onViewResults={handleAuthorViewResults} // NEW: Pass the callback for authors
       />
     );
   }
