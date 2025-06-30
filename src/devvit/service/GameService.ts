@@ -249,7 +249,7 @@ export class GameService {
     }
   }
 
-  // FIXED: Completely rewritten to avoid zCount and use zRank instead
+  // FIXED: Declare userScore outside try block to fix scope issue
   async getUserLeaderboardRank(userId: string, type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime'): Promise<number | null> {
     const weekNumber = this.getWeekNumber();
     const key = timeframe === 'weekly' 
@@ -258,9 +258,12 @@ export class GameService {
 
     console.log(`🔍 Getting user rank for ${userId} in ${key}`);
 
+    // Declare userScore outside try block to fix scope issue
+    let userScore: number | null | undefined;
+
     try {
       // Get the user's score first
-      const userScore = await this.redis.zScore(key, userId);
+      userScore = await this.redis.zScore(key, userId);
       
       if (userScore === null || userScore === undefined) {
         console.log(`❌ User ${userId} not found in leaderboard ${key}`);
@@ -295,6 +298,12 @@ export class GameService {
       // Fallback to manual counting if zRevRank fails
       try {
         console.log(`🔄 Attempting fallback method for user rank calculation...`);
+        
+        // Check if userScore is defined before proceeding with fallback
+        if (userScore === null || userScore === undefined) {
+          console.log(`❌ Cannot proceed with fallback: userScore is not defined`);
+          return null;
+        }
         
         // Get all entries and manually count higher scores
         const allEntries = await this.redis.zRange(key, 0, -1, { withScores: true });
