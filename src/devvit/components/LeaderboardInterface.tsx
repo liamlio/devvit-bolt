@@ -256,10 +256,10 @@ export const LeaderboardInterface = ({
                     <vstack>
                       {/* UPDATED: Display current level with title using proper Devvit components */}
                       <hstack gap="xsmall" alignment="middle">
-                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                        <text size="xxsmall" color={CarnivalTheme.colors.text}>
                           🎯 Lvl.{userStats.level}: 
                         </text>
-                        <text size="xsmall" color={CarnivalTheme.colors.primary} weight="bold">
+                        <text size="xxsmall" color={CarnivalTheme.colors.primary} weight="bold">
                           {(() => {
                             const gameService = new GameService(context.redis);
                             const levelInfo = gameService.getLevelByExperience(userStats.experience);
@@ -267,15 +267,15 @@ export const LeaderboardInterface = ({
                           })()}
                         </text>
                       </hstack>
-                      <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      <text size="xxsmall" color={CarnivalTheme.colors.text}>
                         ⭐ {userStats.experience} XP
                       </text>
                     </vstack>
                     <vstack>
-                      <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      <text size="xxsmall" color={CarnivalTheme.colors.text}>
                         🎮 Games: {userStats.totalGames}
                       </text>
-                      <text size="xsmall" color={CarnivalTheme.colors.text}>
+                      <text size="xxsmall" color={CarnivalTheme.colors.text}>
                         🎯 Accuracy: {userStats.totalGames > 0 
                           ? Math.round((userStats.correctGuesses / userStats.totalGames) * 100) 
                           : 0}%
@@ -291,25 +291,25 @@ export const LeaderboardInterface = ({
                     
                     <hstack gap="medium">
                       <vstack gap="xxsmall">
-                        <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                        <text size="xxsmall" color={CarnivalTheme.colors.textLight}>
                           📅 This Week
                         </text>
-                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                        <text size="xxsmall" color={CarnivalTheme.colors.text}>
                           🕵️ {formatRank(userWeeklyGuesserRank)} guesser
                         </text>
-                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                        <text size="xxsmall" color={CarnivalTheme.colors.text}>
                           🎭 {formatRank(userWeeklyLiarRank)} liar
                         </text>
                       </vstack>
                       
                       <vstack gap="xxsmall">
-                        <text size="xsmall" color={CarnivalTheme.colors.textLight}>
+                        <text size="xxsmall" color={CarnivalTheme.colors.textLight}>
                           🏆 All-Time
                         </text>
-                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                        <text size="xxsmall" color={CarnivalTheme.colors.text}>
                           🕵️ {formatRank(userAllTimeGuesserRank)} guesser
                         </text>
-                        <text size="xsmall" color={CarnivalTheme.colors.text}>
+                        <text size="xxsmall" color={CarnivalTheme.colors.text}>
                           🎭 {formatRank(userAllTimeLiarRank)} liar
                         </text>
                       </vstack>
