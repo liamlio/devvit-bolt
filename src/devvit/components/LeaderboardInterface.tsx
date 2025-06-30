@@ -252,7 +252,7 @@ export const LeaderboardInterface = ({
               <hstack gap="small" alignment="top">
                 {/* Left side - Current stats */}
                 <vstack gap="small" grow>
-                  <hstack gap="large">
+                  <hstack gap="medium">
                     <vstack>
                       {/* UPDATED: Display current level with title using proper Devvit components */}
                       <hstack gap="xsmall" alignment="middle">
