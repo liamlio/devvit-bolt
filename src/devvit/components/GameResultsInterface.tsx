@@ -59,7 +59,7 @@ export const GameResultsInterface = ({
   return (
     <CarnivalBackground>
       <vstack width="100%" height="100%" padding={isSmallScreen ? "small" : "medium"} gap="small">
-        <CarnivalCard padding="small">
+        <CarnivalCard padding={isSmallScreen ? "medium" : "small"}>
           <vstack width="100%" height="100%" padding="xxsmall" gap="xxsmall">
             <text size={isSmallScreen ? "large" : "xxlarge"} alignment="center" color={CarnivalTheme.colors.text}>🎪 Results</text>
             <text size={isSmallScreen ? "small" : "medium"} alignment="center" color={CarnivalTheme.colors.text}>
@@ -73,7 +73,7 @@ export const GameResultsInterface = ({
             </text>
           </vstack>
 
-          <vstack gap="xxsmall" padding="xxsmall">
+          <vstack gap={isSmallScreen ? "small" : "xxsmall"} padding="xxsmall">
             {statements.map((statement, index) => {
               const isLie = index === gamePost.lieIndex;
               const isUserChoice = userGuess?.guessIndex === index;
@@ -90,7 +90,7 @@ export const GameResultsInterface = ({
               return (
                 <vstack 
                   key={index} 
-                  padding={isSmallScreen ? "xsmall" : "small"}
+                  padding={isSmallScreen ? "medium" : "small"}
                   backgroundColor={isLie ? "rgba(255,68,68,0.2)" : "rgba(50,205,50,0.2)"} 
                   cornerRadius="medium"
                   border="thick"
@@ -98,16 +98,16 @@ export const GameResultsInterface = ({
                   gap="small"
                 >
                   <hstack alignment="middle">
-                    <text grow size={isSmallScreen ? "small" : "medium"} weight="bold" color={CarnivalTheme.colors.text} wrap>
+                    <text grow size={isSmallScreen ? "medium" : "medium"} weight="bold" color={CarnivalTheme.colors.text} wrap>
                       {isLie ? '❌ LIE' : '✅ TRUTH'}: {statement.text}
                     </text>
                     <vstack gap="xxsmall" alignment="end">
                       {isUserChoice && (
-                        <text color={CarnivalTheme.colors.primary} weight="bold" size={isSmallScreen ? "xsmall" : "small"}>
+                        <text color={CarnivalTheme.colors.primary} weight="bold" size={isSmallScreen ? "small" : "small"}>
                           (Your choice)
                         </text>
                       )}
-                      <text size={isSmallScreen ? "xsmall" : "small"} color={CarnivalTheme.colors.textLight}>
+                      <text size={isSmallScreen ? "small" : "small"} color={CarnivalTheme.colors.textLight}>
                         {votes} vote{votes !== 1 ? 's' : ''} ({percentage}%)
                       </text>
                     </vstack>
