@@ -228,13 +228,17 @@ export class GameService {
         const { member: userId, score } = results[i];
         const userScore = await this.getUserScore(userId);
         
-        // FIXED: Include all users regardless of score (removed score > 0 filter)
-        leaderboard.push({
-          userId,
-          username: userScore.username || `User_${userId.slice(-4)}`,
-          score,
-          rank: i + 1,
-        });
+        // FIXED: Apply score filter only for liar leaderboards
+        const shouldInclude = type === 'guesser' || score > 0;
+        
+        if (shouldInclude) {
+          leaderboard.push({
+            userId,
+            username: userScore.username || `User_${userId.slice(-4)}`,
+            score,
+            rank: i + 1,
+          });
+        }
       }
 
       console.log(`Processed leaderboard for ${key}:`, leaderboard);
@@ -245,33 +249,43 @@ export class GameService {
     }
   }
 
+  // FIXED: Completely rewritten to properly calculate user ranks
   async getUserLeaderboardRank(userId: string, type: 'guesser' | 'liar', timeframe: 'weekly' | 'alltime'): Promise<number | null> {
     const weekNumber = this.getWeekNumber();
     const key = timeframe === 'weekly' 
       ? `leaderboard:${type}:weekly:${weekNumber}`
       : `leaderboard:${type}:alltime`;
 
-    console.log(`Getting user rank for ${userId} in ${key}`);
+    console.log(`🔍 Getting user rank for ${userId} in ${key}`);
 
     try {
-      // Get the user's ascending rank (0-based)
-      const ascendingRank = await this.redis.zRank(key, userId);
+      // Get the user's score first
+      const userScore = await this.redis.zScore(key, userId);
       
-      if (ascendingRank === null || ascendingRank === undefined) {
-        console.log(`User ${userId} not found in leaderboard ${key}`);
+      if (userScore === null || userScore === undefined) {
+        console.log(`❌ User ${userId} not found in leaderboard ${key}`);
         return null;
       }
       
-      // Get total number of members in the sorted set
-      const totalMembers = await this.redis.zCard(key);
+      console.log(`📊 User ${userId} score in ${key}: ${userScore}`);
       
-      // Calculate descending rank: total members - ascending rank (0-based) = descending rank (1-based)
-      const userRank = totalMembers - ascendingRank;
-      console.log(`User ${userId} rank in ${key}: ${userRank} (ascending rank: ${ascendingRank}, total: ${totalMembers})`);
+      // For liar leaderboards, if user has 0 score, they shouldn't be ranked
+      if (type === 'liar' && userScore === 0) {
+        console.log(`🎭 User ${userId} has 0 liar points, not ranked in ${key}`);
+        return null;
+      }
+      
+      // Count how many users have a higher score than this user
+      const higherScoreCount = await this.redis.zCount(key, `(${userScore}`, '+inf');
+      
+      // User's rank is the number of users with higher scores + 1
+      const userRank = higherScoreCount + 1;
+      
+      console.log(`🏆 User ${userId} rank in ${key}: ${userRank} (score: ${userScore}, users with higher scores: ${higherScoreCount})`);
       
       return userRank;
     } catch (error) {
-      console.error(`Error getting user leaderboard rank for ${key}:`, error);
+      console.error(`❌ Error getting user leaderboard rank for ${key}:`, error);
       return null;
     }
   }
