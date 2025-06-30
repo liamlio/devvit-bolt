@@ -228,15 +228,13 @@ export class GameService {
         const { member: userId, score } = results[i];
         const userScore = await this.getUserScore(userId);
         
-        // Only include users with actual scores > 0
-        if (score > 0) {
-          leaderboard.push({
-            userId,
-            username: userScore.username || `User_${userId.slice(-4)}`,
-            score,
-            rank: i + 1,
-          });
-        }
+        // FIXED: Include all users regardless of score (removed score > 0 filter)
+        leaderboard.push({
+          userId,
+          username: userScore.username || `User_${userId.slice(-4)}`,
+          score,
+          rank: i + 1,
+        });
       }
 
       console.log(`Processed leaderboard for ${key}:`, leaderboard);
